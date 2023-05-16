@@ -1,0 +1,20 @@
+CREAR
+mkdir GIT – crea una carpeta llamada GIT
+cd GIT – introduce la carpeta GIT
+git init – inicia un repositorio GIT
+touch filename.php – crea un archivo vacío llamado filename.php, sustituye filename.php con el nombre real del archivo
+git config --global user.email "xxxa@gmail.com"
+git config --global user.name "jxxxa"
+git status – compara la lista de archivos en el repositorio GIT actual
+ y la lista de archivos actuales que has creado
+
+AÑADIR 
+git add filename.php – añade el filename.php al index del repositorio
+ GIT ( lugar provisorio )
+git commit -m "first commit" – despliega los cambios al repositorio, 
+sustituye first commit con la etiqueta commit real ( lugar de guarda )
+
+
+GITHUB
+git remote add origin git@github.com:your_username/name_of_your_repo.git – despliega los cambios a un repositorio Git remoto. Sustituye your_username y name_of_your_repo con tu usuario real GitHub y el nombre de tu repositorio
+git push origin master – despliega los cambios al repositorio GitHub

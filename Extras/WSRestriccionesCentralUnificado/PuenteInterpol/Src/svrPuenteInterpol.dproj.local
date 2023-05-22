@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2023/04/07 17:36:33.000.619,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:36:33.000.998,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:36:46.000.445,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteInterpolIntf.pas</Transaction>
+    <Transaction>2023/04/07 17:36:46.000.316,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteInterpolImpl.pas</Transaction>
+    <Transaction>2023/04/07 17:38:02.000.009,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\uMainForm.pas</Transaction>
+    <Transaction>2023/04/07 17:38:02.000.009,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.dfm=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\uMainForm.dfm</Transaction>
+    <Transaction>2023/04/07 17:38:11.000.172,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteInterpol.dproj</Transaction>
+    <Transaction>2023/04/07 17:38:59.000.328,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteInterpol\Src\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:38:59.000.167,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteInterpol\Src\puenteInterpolIntf.pas</Transaction>
+    <Transaction>2023/04/07 17:38:59.000.107,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteInterpol\Src\DNM_INTI_WSService.pas</Transaction>
+    <Transaction>2023/04/07 17:38:59.000.077,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteInterpol\Src\DNM_INTERPOL_WSService1.pas</Transaction>
+    <Transaction>2023/04/07 17:38:59.000.197,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteInterpol\Src\ufixWS.pas</Transaction>
+    <Transaction>2023/04/07 17:38:59.000.147,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteInterpol\Src\puenteInterpolImpl.pas</Transaction>
+  </Transactions>
+</BorlandProject>

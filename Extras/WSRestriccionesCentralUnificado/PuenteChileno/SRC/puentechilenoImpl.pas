@@ -1,0 +1,223 @@
+{ Invokable implementation File for Tpuentechileno which implements Ipuentechileno }
+
+unit puentechilenoImpl;
+
+interface
+
+uses Soap.InvokeRegistry, System.Types, Soap.XSBuiltIns, puentechilenoIntf,  vcl.forms, vcl.dialogs, System.sysutils,
+     System.inifiles, System.dateutils, SemaforoCL ;
+
+type
+
+  { Tpuentechileno }
+  Tpuentechileno = class(TInvokableClass, Ipuentechileno)
+  private
+    procedure log(fileName,LogString: string);
+  public
+    function consultarPuentechl (a : consultaPuentechl): respuestaDTOchl; stdcall;
+    function procederCHL (a : consultaProcederCHL)  : respuestaProcederCHL ; stdcall;
+    function  RegistraViajeCHL(request: WriteRequestCHL): WriteResponseCHL; stdcall;
+    function DespachosChileCHL(const request: DespachosChileRequestCHL): DespachosChileResponseCHL; stdcall;
+  end;
+
+implementation
+
+procedure Tpuentechileno.log(fileName,LogString: string);
+var f: TextFile;
+begin
+  AssignFile(f,fileName);
+  If FileExists(fileName) then
+    Reset(f)
+  else
+    Rewrite(f);
+  Append(f);
+  Writeln(f ,logString);
+  closeFile(f);
+end;
+
+
+function Tpuentechileno.consultarPuentechl (a : consultaPuentechl): respuestaDTOchl;
+var ws : SemaforoLegacySoap;
+    R:VerifyResponse;
+    res :respuestaDTOchl;
+     wschl: string;
+    ini : tinifile;
+    Ds : VerifyRequest;
+    filename : string;
+begin
+
+  res:= respuestaDTochl.Create;
+  R := VerifyResponse.Create;
+
+  DateTimeToString(filename,'yyyymmddHHmmss', Now);
+  ForceDirectories(ExtractFilePath(ParamStr(0)) + 'logs\verificar\'+IntToStr(YearOf(Now))+'\'+FormatFloat('00',MonthOf(Now))+'\'+FormatFloat('00',DayOf(now)));
+  filename:= ExtractFilePath(ParamStr(0)) + 'logs\verificar\'+IntToStr(YearOf(Now))+'\'+FormatFloat('00',MonthOf(Now))+'\'+FormatFloat('00',DayOf(now))+'\'+ filename+'.log';
+
+  try
+    ini := TIniFile.Create('.\config.ini'); //ExtractFilePath(application.exename)+
+    wschl:= ini.ReadString('CONFIG','WSCHL','');
+
+    ds:= VerifyRequest.Create;
+
+    ds.PrimerNombre:= a.NOMBRE1;
+    ds.SegundoNombre:=A.NOMBRE2;
+    ds.ApellidoPaterno:=A.APELLIDO1;
+    ds.ApellidoMaterno:= A.APELLIDO2;
+    ds.NumeroDocumento:= A.NUMDOC;
+    ds.TipoDocumento:= A.TIPODOC;
+    ds.PaisDocumento := A.EMISORDOC;
+    ds.FechaNacimiento := A.FECHANAC;
+    ds.Genero:= a.GENERO;
+    ds.Nacionalidad := a.NACIONALIDAD;
+    ds.Run := a.NUMEROIDENTIFICACION;
+    ws :=  GetSemaforoLegacySoap(false, wschl);
+    r:= ws.Verificar(ds);
+    case strtoInt(R.Aod) of
+      0 : res.COD_RTA := '1';
+      1 : res.COD_RTA := '0';
+      2 : res.COD_RTA := R.Aod;
+    end;
+
+    //  res.COD_RTA := R.Aod
+
+
+    res.COD_DETALLE_RTA := R.Cvm;
+    log(filename, 'OK - NroDoc : '+a.NUMDOC+' COD_RTA: '+  R.Aod +' COD_RTA: '+  R.Cvm ) ;
+  except
+    on e: exception do
+    begin
+      log(filename, 'ERROR - NroDoc : '+a.NUMDOC+' desc: '+  e.message) ;
+      res.COD_RTA := '-1';
+      res.COD_DETALLE_RTA :='100';
+    end;
+  end;
+  Result := res;
+end;
+
+
+Function Tpuentechileno.procederCHL (a : consultaProcederCHL)  : respuestaProcederCHL ;
+var ws : SemaforoLegacySoap;
+    R: ProceedResponse;
+    res :respuestaProcederCHL;
+    wschl: string;
+    ini : tinifile;
+    Ds : ProceedRequest;
+    filename : string;
+begin
+
+  res:= respuestaProcederCHL.Create;
+  R := ProceedResponse.Create;
+  DateTimeToString(filename,'yyyymmddHHmmss', Now);
+  ForceDirectories(ExtractFilePath(ParamStr(0)) + 'logs\proceder\'+IntToStr(YearOf(Now))+'\'+FormatFloat('00',MonthOf(Now))+'\'+FormatFloat('00',DayOf(now)));
+  filename:= ExtractFilePath(ParamStr(0)) + 'logs\proceder\'+IntToStr(YearOf(Now))+'\'+FormatFloat('00',MonthOf(Now))+'\'+FormatFloat('00',DayOf(now))+'\'+ filename+'.log';
+
+  try
+    ini := TIniFile.Create('.\config.ini');
+    wschl:= ini.ReadString('CONFIG','WSCHL','');
+    ds:= ProceedRequest.Create;
+
+    ds.TipoDocumento := a.TipoDocumento;
+    ds.NumeroDocumento := a.NumeroDocumento;
+    ds.PaisDocumento := a.PaisDocumento;
+    ds.Observacion := a.Observacion;
+    ds.Funcionario := a.Funcionario;
+    ds.Status := a.Status;
+
+    ws :=  GetSemaforoLegacySoap(false, wschl);
+    r:= ws.Proceder(ds);
+    res.Status := R.Status;
+    res.Descripcion := r.Descripcion;
+  except
+    on e: exception do
+    begin
+      log(filename, 'ERROR - NroDoc : '+a.NumeroDocumento+' desc: '+  e.message) ;
+      res.Status:= -1;
+      res.Descripcion :='ERROR consultando PDI'; //res.COD_DETALLE_RTA :=    e.message;
+    end;
+  end;
+  Result := res;
+end;
+
+function  Tpuentechileno.RegistraViajeCHL(request: WriteRequestCHL): WriteResponseCHL; stdcall;
+var ws : SemaforoLegacySoap;
+    R: WriteResponse;
+    res :WriteResponseCHL;
+    wschl: string;
+    ini : tinifile;
+    Ds : WriteRequest;
+    filename : string;
+begin
+  res:= WriteResponseCHL.Create;
+  R := WriteResponse.Create;
+  DateTimeToString(filename,'yyyymmddHHmmss', Now);
+  ForceDirectories(ExtractFilePath(ParamStr(0)) + 'logs\RegistraViaje\'+IntToStr(YearOf(Now))+'\'+FormatFloat('00',MonthOf(Now))+'\'+FormatFloat('00',DayOf(now)));
+  filename:= ExtractFilePath(ParamStr(0)) + 'logs\RegistraViaje\'+IntToStr(YearOf(Now))+'\'+FormatFloat('00',MonthOf(Now))+'\'+FormatFloat('00',DayOf(now))+'\'+ filename+'.log';
+
+  try
+    ini := TIniFile.Create('.\config.ini');
+    wschl:= ini.ReadString('CONFIG','WSCHL','');
+    ds:= WriteRequest.Create;
+
+    ds.Data := request.Data;
+    ds.FechaCierre := request.FechaCierre;
+
+    ws :=  GetSemaforoLegacySoap(false, wschl, nil, 15000);
+    r:= ws.RegistraViaje(ds);
+    res.Status := R.Status;
+    res.Descripcion := r.Descripcion;
+  except
+    on e: exception do
+    begin
+      log(filename, 'ERROR - NroDoc : '+request.FileName+' desc: '+  e.message) ;
+      res.Status:= -1;
+      res.Descripcion :='ERROR consultando PDI'; //res.COD_DETALLE_RTA :=    e.message;
+    end;
+  end;
+  Result := res;
+end;
+
+function Tpuentechileno.DespachosChileCHL(const request: DespachosChileRequestCHL): DespachosChileResponseCHL; stdcall;
+var ws : SemaforoLegacySoap;
+    R: DespachosChileResponse;
+    res :DespachosChileResponseCHL;
+    wschl: string;
+    ini : tinifile;
+    Ds : DespachosChileRequest;
+    filename : string;
+begin
+  res:= DespachosChileResponseCHL.Create;
+  R := DespachosChileResponse.Create;
+  DateTimeToString(filename,'yyyymmddHHmmss', Now);
+  ForceDirectories(ExtractFilePath(ParamStr(0)) + 'logs\RegistraViaje\'+IntToStr(YearOf(Now))+'\'+FormatFloat('00',MonthOf(Now))+'\'+FormatFloat('00',DayOf(now)));
+  filename:= ExtractFilePath(ParamStr(0)) + 'logs\RegistraViaje\'+IntToStr(YearOf(Now))+'\'+FormatFloat('00',MonthOf(Now))+'\'+FormatFloat('00',DayOf(now))+'\'+ filename+'.log';
+
+  try
+    ini := TIniFile.Create('.\config.ini');
+    wschl:= ini.ReadString('CONFIG','WSCHL','');
+    ds:= DespachosChileRequest.Create;
+
+    ds.FINI := request.FINI;
+    ds.FFIN:= request.FFIN;
+
+    ws :=  GetSemaforoLegacySoap(false, wschl);
+    r:= ws.DespachosChile(ds);
+    res.Status := R.Status;
+    res.Descripcion:= r.Descripcion;
+    res.Data := r.Data;
+  except
+    on e: exception do
+    begin
+      log(filename, 'ERROR - NroDoc : '+formatdatetime('aa/mm/yyyy hh:mm:ss',now())+' desc: '+  e.message) ;
+      res.Status:= -1;
+      res.Descripcion :='ERROR consultando PDI'; //res.COD_DETALLE_RTA :=    e.message;
+    end;
+  end;
+  Result := res;
+end;
+
+
+initialization
+{ Invokable classes must be registered }
+   InvRegistry.RegisterInvokableClass(Tpuentechileno);
+end.
+

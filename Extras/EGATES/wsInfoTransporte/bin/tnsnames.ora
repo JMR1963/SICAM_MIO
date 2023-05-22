@@ -1,0 +1,28 @@
+# # TNSNAMES PRODUCCION
+# #################################
+
+
+# APISQL_HSPD6
+APISQL_HSPD6=
+	(DESCRIPTION =
+		(SEND_BUF_SIZE = 125000)
+		(RECV_BUF_SIZE = 125000)
+		(TRANSPORT_CONNECT_TIMEOUT=4)
+		(ADDRESS_LIST=
+			(FAILOVER=on)
+			(LOAD_BALANCE=off)
+			(ADDRESS=(PROTOCOL=TCP)(HOST=edb05-scan.migraciones.local)(PORT=1521))
+			(ADDRESS=(PROTOCOL=TCP)(HOST=edb01-scan.migraciones.local)(PORT=1521))
+			(ADDRESS=(PROTOCOL=TCP)(HOST=edb02-scan.migraciones.local)(PORT=1521))
+		)
+		(CONNECT_DATA =
+			(SERVER = DEDICATED)
+			(SERVICE_NAME = OSAPIT.migraciones.local)
+			(FAILOVER_MODE =
+				(TYPE = SELECT)
+				(METHOD = BASIC)
+				(RETRIES = 20)
+			)
+		)
+	)
+

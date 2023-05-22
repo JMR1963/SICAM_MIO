@@ -1,0 +1,60 @@
+unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, Buttons, ws_obtener_autorizacionImpl,
+  ws_obtener_autorizacionIntf, Udatosd;
+
+type
+  TForm1 = class(TForm)
+    GroupBox1: TGroupBox;
+    edtDocumento: TEdit;
+    edtFechaNac: TEdit;
+    BitBtn1: TBitBtn;
+    Label1: TLabel;
+    Label2: TLabel;
+    meResult: TMemo;
+    procedure BitBtn1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+uses InvokeRegistry;
+
+{$R *.dfm}
+
+procedure TForm1.BitBtn1Click(Sender: TObject);
+var
+  ws: Tws_obtener_autorizacion;
+  bus: Tdatos_busqueda;
+  res : tautorizacion_full;
+begin
+  ws := Tws_obtener_autorizacion.Create;
+
+  bus := Tdatos_busqueda.Create;
+  bus.fecha_nacimiento := edtFechaNac.Text;
+  bus.numero_documento := edtDocumento.Text;
+  try
+    res := ws.autorizacion_menores(bus);
+    if res.nombre_escribano <> '' then
+      meResult.Lines.Add(res.nro_solicitud)
+    else
+      meResult.Lines.Add('Sin resultado');
+  except
+    on e: exception do
+      meResult.Lines.Add(e.Message);
+  end;
+
+
+end;
+
+end.

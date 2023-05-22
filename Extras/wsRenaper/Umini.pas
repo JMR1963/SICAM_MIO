@@ -1,0 +1,445 @@
+unit Umini;
+{-------------------------------------------------------------------------------
+Consulta el web service del ministerio del interior
+transforma el xml resultante en un arreglo
+
+
+
+Exporta dos funciones.
+
+function consultaCiudadanos(nroDni, sexo: string): ciudadanos;  overload;
+function consultaCiudadanos(apellido, nombre, nacimiento: string): ciudadanos; overload;
+
+No se implemento por soap por que el Ws no tiene un wsdl.
+
+Ciudadanos es un arreglo de personas maximo 20
+
+Cada persona tiene una informacion fija y un arreglo de direcciones declaradas variable.
+Cada persona puede haber declarado mas de una direccion.
+-------------------------------------------------------------------------------}
+
+interface
+
+uses
+  WinApi.Windows, System.Classes, IdHTTP, Soap.InvokeRegistry, System.SysUtils, XML.XMLDoc, XML.XMLIntf, System.StrUtils,
+  UwsdlRenaper, Ufunciones, Vcl.ExtCtrls,
+  IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, system.DateUtils;
+
+  type
+    //El objeto que modela la direccion de una persona
+//	prueba
+    direccion = class(Tremotable)
+    private
+      Fpais           : string;
+      Fprovincia      : string;
+      Fmunicipio      : string;
+      Fciudad         : string;
+      Fcalle          : string;
+      Fnumero         : string;
+      Fpiso           : string;
+      Fdepartamento   : string;
+      Ftelefono       : string;
+      FTel_fijo       : string;
+      Fcaracteristica : string;
+      fcpostal        : string;
+      //Fpiso           : string;
+      Fbarrio         : string;
+      Fmonoblock      : string;
+      Fmail           : string;
+    published
+      property pais          : string read fpais write fpais;
+      property provincia     : string read fprovincia write Fprovincia;
+      property municipio     : string read Fmunicipio write Fmunicipio;
+      property ciudad        : string read Fciudad write Fciudad;
+      property calle         : string read fcalle write fcalle;
+      property numero        : string read fnumero write fnumero;
+      property piso          : string read fpiso write fpiso;
+      property departamento  : string read fdepartamento write fdepartamento;
+      property telefono      : string read ftelefono write ftelefono;
+      property Tel_fijo      : string read FTel_fijo write FTel_fijo;
+      property caracteristica: string read Fcaracteristica write Fcaracteristica;
+      property cpostal       : string read Fcpostal write Fcpostal;
+      //property piso          : string read Fpiso write Fpiso;
+      property barrio        : string read Fbarrio write Fbarrio;
+      property monoblock     : string read Fmonoblock write Fmonoblock;
+      property mail          : string read Fmail write Fmail;
+
+    end;
+
+    //El arreglo de direcciones que tiene un ciudadano
+    adirecciones = array of direccion;
+
+    //Un ciudadano
+    ciudadano = class(Tremotable)
+    private
+      FidPers      : string;
+      Fnrodni      : string;
+      Fsexo        : string;
+      Fapellido    : string;
+      Fnombres     : string;
+      Ffechanac    : string;
+      Fbiometria   : string;
+      Fnacionalidad: string; // by pipo
+      Fdirecciones : adirecciones;
+    published
+      property idPers   : string  read FidPers     write FidPers;
+      property nrodni   : string  read Fnrodni     write Fnrodni;
+      property sexo     : string  read fsexo       write fsexo;
+      property apellido : string  read fapellido   write fapellido;
+      property nombres  : string  read fnombres    write fnombres;
+      property fechanac : string  read ffechanac   write ffechanac;
+      property biometria: string  read fbiometria  write fbiometria;
+      property nacionalidad: string  read Fnacionalidad write Fnacionalidad;
+      property direcciones: adirecciones read fdirecciones write fdirecciones;
+    end;
+
+    //El arreglo de ciudadanos.
+    ciudadanos = array of ciudadano;
+
+    
+    controHttp = class
+    public
+      procedure WorkBeginEvent(ASender: TObject; AWorkMode: TWorkMode; AWorkCountMax: Int64);
+      procedure WorkEndEvent(ASender: TObject; AWorkMode: TWorkMode);
+      procedure pararConsulta(Sender: TObject);
+    end;
+
+     //Un ciudadano
+    ciudadanoYDetalle = class(Tremotable)
+    private
+      FidPers      : string;
+      Fnrodni      : string;
+      Fsexo        : string;
+      Fapellido    : string;
+      Fnombres     : string;
+      Ffechanac    : string;
+      Fbiometria   : string;
+      Fnacionalidad: string; // by pipo
+      Fdirecciones : adirecciones;
+      //del detalle
+      Ffoto: string;
+      FnumeroError: integer;
+      FdescripcionError: string;
+      FhuellaWsq: string;
+
+      FemisionDNI     : string;
+      FvencimientoDNI : string;
+      FemisionPasaporte     : string;
+      FvencimientoPasaporte : string;
+      FdniProgenitor1       : string;
+      FdniProgenitor2       : string;
+      femail                : string;
+      fejemplar             : string;
+      Fnro_tramite           : string;
+    published
+      property idPers   : string  read FidPers     write FidPers;
+      property nrodni   : string  read Fnrodni     write Fnrodni;
+      property sexo     : string  read fsexo       write fsexo;
+      property apellido : string  read fapellido   write fapellido;
+      property nombres  : string  read fnombres    write fnombres;
+      property fechanac : string  read ffechanac   write ffechanac;
+      property biometria: string  read fbiometria  write fbiometria;
+      property nacionalidad: string  read Fnacionalidad write Fnacionalidad;
+      property direcciones: adirecciones read fdirecciones write fdirecciones;
+      //detalle
+      property numeroError          : integer read FnumeroError       write FnumeroError;
+      property foto                 : string  read Ffoto              write Ffoto;
+      property descripcionError     : string  read FdescripcionError  write FdescripcionError;
+      property huellaWsq            : string  read FhuellaWsq         write FhuellaWsq;
+      property emisionPasaporte     : string read FemisionPasaporte write FemisionPasaporte;
+      property vencimientoPasaporte : string read FvencimientoPasaporte write FvencimientoPasaporte;
+      property dniProgenitor1       : string read FdniProgenitor1 write FdniProgenitor1;
+      property dniProgenitor2       : string read FdniProgenitor2 write FdniProgenitor2;
+      property emisionDNI     : string read FemisionDNI write FemisionDNI;
+      property vencimientoDNI : string read FvencimientoDNI write FvencimientoDNI;
+      property email : string read femail write femail;
+      property ejemplar : string read fejemplar write fejemplar;
+      property nro_tramite : string read Fnro_tramite write Fnro_tramite;
+
+
+
+    end;
+
+    ciudadanosYDetalle = array of ciudadanoYDetalle;
+
+
+
+//    function consultaCiudadanos(nroDni, sexo: string): ciudadanos;  overload;
+    function consultaCiudadanos(apellido, nombre, nacimiento: string): ciudadanos; overload;
+    function consultaCiudadanosXML(apellido, nombre, nacimiento: string): string;
+    function xmlToCiudadanos(xml: string): ciudadanos;
+
+implementation
+var
+  tt: ttimer;
+  lHTTP: TIdHTTP;
+
+  function consultaCiudadanosXML(apellido, nombre, nacimiento: string): string;
+  var
+    url, usuario, clave : string;
+    lParamList: TStringList;
+    //lHTTP: TIdHTTP;
+  begin
+    result := '';
+    url    := 'http://www.mininterior.gov.ar/ws/pfa/consultaMigraciones.php';
+    if not TestHTTPConnection('www.mininterior.gov.ar1',
+    //if not TestHTTPConnection('192.168.243.20',
+                              '172.16.14.92',
+                              '',
+                              '',
+                              8080,
+                              4,
+                              true) then
+      Exit;
+    usuario:= 'pfa';
+    clave  := 'Iice6aiw';
+    lParamList := TStringList.Create;
+    lParamList.Add('apellido=' + apellido);
+    lParamList.Add('nombre=' + nombre);
+    lParamList.Add('anionac=' + nacimiento);
+    lParamList.Add('format=' + 'xml');
+    lParamList.Add('indent=' + 'no');
+
+
+    lHTTP := TIdHTTP.Create(nil);
+    try
+      //lhttp.ProxyParams.ProxyServer := '172.16.14.92';
+      //lhttp.ProxyParams.ProxyPort := 8080;
+      lhttp.ProxyParams.BasicAuthentication := true;
+
+      lhttp.Request.BasicAuthentication := true;
+      lhttp.request.Username := usuario;
+      lhttp.request.Password := clave;
+      result := lHTTP.Post(url, lParamList);
+      xmlToCiudadanos(RESult);
+    finally
+      FreeAndNil(lHTTP);
+      FreeAndNil(lParamList);
+    end;
+  end;
+
+{
+function consultaCiudadanos(nroDni, sexo: string): ciudadanos;
+var
+  url, usuario, clave, res : string;
+  lParamList: TStringList;
+  ok: boolean;
+  c : controHttp;
+begin
+  c:=controHttp.Create;
+    tt:= ttimer.Create(nil);
+    tt.Interval := 4000;
+    tt.OnTimer  := c.pararConsulta;
+    tt.Enabled  := false;
+    //url    := 'http://www.mininterior.gov.ar/ws/pfa/consultaMigraciones.php';
+    //usuario:= 'pfa';
+    //clave  := 'Iice6aiw';
+    result := nil;
+
+    if not TestHTTPConnection('www.mininterior.gov.ar',
+                              '',
+                              '',
+                              '',
+                              0,
+                              4,
+                              true) then
+      Exit;
+
+    url := 'http://www.mininterior.gov.ar/ws/ciudadano/consultaCiudadano.php';
+    usuario:= 'migraciones';
+    clave  := 'qscvbui195';
+    lParamList := TStringList.Create;
+    lParamList.Add('nrodni=' + nroDni);
+    lParamList.Add('sexo=' + sexo);
+    lParamList.Add('format=' + 'xml');
+    lParamList.Add('indent=' + 'no');
+
+
+    lHTTP := TIdHTTP.Create(nil);
+    try
+      ok := false;
+
+      //lhttp.ProxyParams.ProxyServer := '172.16.14.92';
+      //lhttp.ProxyParams.ProxyPort := 8080;
+      lhttp.ProxyParams.BasicAuthentication := true;
+
+      lhttp.Request.BasicAuthentication := true;
+      lhttp.request.Username := usuario;
+      lhttp.request.Password := clave;
+      lhttp.OnWorkBegin := c.WorkBeginEvent;
+      lhttp.OnWorkEnd   := c.WorkEndEvent;
+      res := lHTTP.Post(url, lParamList);
+      RESULT := xmlToCiudadanos(RES);
+    finally
+      FreeAndNil(lHTTP);
+      FreeAndNil(lParamList);
+    end;
+  end;
+}
+  function consultaCiudadanos(apellido, nombre, nacimiento: string): ciudadanos;
+  var
+    url, usuario, clave, res : string;
+    lParamList: TStringList;
+    lHTTP: TIdHTTP;
+    ok: boolean;
+    c : controHttp;
+  begin
+    c:=controHttp.Create;
+    tt:= ttimer.Create(nil);
+    tt.Interval := 4000;
+    tt.OnTimer  := c.pararConsulta;
+    tt.Enabled  := false;
+
+    result := nil;
+    if not TestHTTPConnection('www.mininterior.gov.ar1',
+    //if not TestHTTPConnection('192.168.243.20',
+                              '',
+                              '',
+                              '',
+                              0,
+                              4,
+                              true) then
+      Exit;
+
+    url := 'http://www.mininterior.gov.ar/ws/ciudadano/consultaCiudadano.php';
+    usuario:= 'migraciones';
+    clave  := 'qscvbui195';
+
+    lParamList := TStringList.Create;
+    lParamList.Add('apellido=' + apellido);
+    lParamList.Add('nombre=' + nombre);
+    lParamList.Add('anionac=' + nacimiento);
+    lParamList.Add('format=' + 'xml');
+    lParamList.Add('indent=' + 'no');
+
+
+    lHTTP := TIdHTTP.Create(nil);
+    try
+      ok := false;
+      lhttp.Request.BasicAuthentication := true;
+      lhttp.request.Username := usuario;
+      lhttp.request.Password := clave;
+      lhttp.OnWorkBegin := c.WorkBeginEvent;
+      lhttp.OnWorkEnd   := c.WorkEndEvent;
+      res := lHTTP.Post(url, lParamList);
+      RESULT := xmlToCiudadanos(RES);
+    finally
+      FreeAndNil(lHTTP);
+      FreeAndNil(lParamList);
+    end;
+  end;
+
+  //-------------------------------------------------
+  //  Convierto el xml que viene en string en un arreglo de ciudadanos
+  //  para retornarlo desde el WS.
+  //--------------------------------------------------
+  function xmlToCiudadanos(xml: string): ciudadanos;
+  const
+    XML_HEADER = '<?xml version="1.0" encoding="ISO-8859-1"?>'#$0A;
+  var
+    xmldoc: IXMLDocument;//TXMLDocument;
+    node, nodeDirecciones : IXMLNode;
+    tempfecha: String;
+    i, j, domicilios, ciudadanos, direcciones : Integer;
+    dir: adirecciones;
+    aux: string;
+
+  begin
+    xmldoc:= TXMLDocument.Create(nil);
+    xmldoc.Active:= True;
+    xmldoc.Version:= '1.0';
+    //xmldoc.Encoding:= 'ISO-8859-1';
+    //xmldoc.LoadFromXml(XML_HEADER + AnsiReplaceStr(xml, '&#', ''));
+    //xmldoc.LoadFromXml(ansiReplaceStr(xml, '&#', ''));
+    xmldoc.LoadFromXml(xml);
+    xmldoc.SaveToFile('.\xml_result.xml');
+    //xmldoc.Active := true;
+
+    //resultado
+    node := xmldoc.ChildNodes[1];
+    //resultados
+    result := nil;
+    if node.ChildNodes.Count > 0 then
+    begin
+      ciudadanos := node.ChildNodes.Count;
+      SetLength(Result,ciudadanos);
+      node := node.ChildNodes[0];
+      i := 0;
+      while (node <> nil) and   (i < ciudadanos) do
+        begin
+          //ciudadano
+          Result[i]:= ciudadano.create;
+          //Result[i].nrodni :=  xmldoc.ChildNodes[i].ChildNodes.FindNode('APELLIDO').NodeValue;
+          Result[i].FidPers   := node.ChildNodes.FindNode('idpersona').Text;
+          Result[i].nrodni    := node.ChildNodes.FindNode('nrodni').Text;
+          Result[i].sexo      := node.ChildNodes.FindNode('sexo').Text;
+          Result[i].apellido  := node.ChildNodes.FindNode('apellido').Text;
+          Result[i].nombres   := node.ChildNodes.FindNode('nombres').Text;
+          Result[i].fechanac  := node.ChildNodes.FindNode('fechanac').Text;
+          try
+            aux := node.ChildNodes.FindNode('nacionalidad').Text;
+            Result[i].nacionalidad := aux;
+          except
+            Result[i].nacionalidad := '';
+          end;
+
+          Result[i].Fbiometria := node.ChildNodes.FindNode('posee_biometria_digital').Text;
+
+
+          //direcciones
+          nodeDirecciones := node.ChildNodes.FindNode('domicilios');
+          domicilios := nodeDirecciones.ChildNodes.Count;
+          nodeDirecciones := nodeDirecciones.ChildNodes.FindNode('domicilio');
+
+          for j := 0 to domicilios -1 do
+          begin
+            setlength(dir,domicilios);
+            dir[j] := direccion.Create;
+            result[i].direcciones := dir;
+            result[i].direcciones[j].pais := nodeDirecciones.ChildNodes.FindNode('pais').Text;
+            result[i].direcciones[j].provincia := nodeDirecciones.ChildNodes.FindNode('provincia').Text;
+            result[i].direcciones[j].municipio := nodeDirecciones.ChildNodes.FindNode('municipio').Text;
+            result[i].direcciones[j].ciudad := nodeDirecciones.ChildNodes.FindNode('ciudad').Text;
+            result[i].direcciones[j].calle := nodeDirecciones.ChildNodes.FindNode('calle').Text;
+            result[i].direcciones[j].numero := nodeDirecciones.ChildNodes.FindNode('numero').Text;
+            result[i].direcciones[j].piso := nodeDirecciones.ChildNodes.FindNode('piso').Text;
+            result[i].direcciones[j].departamento := nodeDirecciones.ChildNodes.FindNode('departamento').Text;
+            result[i].direcciones[j].telefono := nodeDirecciones.ChildNodes.FindNode('telefono').Text;
+            result[i].direcciones[j].Tel_fijo := nodeDirecciones.ChildNodes.FindNode('movil_o_fijo').Text;
+            result[i].direcciones[j].caracteristica := nodeDirecciones.ChildNodes.FindNode('tele_zona').Text;
+            nodeDirecciones := nodeDirecciones.NextSibling;
+          end;
+          node := node.NextSibling;
+          inc(i);
+        end;
+    end;
+  end;
+
+//---Control de ejecucion del http
+{
+Inicio el timer y si no termina en 4seg corta el pedido por http
+
+
+}
+{ controHttp }
+
+procedure controHttp.pararConsulta(Sender: TObject);
+begin
+  lHTTP.Disconnect(true);
+
+end;
+
+procedure controHttp.WorkBeginEvent(ASender: TObject; AWorkMode: TWorkMode;
+  AWorkCountMax: Int64);
+begin
+  tt.Enabled := true;
+
+end;
+
+procedure controHttp.WorkEndEvent(ASender: TObject; AWorkMode: TWorkMode);
+begin
+  tt.Enabled := false;
+
+end;
+
+end.

@@ -1,0 +1,366 @@
+unit Udatosd;
+
+interface
+
+uses
+  SysUtils, Classes, DB, MemDS, DBAccess, Ora, ws_obtener_autorizacionIntf;
+
+type
+  TDataModule1 = class(TDataModule)
+    osConeccion: TOraSession;
+    ospBusqueda_escribanos: TOraStoredProc;
+    ospBusquedaSacer: TOraStoredProc;
+    ospTerceros: TOraStoredProc;
+    oqProgenitores: TOraQuery;
+    OqAcompaniantes: TOraQuery;
+    ospAutorizacionesMenores: TOraStoredProc;
+  private
+    { Private declarations }
+  public
+    function obtener_autorizacion_escribanos_dm(datos_busqueda: Tdatos_busqueda):tautorizacion;
+    function obtener_autorizacion_menores_dm(datos_busqueda: Tdatos_busqueda):tautorizacion_full;
+    function obtener_autorizacion_sacer_dm(datos_busqueda: Tdatos_busqueda):tautorizacion_sacer;
+    function obtener_terceros(tramite: string): tterceros;
+    function obtener_progenitores(tramite: string): tterceros;
+    function autorizantes(tramite: string): tterceros;
+
+    { Public declarations }
+  end;
+
+var
+  DataModule1: TDataModule1;
+
+implementation
+
+{$R *.dfm}
+
+{ TDataModule1 }
+
+function TDataModule1.autorizantes(tramite: string): tterceros;
+begin
+  OqAcompaniantes.Close;
+  OqAcompaniantes.ParamByName('pau').Value := tramite;
+  OqAcompaniantes.Open;
+
+
+  if not(OqAcompaniantes.IsEmpty) then
+  begin
+    SetLength(result, 2);
+    OqAcompaniantes.First;
+    if trim(OqAcompaniantes.fieldbyname('nombre1').AsString) <> '' then
+    begin
+      Result[0] := ttercero.Create;
+
+      result[0].nombre1   := OqAcompaniantes.fieldbyname('nombre1').AsString;
+      result[0].apellido1 := OqAcompaniantes.fieldbyname('apellido1').AsString;
+
+      result[1] := ttercero.Create;
+      result[1].nombre1   := OqAcompaniantes.fieldbyname('nombre2').AsString;
+      result[1].apellido1 := OqAcompaniantes.fieldbyname('apellido2').AsString;
+    end;
+
+
+  end;
+
+end;
+
+function TDataModule1.obtener_autorizacion_escribanos_dm(
+  datos_busqueda: Tdatos_busqueda): tautorizacion;
+begin
+  try
+    ospBusqueda_escribanos.Close;
+    ospBusqueda_escribanos.ParamByName('P_NUMERO_DOC').Value := datos_busqueda.numero_documento;
+    ospBusqueda_escribanos.ParamByName('P_FECHA_NAC').Value := datos_busqueda.fecha_nacimiento;
+    ospBusqueda_escribanos.ExecProc;
+    begin
+      Result := tautorizacion.Create;
+      if ospBusqueda_escribanos.parambyname('P_MENOR').IsNull then
+      begin
+        Result.MENOR              := '-1';
+      end
+      else
+      begin
+        result.NUMERO_DOCUMENTO             := datos_busqueda.numero_documento;
+        result.FECHA_NACIMIENTO             := datos_busqueda.fecha_nacimiento;
+        Result.NRO_ACT_NOTARIAL_CERT_FIRMA  := ospBusqueda_escribanos.parambyname('P_NRO_ACT_NOTARIAL_CERT_FIRMA').Value;
+        Result.SERIE_FOJA                   := ospBusqueda_escribanos.parambyname('P_SERIE_FOJA').Value;
+        Result.TIPO_FOJA                    := ospBusqueda_escribanos.parambyname('P_TIPO_FOJA').Value;
+        Result.MENOR                  := ospBusqueda_escribanos.parambyname('P_MENOR').Value;
+        Result.AUTORIZANTE_1          := ospBusqueda_escribanos.parambyname('P_AUTORIZANTE_1').Value;
+        Result.AUTORIZANTE_2          := ospBusqueda_escribanos.parambyname('P_AUTORIZANTE_2').Value;
+        //Result.ACOMPANIANTE           := ospBusqueda_escribanos.parambyname('P_ACOMPANIANTE').Value;
+        Result.NOMBRES_ESCRIBANO      := ospBusqueda_escribanos.parambyname('P_NOMBRES_ESCRIBANO').Value;
+        Result.APELLIDOS_ESCRIBANO    := ospBusqueda_escribanos.parambyname('P_APELLIDOS_ESCRIBANO').Value;
+        Result.FECHA_DEL_INSTRUMENTO  := ospBusqueda_escribanos.parambyname('P_FECHA_DEL_INSTRUMENTO').Value;
+        Result.PAISES_TODOS           := ospBusqueda_escribanos.parambyname('P_PAISES_TODOS').Value;
+        Result.APELLIDO_MENOR         := ospBusqueda_escribanos.parambyname('P_APELLIDO_MENOR').Value;
+        Result.SAPELLIDO_MENOR        := ospBusqueda_escribanos.parambyname('P_SAPELLIDO_MENOR').Value;
+        Result.NOMBRE_MENOR           := ospBusqueda_escribanos.parambyname('P_NOMBRE_MENOR').Value;
+        Result.SNOMBRE_MENOR          := ospBusqueda_escribanos.parambyname('P_SNOMBRE_MENOR').Value;
+        Result.NACIONALIDAD_MENOR     := ospBusqueda_escribanos.parambyname('P_NACIONALIDAD_MENOR').Value;
+        Result.TIPO_DOC_MENOR         := ospBusqueda_escribanos.parambyname('P_TIPO_DOC_MENOR').Value;
+        Result.EMISOR_DOC_MENOR       := ospBusqueda_escribanos.parambyname('P_EMISOR_DOC_MENOR').Value;
+        Result.NUMERO_TRAMITE         := ospBusqueda_escribanos.parambyname('P_ID').Value;
+        Result.NOMBRE_AUTORIZANTE1         := ospBusqueda_escribanos.parambyname('P_NOMBRE_AUTORIZANTE1').Value;
+        Result.OTROS_NOMBRES_AUTORIZANTE1  := ospBusqueda_escribanos.parambyname('P_OTROS_NOMBRES_AUTORIZANTE1').Value;
+        Result.APELLIDO_AUTORIZANTE1       := ospBusqueda_escribanos.parambyname('P_APELLIDO_AUTORIZANTE1').Value;
+        Result.S_APELLIDO_AUTORIZANTE1     := ospBusqueda_escribanos.parambyname('P_S_APELLIDO_AUTORIZANTE1').Value;
+        Result.NOMBRE_AUTORIZANTE2         := ospBusqueda_escribanos.parambyname('P_NOMBRE_AUTORIZANTE2').Value;
+        Result.OTROS_NOMBRES_AUTORIZANTE2  := ospBusqueda_escribanos.parambyname('P_OTROS_NOMBRES_AUTORIZANTE2').Value;
+        Result.APELLIDO_AUTORIZANTE2       := ospBusqueda_escribanos.parambyname('P_APELLIDO_AUTORIZANTE2').Value;
+        Result.S_APELLIDO_AUTORIZANTE2     := ospBusqueda_escribanos.parambyname('P_S_APELLIDO_AUTORIZANTE2').Value;
+      end;
+    end;
+  except
+    on e: Exception do
+    begin
+      try
+        if result = nil then
+          Result := tautorizacion.Create;
+        result.MENOR := '-1';
+      except
+      end;
+    end;
+
+  end;
+end;
+
+function TDataModule1.obtener_autorizacion_menores_dm(datos_busqueda: Tdatos_busqueda): tautorizacion_full;
+begin
+  //AUTORIZACIONES_VIAJE.PR_OBTENER_AUTORIZACION_MENOR
+  TRY
+    osConeccion.Connect;
+    ospAutorizacionesMenores.StoredProcName:= 'AUTORIZACIONES_VIAJE.PR_OBTENER_AUTORIZACION_MENOR';
+    if not osConeccion.InTransaction then
+    begin
+      osConeccion.StartTransaction;
+      with ospAutorizacionesMenores do
+      begin
+        Params.Clear;
+        Params.CreateParam(ftString, 'p_numero_doc', ptInput) ;
+        Params.CreateParam(ftString, 'p_fecha_nac', ptInput) ;
+        Params.CreateParam(ftString, 'v_tipo', ptOutput) ;
+        Params.CreateParam(ftString, 'v_nro_solicitud', ptOutput) ;
+        Params.CreateParam(ftString, 'v_fecha_solicitud', ptOutput) ;
+
+        Params.CreateParam(ftString, 'v_serie_foja', ptOutput) ;
+        Params.CreateParam(ftString, 'v_tipo_foja', ptOutput) ;
+        Params.CreateParam(ftString, 'v_nombre_escribano', ptOutput) ;
+        Params.CreateParam(ftString, 'v_apellido_escribano', ptOutput) ;
+        Params.CreateParam(ftString, 'v_consulado', ptOutput) ;
+        Params.CreateParam(ftString, 'v_juzgado', ptOutput) ;
+        Params.CreateParam(ftString, 'v_apellido_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_apellido2_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_nombre_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_nombre2_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_nac_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_tipo_doc_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pais_doc_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_nro_doc_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_fecha_nac_menor', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_tipo_aut', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_apellido_1', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_apellido_2', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_nombre_1', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_nombre_2', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_tipo_doc', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_nro_doc', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_nacionalidad', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pa_observacion', ptOutput) ; //nuevo
+        Params.CreateParam(ftString, 'v_sa_tipo_aut', ptOutput) ;
+        Params.CreateParam(ftString, 'v_sa_apellido_1', ptOutput) ;
+        Params.CreateParam(ftString, 'v_sa_apellido_2', ptOutput) ;
+        Params.CreateParam(ftString, 'v_sa_nombre_1', ptOutput) ;
+        Params.CreateParam(ftString, 'v_sa_nombre_2', ptOutput) ;
+        Params.CreateParam(ftString, 'v_sa_tipo_doc', ptOutput) ;
+        Params.CreateParam(ftString, 'v_sa_nro_doc', ptOutput) ;
+        Params.CreateParam(ftString, 'v_sa_nacionalidad', ptOutput) ;
+        Params.CreateParam(ftString, 'v_sa_observacion', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_tipo_aut', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_apellido_1', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_apellido_2', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_nombre_1', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_nombre_2', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_tipo_doc', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_nro_doc', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_nacionalidad', ptOutput) ;
+        Params.CreateParam(ftString, 'v_ta_observacion', ptOutput) ;
+        Params.CreateParam(ftString, 'v_tipo_acompaniante', ptOutput) ;
+        Params.CreateParam(ftString, 'v_datos_acompaniante', ptOutput) ;
+        Params.CreateParam(ftString, 'v_tipo_vigencia', ptOutput) ;
+        Params.CreateParam(ftString, 'v_vigencia_desde', ptOutput) ;
+        Params.CreateParam(ftString, 'v_vigencia_hasta', ptOutput) ;
+        Params.CreateParam(ftString, 'v_pais_viaje', ptOutput) ;
+        Params.CreateParam(ftString, 'v_estado', ptOutput) ;
+        //--iNICIO CARGA DE PARAMETROS
+        ParamByName('p_numero_doc').Value := datos_busqueda.numero_documento;
+        ParamByName('p_fecha_nac').Value := datos_busqueda.fecha_nacimiento;
+        //----
+        ExecSQL;
+        RESULT := tautorizacion_full.Create;
+        RESULT.numero_doc   := ospAutorizacionesMenores.ParamByName('p_numero_doc').Value;
+        RESULT.fecha_nac  := ospAutorizacionesMenores.ParamByName('p_fecha_nac').Value;
+        RESULT.tipo       := ospAutorizacionesMenores.ParamByName('v_tipo').Value;
+        RESULT.nro_solicitud    := ospAutorizacionesMenores.ParamByName('v_nro_solicitud').Value;
+        RESULT.fecha_solicitud  := ospAutorizacionesMenores.ParamByName('v_fecha_solicitud').Value;
+        RESULT.serie_foja       := ospAutorizacionesMenores.ParamByName('v_serie_foja').Value;
+        RESULT.tipo_foja        := ospAutorizacionesMenores.ParamByName('v_tipo_foja').Value ;
+        RESULT.nombre_escribano := ospAutorizacionesMenores.ParamByName('v_nombre_escribano').Value;
+        RESULT.apellido_escribano := ospAutorizacionesMenores.ParamByName('v_apellido_escribano').Value ;
+        RESULT.consulado        := ospAutorizacionesMenores.ParamByName('v_consulado').Value;
+        RESULT.juzgado          := ospAutorizacionesMenores.ParamByName('v_juzgado').Value ;
+        RESULT.apellido_menor   := ospAutorizacionesMenores.ParamByName('v_apellido_menor').Value;
+        RESULT.apellido2_menor  := ospAutorizacionesMenores.ParamByName('v_apellido2_menor').Value;
+        RESULT.nombre_menor     := ospAutorizacionesMenores.ParamByName('v_nombre_menor').Value;
+        RESULT.nombre2_menor    := ospAutorizacionesMenores.ParamByName('v_nombre2_menor').Value ;
+        RESULT.nac_menor        := ospAutorizacionesMenores.ParamByName('v_nac_menor').Value;
+        RESULT.tipo_doc_menor   := ospAutorizacionesMenores.ParamByName('v_tipo_doc_menor').Value ;
+        RESULT.pais_doc_menor   := ospAutorizacionesMenores.ParamByName('v_pais_doc_menor').Value;
+        RESULT.nro_doc_menor    := ospAutorizacionesMenores.ParamByName('v_nro_doc_menor').Value ;
+        RESULT.fecha_nac_menor  := ospAutorizacionesMenores.ParamByName('v_fecha_nac_menor').Value;
+        RESULT.pa_tipo_aut      := ospAutorizacionesMenores.ParamByName('v_pa_tipo_aut').Value;
+        RESULT.pa_apellido_1    := ospAutorizacionesMenores.ParamByName('v_pa_apellido_1').Value ;
+        RESULT.pa_apellido_2    := ospAutorizacionesMenores.ParamByName('v_pa_apellido_2').Value;
+        RESULT.pa_nombre_1      := ospAutorizacionesMenores.ParamByName('v_pa_nombre_1').Value;
+        RESULT.pa_nombre_2      := ospAutorizacionesMenores.ParamByName('v_pa_nombre_2').Value ;
+        RESULT.pa_tipo_doc      := ospAutorizacionesMenores.ParamByName('v_pa_tipo_doc').Value;
+        RESULT.pa_nro_doc       := ospAutorizacionesMenores.ParamByName('v_pa_nro_doc').Value ;
+        RESULT.pa_nacionalidad  := ospAutorizacionesMenores.ParamByName('v_pa_nacionalidad').Value;
+        RESULT.pa_observacion  := ospAutorizacionesMenores.ParamByName('v_pa_observacion').Value;
+        RESULT.sa_tipo_aut      := ospAutorizacionesMenores.ParamByName('v_sa_tipo_aut').Value;
+        RESULT.sa_apellido_1 := ospAutorizacionesMenores.ParamByName('v_sa_apellido_1').Value;
+        RESULT.sa_apellido_2 := ospAutorizacionesMenores.ParamByName('v_sa_apellido_2').Value;
+        RESULT.sa_nombre_1   := ospAutorizacionesMenores.ParamByName('v_sa_nombre_1').Value;
+        RESULT.sa_nombre_2   := ospAutorizacionesMenores.ParamByName('v_sa_nombre_2').Value;
+        RESULT.sa_tipo_doc   := ospAutorizacionesMenores.ParamByName('v_sa_tipo_doc').Value;
+        RESULT.sa_nro_doc    := ospAutorizacionesMenores.ParamByName('v_sa_nro_doc').Value;
+        RESULT.sa_nacionalidad := ospAutorizacionesMenores.ParamByName('v_sa_nacionalidad').Value ;
+        RESULT.sa_observacion := ospAutorizacionesMenores.ParamByName('v_sa_observacion').Value ;
+
+        RESULT.ta_tipo_aut := ospAutorizacionesMenores.ParamByName('v_ta_tipo_aut').Value;
+        RESULT.ta_apellido_1 := ospAutorizacionesMenores.ParamByName('v_ta_apellido_1').Value;
+        RESULT.ta_apellido_2 := ospAutorizacionesMenores.ParamByName('v_ta_apellido_2').Value;
+        RESULT.ta_nombre_1   := ospAutorizacionesMenores.ParamByName('v_ta_nombre_1').Value;
+        RESULT.ta_nombre_2   := ospAutorizacionesMenores.ParamByName('v_ta_nombre_2').Value ;
+        RESULT.ta_tipo_doc   := ospAutorizacionesMenores.ParamByName('v_ta_tipo_doc').Value;
+        RESULT.ta_nro_doc    := ospAutorizacionesMenores.ParamByName('v_ta_nro_doc').Value;
+        RESULT.ta_nacionalidad    := ospAutorizacionesMenores.ParamByName('v_ta_nacionalidad').Value;
+        RESULT.ta_observacion    := ospAutorizacionesMenores.ParamByName('v_ta_observacion').Value;
+        RESULT.tipo_acompaniante  := ospAutorizacionesMenores.ParamByName('v_tipo_acompaniante').Value;
+        RESULT.datos_acompaniante := ospAutorizacionesMenores.ParamByName('v_datos_acompaniante').Value;
+        RESULT.tipo_vigencia  := ospAutorizacionesMenores.ParamByName('v_tipo_vigencia').Value;
+        RESULT.vigencia_desde := ospAutorizacionesMenores.ParamByName('v_vigencia_desde').Value ;
+        RESULT.vigencia_hasta := ospAutorizacionesMenores.ParamByName('v_vigencia_hasta').Value;
+        RESULT.pais_viaje     := ospAutorizacionesMenores.ParamByName('v_pais_viaje').Value;
+        RESULT.estado         := ospAutorizacionesMenores.ParamByName('v_estado').Value;
+      end;
+    end;
+  except;
+  end;
+
+
+
+end;
+
+function TDataModule1.obtener_autorizacion_sacer_dm(datos_busqueda: Tdatos_busqueda): tautorizacion_sacer;
+begin
+  try
+    ospBusquedaSacer.Close;
+    ospBusquedaSacer.ParamByName('P_NUMERO_DOC').Value := datos_busqueda.numero_documento;
+    ospBusquedaSacer.ParamByName('P_FECHA_NAC').Value := datos_busqueda.fecha_nacimiento;
+    ospBusquedaSacer.ExecProc;
+
+    result := tautorizacion_sacer.Create;
+    if (ospBusquedaSacer.ParamByName('P_NRO_SOLICITUD').Value = '') then
+    begin
+      result.NUMERO_DOC       := '-1';
+    end
+    else
+    begin
+      result.NUMERO_DOC       := ospBusquedaSacer.ParamByName('P_NUMERO_DOC').Value;
+      result.FECHA_NAC        := ospBusquedaSacer.ParamByName('P_FECHA_NAC').Value;
+      result.NRO_SOLICITUD    := ospBusquedaSacer.ParamByName('P_NRO_SOLICITUD').Value;
+      result.FECHA_SOLICITUD  := ospBusquedaSacer.ParamByName('P_FECHA_SOLICITUD').Value;
+      result.APELLIDO_MENOR   := ospBusquedaSacer.ParamByName('P_APELLIDO_MENOR').Value;
+      result.NOMBRE_MENOR     := ospBusquedaSacer.ParamByName('P_NOMBRE_MENOR').Value;
+      result.NACIONALIDAD     := ospBusquedaSacer.ParamByName('P_NACIONALIDAD').Value;
+      result.PA_APELLIDO_1    := ospBusquedaSacer.ParamByName('P_PA_APELLIDO_1').Value;
+      result.PA_APELLIDO_2    := ospBusquedaSacer.ParamByName('P_PA_APELLIDO_2').Value;
+      result.PA_NOMBRE_1      := ospBusquedaSacer.ParamByName('P_PA_NOMBRE_1').Value;
+      result.PA_NOMBRE_2      := ospBusquedaSacer.ParamByName('P_PA_NOMBRE_2').Value;
+      result.PA_TIPO_DOCUMENTO := ospBusquedaSacer.ParamByName('P_PA_TIPO_DOCUMENTO').Value;
+      result.PA_NRO_DOCUMENTO := ospBusquedaSacer.ParamByName('P_PA_NRO_DOCUMENTO').Value;
+      result.PA_NACIONALIDAD := ospBusquedaSacer.ParamByName('P_PA_NACIONALIDAD').Value;
+      result.SA_APELLIDO_1  := ospBusquedaSacer.ParamByName('P_SA_APELLIDO_1').Value;
+      result.SA_APELLIDO_2  := ospBusquedaSacer.ParamByName('P_SA_APELLIDO_2').Value;
+      result.SA_NOMBRE_1    := ospBusquedaSacer.ParamByName('P_SA_NOMBRE_1').Value;
+      result.SA_NOMBRE_2    := ospBusquedaSacer.ParamByName('P_SA_NOMBRE_2').Value;
+      result.SA_TIPO_DOCUMENTO   := ospBusquedaSacer.ParamByName('P_SA_TIPO_DOCUMENTO').Value;
+      result.SA_NRO_DOCUMENTO    := ospBusquedaSacer.ParamByName('P_SA_NRO_DOCUMENTO').Value;
+      result.SA_NACIONALIDAD     := ospBusquedaSacer.ParamByName('P_SA_NACIONALIDAD').Value;
+      result.ACOMPANIANTE_DESCRIPCION:= ospBusquedaSacer.ParamByName('P_ACOMPANIANTE_DESCRIPCION').Value;
+    end
+  except
+  end;
+
+end;
+
+function TDataModule1.obtener_progenitores(tramite: string): tterceros;
+var
+  i: integer;
+begin
+  oqProgenitores.Close;
+  oqProgenitores.ParamByName('ptramite').Value := tramite;
+  oqProgenitores.Open;
+  if not oqProgenitores.IsEmpty then
+  begin
+    oqProgenitores.Last;
+    setLength(Result, oqProgenitores.RecNo);
+    oqProgenitores.first;
+    i:=0;
+    while not oqProgenitores.eof do
+    begin
+      result[i]           := ttercero.Create;
+      //result[i].id        := oqProgenitores.fieldbyname('ID').value;
+      result[i].apellido1 := oqProgenitores.fieldbyname('APELLIDO').value;
+      if (not oqProgenitores.fieldbyname('SEGUNDO_APELLIDO').IsNull) then
+        result[i].apellido2 := oqProgenitores.fieldbyname('SEGUNDO_APELLIDO').value;
+      result[i].nombre1   := oqProgenitores.fieldbyname('NOMBRE').value;
+      if (not oqProgenitores.fieldbyname('OTROS_NOMBRES').IsNull) then
+      result[i].nombre2   := oqProgenitores.fieldbyname('OTROS_NOMBRES').value;
+      inc(i);
+      oqProgenitores.Next;
+    end;
+  end;
+end;
+
+function TDataModule1.obtener_terceros(tramite: string): tterceros;
+var
+  i:integer;
+begin
+  ospTerceros.Close;
+  ospTerceros.ParamByName('P_TRAMITE').Value := tramite;
+  ospTerceros.Open;
+
+  ospTerceros.Last;
+
+  SetLength(result, ospTerceros.RecNo);
+
+  ospTerceros.First;
+  i:=0;
+  while not ospTerceros.Eof do
+  begin
+    Result[i] := ttercero.Create;
+    result[i].apellido1 := ospTerceros.Fields[1].Value;
+    if (not ospTerceros.Fields[2].IsNull) then
+      result[i].apellido2 := ospTerceros.Fields[2].Value;
+    result[i].nombre1   := ospTerceros.Fields[3].Value;
+    if (not ospTerceros.Fields[4].IsNull) then
+      result[i].nombre2   := ospTerceros.Fields[4].Value;
+      
+    inc(i);
+    ospTerceros.Next;
+  end;
+end;
+
+end.

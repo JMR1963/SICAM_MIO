@@ -1,0 +1,62 @@
+unit uDMDatos;
+
+interface
+
+uses
+  System.SysUtils, system.Classes, data.DB, MemDS, DBAccess, Ora, system.iniFiles, NetConn, OraCall;
+
+type
+  TDMDatos = class(TDataModule)
+    oraConn: TOraSession;
+    OraQuery1: TOraQuery;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    function leerIni(var path : string): boolean;
+  end;
+
+var
+  DMDatos: TDMDatos;
+
+implementation
+
+function Tdmdatos.leerIni(var path : string): boolean;
+var
+  Server,Username,Password :String;
+  inifile :TIniFile;
+  netConn : TNetConnection;
+
+begin
+
+  try
+    inifile := TIniFile.Create('.\config.ini');
+
+    oraConn.Username := inifile.ReadString('Database', 'username', '');
+    oraConn.Password := inifile.ReadString('Database', 'password', '');;
+    oraConn.Server   := inifile.ReadString('Database', 'server', '');
+    oraConn.Connected:= true;
+
+    netConn               := TNetConnection.Create(nil);
+    netConn.UserName      := inifile.ReadString('recurso', 'username', '');
+    netConn.Password      := inifile.ReadString('recurso', 'password', '');
+    path                  := inifile.ReadString('recurso', 'server', '');
+    netConn.RemoteName    := Path;
+    netConn.ResourceType  := rtDisk;
+    netConn.Connect;
+
+    inifile.Free;
+
+    result:= true;
+  except
+    result:= false;
+  end;
+end;
+
+
+
+
+
+{$R *.dfm}
+
+end.

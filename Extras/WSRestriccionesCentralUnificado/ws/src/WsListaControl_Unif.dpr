@@ -1,0 +1,31 @@
+ program WsListaControl_Unif;
+{$APPTYPE CONSOLE}
+uses
+  web.WebBroker,
+  web.CGIApp,
+  ListaControl in 'ListaControl.pas' {WebModule1: TWebModule},
+  WsListaControlImpl in 'WsListaControlImpl.pas',
+  WsListaControlIntf in 'WsListaControlIntf.pas',
+  SqlOracleManage in 'SqlOracleManage.pas',
+  IWsListaControl1 in 'IWsListaControl1.pas',
+  UcheckConn in 'UcheckConn.pas',
+  uexport in 'uexport.pas',
+  UGlobal in 'UGlobal.pas',
+  Uhilo in 'Uhilo.pas',
+  usocket in 'usocket.pas',
+  consultaArgentina in 'consultaArgentina.pas',
+  WSdePaiseParaConsultaRestriccionLocal in 'WSdePaiseParaConsultaRestriccionLocal.pas',
+  IPuenteParaguayo1 in 'IPuenteParaguayo1.pas',
+  IpuenteInterpol1 in 'IpuenteInterpol1.pas',
+  IpuenteBoliviano1 in 'IpuenteBoliviano1.pas',
+  Ipuentechileno2 in 'Ipuentechileno2.pas',
+  IpuenteUry1 in 'IpuenteUry1.pas';
+
+(*Necesaria a partir de que la requiere FsocketChile.pas - Hecho para PSCM*)
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(TWebModule1, WebModule1);
+  Application.Run;
+end.

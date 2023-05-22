@@ -1,0 +1,218 @@
+{ Invokable interface IWsServiciosMaritimos }
+
+unit WsServiciosMaritimosIntf;
+
+interface
+
+uses InvokeRegistry, Types, XSBuiltIns;
+
+type
+  TudpServicio = class(Tremotable)
+  private
+    FnroSolicitud : integer;
+    Fservicio     : integer;
+    Fsobretasa    : integer;
+    Ftripulantes  : integer;
+    Fpasajeros    : integer;
+    Fusuario      : string;
+    FapellidoFirmante : string;
+    FnombreFirmante   : string;
+    FpuertoIntermedio1: integer;
+    FpuertoIntermedio2: integer;
+    FpuertoIntermedio3: integer;
+    FpuertoIntermedio4: integer;
+    FpuertoIntermedio5: integer;
+    FpuertoFinal          : string;
+    Fobservacion          : string;
+    FfechaFinalDeclarada  : string;
+    FfechaTopeCancelacion : string;
+    FfechaTopeReclamo     : string;
+    FfechaInicioConfirmada: string;
+    FPAPENOM_USERNAME_FIRMANTE: string;
+    Fexentos_confirmados  : integer;
+    Ffecha_registro       : string;
+  published
+    property servicio     : integer read fservicio write fservicio;
+    property sobretasa    : integer read Fsobretasa write Fsobretasa;
+    property tripulantes  : integer read Ftripulantes write Ftripulantes;
+    property pasajeros    : integer read Fpasajeros write Fpasajeros;
+    property usuario      : string read Fusuario write Fusuario;
+    property apellidoFirmante   : string read FapellidoFirmante write FapellidoFirmante;
+    property nombreFirmante     : string read FnombreFirmante write FnombreFirmante;
+    property puertoIntermedio1  : integer read FpuertoIntermedio1 write FpuertoIntermedio1;
+    property puertoIntermedio2  : integer read FpuertoIntermedio2 write FpuertoIntermedio2;
+    property puertoIntermedio3  : integer read FpuertoIntermedio3 write FpuertoIntermedio3;
+    property puertoIntermedio4  : integer read FpuertoIntermedio4 write FpuertoIntermedio4;
+    property puertoIntermedio5  : integer read FpuertoIntermedio5 write FpuertoIntermedio5;
+    property puertoFinal        : string read FpuertoFinal write FpuertoFinal;
+    property nroSolicitud       : integer read FnroSolicitud write FnroSolicitud;
+    property observacion        : string read Fobservacion write Fobservacion;
+    property fechaFinalDeclarada  : string read FfechaFinalDeclarada write FfechaFinalDeclarada;
+    property fechaTopeCancelacion : string read FfechaTopeCancelacion write FfechaTopeCancelacion;
+    property fechaTopeReclamo     : string read FfechaTopeReclamo write FfechaTopeReclamo;
+    property fechaInicioConfirmada: string read FfechaInicioConfirmada write FfechaInicioConfirmada;
+    property APENOM_USERNAME_FIRMANTE: string read FPAPENOM_USERNAME_FIRMANTE  write FPAPENOM_USERNAME_FIRMANTE;
+    property EXENTOS_CONFIRMADOS  : INTEGER READ Fexentos_confirmados WRITE Fexentos_confirmados;
+    property fecha_registro       : string read ffecha_registro write ffecha_registro;
+  end;
+
+  tservicioMaritimo = class(Tremotable)
+  private
+    Fcodigo       : integer;
+    Fdescripcion  : string;
+    FtipoBuque : integer;
+  published
+    property codigo: integer read Fcodigo write fcodigo;
+    property descripcion : string read fdescripcion write fdescripcion;
+    property tipoBuque: integer read FtipoBuque write FtipoBuque;
+
+  end;
+
+  tServiciosMaritimos = array of tservicioMaritimo;
+
+
+
+  Ttipobuque = class(Tremotable)
+  private
+    Fcodigo       : integer;
+    Fdescripcion  : string;
+    Fflag         : boolean;
+  published
+    property codigo       : integer read Fcodigo write fcodigo;
+    property descripcion  : string  read fdescripcion write fdescripcion;
+    property flag         : boolean read fflag write fflag;
+  end;
+
+  TtipoBuques = array of ttipobuque;
+
+
+  Ttasa = class(Tremotable)
+  private
+    Fcodigo       : integer;
+    Fdescripcion  : string;
+  published
+    property codigo: integer read Fcodigo write fcodigo;
+    property descripcion : string read fdescripcion write fdescripcion;
+  end;
+
+  Ttasas = array of Ttasa;
+
+
+  TpasoFronterizo = class(TRemotable)
+  private
+    FIdPaso        : integer;
+    FDescripcion    : string;
+    FDescripcionReso: string;
+    FJurisdiccion   : integer;
+    FPadron         : string;
+    FIdProvincia    : integer;
+    FOperador       : string;
+    FCodigoDispo    : string;
+    FInformatizado  : string;
+    FTipoPaso       : string;
+  published
+    property IdPaso           : integer read FIdPaso write FIdPaso;
+    property Descripcion      : string  read FDescripcion write FDescripcion;
+    property DescripcionReso  : string  read FDescripcionReso write FDescripcionReso;
+    property Jurisdiccion     : integer read FJurisdiccion write FJurisdiccion;
+    property IdProvincia      : integer read FIdProvincia write FIdProvincia;
+    property Padron           : string  read FPadron write FPadron;
+    property Operador         : string  read FOperador write FOperador;
+    property CodigoDispo      : string  read FCodigoDispo write FCodigoDispo;
+    property Informatizado    : string  read FInformatizado write FInformatizado;
+    property TipoPaso         : string  read FTipoPaso write FTipoPaso;
+  end;
+
+
+  Tpasosfronterizos = array of TpasoFronterizo;
+  Testado = ( SOLICITADO, CANCELADO, INTERVENIDO, PROCESANDO);
+
+  servicios = class(TRemotable)
+  private
+    FNumero_solicitud : integer;
+    FAutorizado       : string;
+    Festado           : string;
+    FFechaDeclarada   : string;
+    FdescripcionBuque : string;
+    FmatriculaBuque   : string;
+    Fdiferido         : string;
+    Fempresa          : string;
+    FidEmpresa        : string;
+    Fpuerto           : string;
+    Fsentido          : string;
+    FtotalTripulantes : integer;
+    FtotalPasajeros   : integer;
+    FpuertoIntermedio1: string;
+    FpuertoIntermedio2: string;
+    FpuertoIntermedio3: string;
+    FpuertoIntermedio4: string;
+    FpuertoIntermedio5: string;
+    Fsobretasa        : string;
+    FpuertoFinal      : string;
+    Fservicio         : string;
+    Fjurisdiccion     : integer;
+    FdescripcionEmpresa:string;
+    Ftipo_buque       : integer;
+    FFECHA_PROCESANDO : STRING;
+    FEXENTOS_DECLARADOS : INTEGER;
+  published
+    property numero_solicitud : integer read FNumero_solicitud write FNumero_solicitud;
+    property autorizado       : string read FAutorizado write FAutorizado;
+    property estado           : string read Festado write Festado;
+    property fecha_declarada  : string read FFechaDeclarada write FFechaDeclarada;
+    property nombreBuque      : string read FdescripcionBuque write FdescripcionBuque;
+    property matricula        : string read FmatriculaBuque write FmatriculaBuque;
+    property diferido         : string read Fdiferido write Fdiferido;
+    property empresa          : string read Fempresa write Fempresa;
+    property puerto           : string read Fpuerto write Fpuerto;
+    property sentido          : string read Fsentido write Fsentido;
+    property idEmpresa        : string read FidEmpresa write FidEmpresa;
+    property totalTripulantes : integer read FtotalTripulantes write FtotalTripulantes;
+    property totalPasajeros   : integer read FtotalPasajeros write FtotalPasajeros;
+    property puertoIntermedio1    : string read FpuertoIntermedio1 write FpuertoIntermedio1;
+    property puertoIntermedio2    : string read FpuertoIntermedio2 write FpuertoIntermedio2;
+    property puertoIntermedio3    : string read FpuertoIntermedio3 write FpuertoIntermedio3;
+    property puertoIntermedio4    : string read FpuertoIntermedio4 write FpuertoIntermedio4;
+    property puertoIntermedio5    : string read FpuertoIntermedio5 write FpuertoIntermedio5;
+    property puertoFinal          : string read FpuertoFinal write FpuertoFinal;
+    property sobretasa            : string read Fsobretasa write Fsobretasa;
+    property servicio             : string read Fservicio write Fservicio;
+    property jurisdiccion         : integer read Fjurisdiccion write Fjurisdiccion;
+    property descripcion_empresa  : string read FdescripcionEmpresa write FdescripcionEmpresa;
+    property tipo_buque           : integer read Ftipo_buque write Ftipo_buque;
+    property FECHA_PROCESANDO     : string read FFECHA_PROCESANDO write FFECHA_PROCESANDO;
+    PROPERTY EXENTOS_DECLARADOS   : INTEGER READ FEXENTOS_DECLARADOS WRITE FEXENTOS_DECLARADOS;
+  end;
+
+  Tservicios = array of servicios;
+
+  { Invokable interfaces must derive from IInvokable }
+  IWsServiciosMaritimos = interface(IInvokable)
+  ['{45AD1526-3270-4C28-8532-B946D664E027}']
+    function getServicios(paso: integer; fecha_desde, fecha_hasta: string): Tservicios; stdcall;
+    function setAprobado(servicio: integer;username:string): boolean; stdcall;
+    function setEstado(servicio: integer; estado: Testado; username:string): boolean; stdcall;
+    function getServiciosOtrosPasos(paso: integer; fecha_desde, fecha_hasta: string): Tservicios; stdcall;
+    function setDiferido(servicio: integer; observacion:string; usuario: string; fecha_declarada:string): string; stdcall;
+    function catalogosPasosFronterizos: TpasosFronterizos; stdcall;
+    function catalogosTasas:Ttasas;  stdcall;
+    function catalogoTipoBuque: TtipoBuques;  stdcall;
+    function catalogoServicioMaritimo: tServiciosMaritimos; stdcall;
+    function confirmarServicio(idServicio:integer; updServicio:TudpServicio): string; stdcall;
+    function getServiciosLocalesYOtros(paso: integer; fecha_desde, fecha_hasta: string): Tservicios; stdcall;
+    function fechaIntervencion(servicio: integer): string; stdcall;
+    function fechaHoraNominas: String; stdcall;
+    function setAprobadoYQ(servicio: integer; username: string): boolean; stdcall;
+    function fechaProcesando(servicio: integer): string;stdcall;
+    { Methods of Invokable interface must not use the default }
+    { calling convention; stdcall is recommended }
+  end;
+
+implementation
+
+initialization
+  { Invokable interfaces must be registered }
+  InvRegistry.RegisterInterface(TypeInfo(IWsServiciosMaritimos));
+
+end.
+ 

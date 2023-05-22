@@ -1,0 +1,24 @@
+ Result := inifile.ReadString('EXTERNO', 'cmd', '');
+
+
+    Result := inifile.ReadInteger('WS', 'Conf1Check', 0)=1;
+
+
+---------------------------------------
+
+
+      borroTXT1 := ini.ReadString('Extra', 'DirectorioTXT1', '');
+      borroTXT2 := ini.ReadString('Extra', 'DirectorioTXT2', '');
+      borroXML1 := ini.ReadString('Extra', 'DirectorioTXT1', '');
+      borroXML2 := ini.ReadString('Extra', 'DirectorioTXT2', '');
+      borroLOG1 := ini.ReadString('Extra', 'DirectorioLOG1', '');
+      FMinExta := ini.ReadInteger('Extra', 'Min',24*60*30);
+
+
+  recorroYBorro(borroTXT2,'*.txt');
+  recorroYBorro(borroXML2,'*.xml');
+  recorroYBorro(borroLOG1,'*.log');
+
+  FMin :=FMinExta;
+  recorroYBorro(borroTXT1,'*.txt');
+  recorroYBorro(borroXML1,'*.xml');

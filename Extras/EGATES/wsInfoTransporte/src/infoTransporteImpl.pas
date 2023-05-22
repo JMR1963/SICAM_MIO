@@ -1,0 +1,435 @@
+{ Invokable implementation File for TinfoTransporte which implements IinfoTransporte }
+
+unit infoTransporteImpl;
+
+interface
+
+uses Soap.InvokeRegistry, system.Types, Soap.XSBuiltIns, infoTransporteIntf, UDM, system.inifiles, System.SysUtils,
+     IpuenteApiMar3;//IpuenteApiMar2; //IpuenteApiMar1
+
+type
+
+  { TinfoTransporte }
+  TinfoTransporte = class(TInvokableClass, IinfoTransporte)
+  public
+     function InfTransporte(Ape1,ape2, nom1, nom2, nroDoc, nrolibreta, sentidoVuelo, tipopaso, paso, fecha_nac: AnsiString ): trtaTransporte; stdcall;
+     
+  end;
+
+implementation
+
+
+function TinfoTransporte.InfTransporte(Ape1,ape2, nom1, nom2, nroDoc, nrolibreta, sentidoVuelo, tipopaso, paso, fecha_nac: AnsiString ): trtaTransporte; stdcall;
+var ws:IpuenteApiMar;
+    RTA: STRING;
+    erafotopoc : Boolean;
+
+   inifile:TIniFile;
+   DatabaseName,Username,Password:String;
+
+   InfTransp :string;
+   transporteGral  :string;
+   urlApiMar:string;
+   Consulta_XML_API:string;
+
+   rta1 : trtaTransporte;
+
+function dameSql : AnsiString;
+begin
+
+  if Consulta_XML_API = '0' then
+  begin
+    Result:='SELECT '+
+                'a.id, '+
+                'a.FlightId, '+
+                'a.NOMBRE1|| '+''''+' '+''''+'||a.NOMBRE2 AS nombre,'+
+                'a.APELLIDO1 AS apellido, '+
+                'a.pasajero, '+
+                'a.sexo, '+
+                'a.fecha_nac, '+
+                'a.nacionalidad, '+
+                'a.codigo_compania, '+
+                'a.numero_vuelo, '+
+                'a.origen_vuelo, '+
+                'a.destino_vuelo, '+
+                'a.fecha_vuelo, '+
+                'a.tipo_doc, '+
+                'a.numero_doc, '+
+                'a.pais_doc, '+
+                'a.asiento, '+
+                'a.compania_descripcion, '+
+                'a.destino_vuelo_desc, '+
+                'a.origen_vuelo_desc, '+
+                'a.asiento_numero, '+
+                'a.asiento_letra, '+
+                'a.origen_viaje_desc, '+
+                'a.destino_viaje_desc, '+
+                'a.tipo_cruce '+
+             'FROM '+
+                ' apisql.VW_PASAJEROS_WEB a '+ //inner join '+
+                //' apisql.VW_VUELOS_WEB b on a.FlightId = b.flightid '+
+             ' WHERE '+
+                    //' a.fecha_vuelo >= to_date('+''''+formatdatetime('dd/mm/yyyy', now-1)+''''+','+''''+'dd/mm/yyyy'+''''+')'+         //VERRRRRRR
+                    ' a.fecha_vuelo >= to_date(:desde,''dd/mm/yyyy'') '+         //VERRRRRRR
+                    ' and a.fecha_nac = to_date(:fechaNac,''dd/mm/yyyy'') '+
+                    ' and a.numero_doc = :doc '+
+                    ' and a.tipo_cruce = upper(:sentido) '+
+             ' ORDER BY '+
+                    ' a.asiento_numero, a.asiento_letra, a.apellido1 ASC ' ;
+
+      //dm.msgLOG('dameSql: apisql.VW_PASAJEROS_WEB');
+  end
+  else
+  begin
+       Result:= 'SELECT '+
+                   ' APELLIDO, APELLIDO1, APELLIDO2, '+
+                   ' APTITUD, APTITUD_MENSAJE, ASIENTO_LETRA, '+
+                   ' ASIENTO_NUMERO, ASIENTO_TIPO, CODIGO_COMPANIA, '+
+                   ' CODIGO_UNICO_VUELO, DESTINO_DE_DATOS, DESTINO_VIAJE, '+
+                   ' DESTINO_VUELO, ENVIO, EQUIPAJE, '+
+                   ' FECHA_INSERT_REG, FECHA_LLEGADA, FECHA_NAC, '+
+                   ' FECHA_PREPARATION, FECHA_REGISTRO, FECHA_SALIDA, '+
+                   ' FECHA_VTO_DOC, FECHA_VTO_DOC2, FECHA_VUELO_OK, '+
+                   ' FUENTE, FUENTE_ARCHIVO, '+
+                   ' IDENTIFICADOR_VUELO, INTERPOL, INTERPOL_MENSAJE, '+
+                   ' MIGRADO, NACIONALIDAD, NOMBRE, '+
+                   ' NOMBRE_ARCHIVO, NOMBRE1, NOMBRE2, '+
+                   ' NUMERO_DOC, NUMERO_DOC2, NUMERO_VUELO, '+
+                   ' NUMERO_VUELO_NUMBER, ORIGEN_DE_DATOS, ORIGEN_VIAJE, '+
+                   ' ORIGEN_VUELO, PAIS_DOC, PAIS_DOC2, TIPO_VIAJERO, '+
+                   ' CASE WHEN TIPO_VIAJERO = ''FM'' THEN ''CRW'' ELSE ''PAX'' END AS PASAJERO, '+
+                   ' REF_MENSAJE, REFERENCIA_ID, '+
+                   ' REFERENCIA_TIPO, RUTA_ARCHIVO, SECUENCIA, '+
+                   ' SEXO, TIPO_CRUCE, TIPO_DOC, '+
+                   ' TIPO_DOC2, TOTAL_PASAJEROS, '+
+                   ' TOTAL_TRIPULANTES '+
+              ' FROM API_OWNER.API_XML '+
+              ' WHERE TRUNC(FECHA_VUELO_OK) >= to_date(:desde,''dd/mm/yyyy'') '+
+                   ' AND FECHA_NAC = to_date(:fechaNac,''dd/mm/yyyy'') '+
+                   ' AND NUMERO_DOC= :doc '+
+                   ' AND TIPO_CRUCE = upper(:sentido) '+
+              ' ORDER BY ASIENTO_NUMERO,ASIENTO_LETRA,APELLIDO1 ASC ';
+
+       //dm.msgLOG('dameSql: FROM API_OWNER.API_XML');
+
+  end;
+
+end;
+
+
+
+function dameSql2 : AnsiString;
+begin
+
+  if Consulta_XML_API = '0' then
+  begin
+      Result:=
+
+                'SELECT '+
+                'a.id, '+
+                'a.FlightId, '+
+                'a.NOMBRE1|| '+''''+' '+''''+'||a.NOMBRE2 AS nombre,'+
+                'a.APELLIDO1 AS apellido, '+
+                'a.pasajero, '+
+                'a.sexo, '+
+                'a.fecha_nac, '+
+                'a.nacionalidad, '+
+                'a.codigo_compania, '+
+                'a.numero_vuelo, '+
+                'a.origen_vuelo, '+
+                'a.destino_vuelo, '+
+                'a.fecha_vuelo, '+
+                'a.tipo_doc, '+
+                'a.numero_doc, '+
+                'a.pais_doc, '+
+                'a.asiento, '+
+                'a.compania_descripcion, '+
+                'a.destino_vuelo_desc, '+
+                'a.origen_vuelo_desc, '+
+                'a.asiento_numero, '+
+                'a.asiento_letra, '+
+                'a.origen_viaje_desc, '+
+                'a.destino_viaje_desc, '+
+                'a.tipo_cruce '+
+             'FROM '+
+                ' apisql.VW_PASAJEROS_WEB a '+ //inner join '+
+                //' apisql.VW_VUELOS_WEB b on a.FlightId = b.flightid '+
+             ' WHERE '+
+                    ' a.fecha_vuelo >= to_date(:desde,''dd/mm/yyyy'') '+         //VERRRRRRR
+                    ' and a.fecha_nac = to_date(:fechaNac,''dd/mm/yyyy'') '+
+                    ' and a.apellido1 like Upper(:Ape1)||''%'' '+
+                    ' and a.nombre1 = Upper(:nom1) '+
+                    ' and a.tipo_cruce = upper(:sentido) '+
+             ' ORDER BY '+
+                    ' a.asiento_numero, a.asiento_letra, a.apellido1 ASC' ;
+
+      //dm.msgLOG('dameSql2: apisql.VW_PASAJEROS_WEB');
+  end
+  else
+  begin
+      Result:= 'SELECT '+
+                   ' APELLIDO, APELLIDO1, APELLIDO2, '+
+                   ' APTITUD, APTITUD_MENSAJE, ASIENTO_LETRA, '+
+                   ' ASIENTO_NUMERO, ASIENTO_TIPO, CODIGO_COMPANIA, '+
+                   ' CODIGO_UNICO_VUELO, DESTINO_DE_DATOS, DESTINO_VIAJE, '+
+                   ' DESTINO_VUELO, ENVIO, EQUIPAJE, '+
+                   ' FECHA_INSERT_REG, FECHA_LLEGADA, FECHA_NAC, '+
+                   ' FECHA_PREPARATION, FECHA_REGISTRO, FECHA_SALIDA, '+
+                   ' FECHA_VTO_DOC, FECHA_VTO_DOC2, FECHA_VUELO_OK, '+
+                   ' FUENTE, FUENTE_ARCHIVO, '+
+                   ' IDENTIFICADOR_VUELO, INTERPOL, INTERPOL_MENSAJE, '+
+                   ' MIGRADO, NACIONALIDAD, NOMBRE, '+
+                   ' NOMBRE_ARCHIVO, NOMBRE1, NOMBRE2, '+
+                   ' NUMERO_DOC, NUMERO_DOC2, NUMERO_VUELO, '+
+                   ' NUMERO_VUELO_NUMBER, ORIGEN_DE_DATOS, ORIGEN_VIAJE, '+
+                   ' ORIGEN_VUELO, PAIS_DOC, PAIS_DOC2, TIPO_VIAJERO, '+
+                   ' CASE WHEN TIPO_VIAJERO = ''FM'' THEN ''CRW'' ELSE ''PAX'' END AS PASAJERO, '+
+                   ' REF_MENSAJE, REFERENCIA_ID, '+
+                   ' REFERENCIA_TIPO, RUTA_ARCHIVO, SECUENCIA, '+
+                   ' SEXO, TIPO_CRUCE, TIPO_DOC, '+
+                   ' TIPO_DOC2, TOTAL_PASAJEROS, '+
+                   ' TOTAL_TRIPULANTES '+
+              ' FROM API_OWNER.API_XML '+
+              ' WHERE TRUNC(FECHA_VUELO_OK) >= to_date(:desde,''dd/mm/yyyy'') '+
+                   ' AND FECHA_NAC = to_date(:fechaNac,''dd/mm/yyyy'') '+
+                   ' AND APELLIDO1 like Upper(:Ape1)||''%'' '+
+                   ' AND NOMBRE1   like Upper(:nom1)||''%'' '+
+                   ' AND TIPO_CRUCE = upper(:sentido) '+
+              ' ORDER BY ASIENTO_NUMERO,ASIENTO_LETRA,APELLIDO1 ASC ';
+
+      // dm.msgLOG('dameSql2: FROM API_OWNER.API_XML');
+  end;
+
+end;
+
+
+function dameAPIFOTOPOC : AnsiString;
+begin
+
+       Result:= 'select trim(replace(vuelo,'' '' , ''-'') ) vueloCast, a.* '+
+           'from api_owner.apifotopoc a '+
+           'where '+
+           //'a.fecha_vuelo >= to_date(:desde,''dd/mm/yyyy'') '+
+           'a.fecha_registro >= sysdate-1/2 '+
+           'and a.apellido1 = Upper(:Ape1) '+
+           'and a.nombre1 = Upper(:nom1)' ;
+
+end;
+
+begin
+  try
+
+    dm:=Tdm.Create(nil);
+    inifile := TIniFile.Create('.\config.ini');
+    try
+
+      InfTransp := inifile.ReadString('Transporte', 'nombre', '');
+      transporteGral  := inifile.ReadString('Transporte', 'transporteGral', '');
+      urlApiMar:=  inifile.ReadString('Transporte', 'urlApiMar', '');
+      //CONSULTAR_API_XML --> para activar la busqueda al esquema de contingencia DNM
+      Consulta_XML_API:= inifile.ReadString('Transporte', 'CONSULTAR_API_XML', '1');
+
+    finally
+      inifile.Free;
+    end;
+
+
+    rta1 := trtaTransporte.Create;
+
+    RTA1.ok := 'NOT_OK';
+    RTA1.vuelo :='';
+    RTA1.pasajero:='';
+    RTA1.hayTransporte:='F';
+
+    //ADOConnection1.ConnectionString := 'Provider=SQLOLEDB.1;Password=userapi;Persist Security Info=True;User ID=apiuser;Initial Catalog=ATSG;Data Source='+InfTransp+';Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID= ;Use Encryption for Data=False;Tag with column collation when possible=False';
+    //ADOConnection1.Connected := true;
+
+    IF tipoPaso = 'A' then
+    begin
+      // pasos Aereos
+
+      if (Consulta_XML_API = '0') then
+      begin
+         //dm.msgLOG('conecto: APISQLUSR');
+         dm.OraSession1.Username:='APISQLUSR';
+         dm.OraSession1.Password:='usrapisql';
+         dm.OraSession1.Server := InfTransp;
+         dm.OraSession1.Connected := true;
+
+      end
+      else // Consulta_XML_API = '1' CX--> esquema API_XML
+      begin
+         //dm.msgLOG('conecto: APIUSER');
+         dm.OraSession1.Username:='APIUSER';
+         dm.OraSession1.Password:='userapi';
+         dm.OraSession1.Server := 'api';
+         dm.OraSession1.Connected := true;
+
+      end;
+
+
+
+      if sentidoVuelo <> '' then
+      begin
+        erafotopoc := False;
+        if sentidoVuelo = 'S' then
+        begin
+          with dm.OraQuery1 do
+          begin
+            Close;
+            sql.Clear;
+            SQL.Add(dameAPIFOTOPOC);
+            ParamByName('ape1').AsString:=ape1;
+            ParamByName('Nom1').AsString:=Nom1;
+            Open;
+            if (not IsEmpty) and ( RecordCount=1) then
+            begin
+              rta1.pasajero:=  'P';
+              rta1.vuelo := UpperCase(trim(fieldbyname('vueloCast').AsString));
+              rta1.hayTransporte := 'T';
+
+              erafotopoc:=True;
+            end;
+          end;
+        end;
+
+        if not erafotopoc then
+        begin
+          with dm.OraQuery1 do
+          begin
+            (*Busqueda por fecha nac y Doc*)
+            Close;
+            sql.Clear;
+            SQL.Add(dameSql);
+            ParamByName('desde').AsString:= formatdatetime('dd/mm/yyyy', now-1);  //now-1
+            ParamByName('fechaNac').AsString:= fecha_nac;
+            ParamByName('doc').AsString:=nroDoc;
+            ParamByName('sentido').AsString:= sentidoVuelo;
+            dm.msgLOG(ParamByName('desde').AsString + ' ' + ParamByName('fechaNac').AsString + ' ' +ParamByName('doc').AsString + ' ' + ParamByName('sentido').AsString);
+            Open;
+            if IsEmpty then
+            begin
+              (*Busqueda por fecha nac , APE Y NOM*)
+              Close;
+              sql.Clear;
+              SQL.Add(dameSql2);
+             // sql.savetofile('.\prueba.txt');
+              ParamByName('desde').AsString:= formatdatetime('dd/mm/yyyy', now-1); //-1
+              ParamByName('fechaNac').AsString:= fecha_nac;
+              ParamByName('ape1').AsString:=ape1;
+              ParamByName('Nom1').AsString:=Nom1;
+              ParamByName('sentido').AsString:= sentidoVuelo;
+              Open;
+              if IsEmpty then
+              begin
+                if nrolibreta <> '' then
+                begin
+                  Close;
+                  sql.Clear;
+                (*Busqueda por fecha nac , APE Y NOM*)
+                  SQL.add(dameSql);
+                  ParamByName('desde').AsString:= formatdatetime('dd/mm/yyyy', now-1);
+                  ParamByName('fechaNac').AsString:= fecha_nac;
+                  ParamByName('doc').AsString:=nrolibreta;
+                  ParamByName('sentido').AsString:= sentidoVuelo;
+                  //SQL.savetofile('.\ejemplo.txt');
+                  Open;
+                  if not IsEmpty then
+                    begin
+                      First;
+                      rta1.pasajero:=  fieldbyname('pasajero').AsString;
+                      rta1.vuelo := fieldbyname('codigo_compania').AsString+'-'+fieldbyname('numero_vuelo').AsString;
+                      rta1.hayTransporte := 'T';
+                    end
+                    else
+                    begin
+                      rta1.pasajero:= '';
+                      rta1.vuelo := ''; //transporteGral ;
+                      rta1.hayTransporte := 'F';
+                    end;
+                 end
+                 else
+                 begin
+                   rta1.pasajero:= '';
+                   rta1.vuelo := '';//transporteGral ;
+                   rta1.hayTransporte := 'F';
+                 end;
+              end
+              else
+              begin
+                First;
+                rta1.pasajero:=  fieldbyname('pasajero').AsString;
+                rta1.vuelo := fieldbyname('codigo_compania').AsString+'-'+fieldbyname('numero_vuelo').AsString;
+                rta1.hayTransporte := 'T';
+              end
+            end
+            else
+            begin
+              First;
+              rta1.pasajero:=  fieldbyname('pasajero').AsString;
+              rta1.vuelo := fieldbyname('codigo_compania').AsString+'-'+fieldbyname('numero_vuelo').AsString;
+              rta1.hayTransporte := 'T';
+            end;
+
+            if rta1.vuelo <> '' then
+            begin
+              if (Copy(rta1.vuelo,1,2)= 'AR') and (StrToInt(Copy(rta1.vuelo,4,Length(rta1.vuelo)))>=2000 ) then
+                rta1.vuelo := 'AU-'+ Copy(rta1.vuelo,4,Length(rta1.vuelo));
+
+
+            end;
+          end;
+        end;
+      end
+      else
+      begin
+        rta1.pasajero:= '';
+        rta1.vuelo := ''; //'ERROR - WS SIN TIPO_CRUCE'
+        rta1.hayTransporte := 'F';
+      end;
+    end
+    else
+    begin
+      if tipoPaso = 'M' then
+      begin
+        // pasos Maritimos
+        ws:= GetIpuenteApiMar(false,urlApiMar);
+        //ws:=GetIpuenteApiMar(False);
+        //RTA:=dm.ConsultarApiMaritimo(Paso, Ape1,ape2, nom1,nom2,fecha_nac,nroDoc,nrolibreta);
+
+        RTA:= ws.dameApi(Paso, Ape1,ape2, nom1,nom2,fecha_nac,nroDoc,nrolibreta);
+
+        //RTA:='EGATES';
+        //transporteGral:=RTA;
+        IF (rta = '0') or (rta ='-1000') then
+          rta1.vuelo := transporteGral
+        else
+          rta1.vuelo := RTA;
+        rta1.pasajero:=  '';
+      end
+      else
+      begin
+        // pasos Terrestres
+        rta1.pasajero:= '';
+        //rta1.vuelo := RTA;
+        rta1.vuelo := transporteGral;
+      end;
+    end;
+    RTA1.ok:='OK';
+    Result:=RTA1;
+  except
+     on E: Exception do
+     begin
+      dm.msgLOG(e.Message);
+      Result:=RTA1;
+     end;
+  end;
+  FreeAndNil(dm);
+end;
+
+
+initialization
+  { Invokable classes must be registered }
+  InvRegistry.RegisterInvokableClass(TinfoTransporte);
+
+end.

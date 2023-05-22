@@ -1,0 +1,111 @@
+{ Invokable implementation File for TTAMS which implements ITAMS }
+
+unit uTAMSImpl;
+
+interface
+
+uses
+  Soap.InvokeRegistry, System.Types, Soap.XSBuiltIns, uTAMSIntf, Soap.SOAPHTTPTrans, uAA2000, System.Net.HttpClient;
+
+type
+  { TTAMS }
+  TTAMS = class(TInvokableClass, ITAMS)
+  private
+    Username: String;
+    Password: String;
+    Protocol: String;
+    IPAddress: String;
+    Path: String;
+    ProxyIP: String;
+    ProxyPort: Integer;
+    function ReadConfig : Boolean;
+    procedure WSAuthentication(const HTTPReqResp : THTTPReqResp; Client: THTTPClient);
+  public
+    function GetFlightsOpSoap(const Airport: String): ArrayOfFlightOp; stdcall;
+  end;
+
+implementation
+
+uses
+  System.IniFiles, System.SysUtils, Winapi.WinInet, Soap.SOAPHTTPClient;
+
+function TTAMS.ReadConfig : Boolean;
+const
+  SEC_AUTH = 'AUTHENTICATION';
+  SEC_WS = 'WEBSERVICE';
+var
+  inifile : TIniFile;
+begin
+  Result := False;
+  try
+    inifile := TIniFile.Create('.\config.ini');
+    try
+      Username := inifile.ReadString(SEC_AUTH, 'username', '');
+      Password := inifile.ReadString(SEC_AUTH, 'password', '');
+      Protocol := inifile.ReadString(SEC_WS, 'protocol', '');
+      IPAddress := inifile.ReadString(SEC_WS, 'ipaddress', '');
+      Path := inifile.ReadString(SEC_WS, 'path', '');
+      ProxyIP := inifile.ReadString(SEC_WS, 'proxyip', '');
+      ProxyPort := inifile.ReadInteger(SEC_WS, 'proxyport', 0);
+      Result := True;
+    finally
+      inifile.Free;
+    end;
+  except
+  end;
+end;
+
+procedure TTAMS.WSAuthentication(const HTTPReqResp : THTTPReqResp; Client: THTTPClient);
+var
+  Data:Pointer;
+begin
+  Data:=Pchar('');
+  if not InternetSetOption(Data, INTERNET_OPTION_USERNAME, PChar(HTTPReqResp.UserName),
+                           Length(HTTPReqResp.UserName)) then
+    raise ESOAPHTTPException.Create((SysErrorMessage(GetLastError)));
+
+  if not InternetSetOption(Data, INTERNET_OPTION_PASSWORD, PChar(HTTPReqResp.Password),
+                           Length(HTTPReqResp.Password)) then
+    raise ESOAPHTTPException.Create((SysErrorMessage(GetLastError)));
+end;
+
+function TTAMS.GetFlightsOpSoap(const Airport: String): ArrayOfFlightOp;
+var
+  httpreqresp : THTTPReqResp;
+  httprio : THTTPRIO;
+  ws : FlightsOpSoap;
+  f : ArrayOfFlightOp;
+  i : Integer;
+begin
+  if not ReadConfig then
+    Exit;
+  try
+    httpreqresp := THTTPReqResp.Create(nil);
+    httpreqresp.UserName := Username;
+    httpreqresp.Password := Password;
+    httpreqresp.OnBeforePost:= WSAuthentication;
+    httprio := THTTPRIO.Create(nil);
+    httprio.HTTPWebNode := httpreqresp;
+    ws := uAA2000.GetFlightsOpSoap(False,
+                                   Protocol,
+                                   IPAddress,
+                                   Path,
+                                   ProxyIP,
+                                   IntToStr(ProxyPort),
+                                   httprio);
+    f := ws.GetFlightsOp(Airport);
+    SetLength(Result, Length(f));
+    for i := Low(f) to High(f) do
+    begin
+      Result[i] := FlightOp.Create;
+      Result[i] := f[i];
+    end;
+  except
+  end;
+end;
+
+initialization
+  { Invokable classes must be registered }
+  InvRegistry.RegisterInvokableClass(TTAMS);
+
+end.

@@ -1,0 +1,19 @@
+object dm: Tdm
+  OldCreateOrder = False
+  Left = 635
+  Top = 239
+  Height = 247
+  Width = 307
+  object OraSession1: TOraSession
+    Username = 'APISQLUSR'
+    Password = 'usrapisql'
+    HomeName = 'OraHome92'
+    Left = 48
+    Top = 32
+  end
+  object OraQuery1: TOraQuery
+    Session = OraSession1
+    Left = 144
+    Top = 32
+  end
+end

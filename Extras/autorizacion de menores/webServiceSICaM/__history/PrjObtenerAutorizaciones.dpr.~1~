@@ -1,0 +1,19 @@
+program PrjObtenerAutorizaciones;
+
+{$APPTYPE CONSOLE}
+
+uses
+  WebBroker,
+  CGIApp,
+  Uws in 'Uws.pas' {WebModule1: TWebModule},
+  ws_obtener_autorizacionImpl in 'ws_obtener_autorizacionImpl.pas',
+  ws_obtener_autorizacionIntf in 'ws_obtener_autorizacionIntf.pas',
+  Udatosd in 'Udatosd.pas' {DataModule1: TDataModule};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(TWebModule1, WebModule1);
+  Application.Run;
+end.

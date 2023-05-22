@@ -1,0 +1,6 @@
+Este ws se corresponde con el que esta en tortoice en 
+C:\sicam\extra\WSRestriccionesCentralUnificado\ws
+El web service se llama wsimpedimentosargentina segun los chilenos y las puertas.
+En el paso Horcones esta dentro del la carpeta restriccionLocal pero el ws adentro se 
+llama wslistacontrolunificado.
+ 

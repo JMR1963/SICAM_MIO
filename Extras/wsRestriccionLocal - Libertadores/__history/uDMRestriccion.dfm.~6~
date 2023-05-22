@@ -1,0 +1,148 @@
+object DMRestriccion: TDMRestriccion
+  OnCreate = DataModuleCreate
+  OnDestroy = DataModuleDestroy
+  Height = 224
+  Width = 476
+  object OraSession1: TOraSession
+    Username = 'APISQLUSR'
+    HomeName = 'OraHome92'
+    Left = 312
+    Top = 8
+    EncryptedPassword = '8AFF8CFF8DFF9EFF8FFF96FF8CFF8EFF93FF'
+  end
+  object OraQuery1: TOraQuery
+    Aggregates = <>
+    Session = OraSession1
+    Left = 408
+    Top = 8
+  end
+  object OraSession2: TOraSession
+    Username = 'marrese'
+    Server = 'nominas'
+    HomeName = 'OraHome92'
+    Left = 312
+    Top = 72
+    EncryptedPassword = 'CDFFCAFF9BFF92FF9EFF86FF90FF'
+  end
+  object OraQuery2: TOraQuery
+    Aggregates = <>
+    Session = OraSession2
+    Left = 408
+    Top = 72
+  end
+  object IBTransaction1: TFDTransaction
+    Options.Isolation = xiReadCommitted
+    Connection = IBDatabase1
+    Left = 184
+    Top = 8
+  end
+  object IBDatabase1: TFDConnection
+    Params.Strings = (
+      'Database=Localhost:1521/SICAM'
+      'User_Name=SICAM'
+      'Password=sicam'
+      'DriverID=Ora')
+    TxOptions.Isolation = xiReadCommitted
+    Left = 40
+    Top = 8
+  end
+  object qryBuscarNombre: TFDStoredProc
+    Connection = IBDatabase1
+    Transaction = IBTransaction1
+    SchemaName = 'SICAM'
+    PackageName = 'PKGTRANSITOS'
+    StoredProcName = 'CLTRESTRICCIONNOM'
+    Left = 40
+    Top = 72
+    ParamData = <
+      item
+        Position = 1
+        Name = 'PAPELLIDO1'
+        DataType = ftString
+        FDDataType = dtWideString
+        ParamType = ptInput
+        Size = 39
+      end
+      item
+        Position = 2
+        Name = 'PAPELLIDO2'
+        DataType = ftString
+        FDDataType = dtWideString
+        ParamType = ptInput
+        Size = 40
+      end
+      item
+        Position = 3
+        Name = 'PNOMBRE1'
+        DataType = ftString
+        FDDataType = dtWideString
+        ParamType = ptInput
+        Size = 60
+      end
+      item
+        Position = 4
+        Name = 'PNOMBRE2'
+        DataType = ftString
+        FDDataType = dtWideString
+        ParamType = ptInput
+        Size = 40
+      end
+      item
+        Position = 5
+        Name = 'OCURSOR'
+        DataType = ftCursor
+        FDDataType = dtCursorRef
+        ParamType = ptOutput
+      end>
+  end
+  object qryDocumentosRobados: TFDStoredProc
+    Connection = IBDatabase1
+    Transaction = IBTransaction1
+    SchemaName = 'SICAM'
+    PackageName = 'PKGTRANSITOS'
+    StoredProcName = 'CLTDOCUMENTOSROBADOS'
+    Left = 184
+    Top = 72
+    ParamData = <
+      item
+        Position = 1
+        Name = 'PDOCNUMERO'
+        DataType = ftString
+        FDDataType = dtAnsiString
+        ParamType = ptInput
+        Size = 19
+      end
+      item
+        Position = 2
+        Name = 'OCURSOR'
+        DataType = ftCursor
+        FDDataType = dtCursorRef
+        ParamType = ptOutput
+      end>
+  end
+  object qryBuscarDoc: TFDStoredProc
+    Connection = IBDatabase1
+    Transaction = IBTransaction1
+    SchemaName = 'SICAM'
+    PackageName = 'PKGTRANSITOS'
+    StoredProcName = 'CLTRESTRICCIONDOC'
+    Left = 40
+    Top = 128
+    ParamData = <
+      item
+        Position = 1
+        Name = 'PDOCNUMERO'
+        DataType = ftString
+        FDDataType = dtAnsiString
+        ParamType = ptInput
+        Size = 19
+      end
+      item
+        Position = 2
+        Name = 'OCURSOR'
+        DataType = ftCursor
+        FDDataType = dtCursorRef
+        ParamType = ptOutput
+      end>
+  end
+end

@@ -1,0 +1,238 @@
+<?xml version="1.0"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" name="IEGateMgrWSservice" targetNamespace="http://tempuri.org/" xmlns:tns="http://tempuri.org/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns1="http://common.egate.sol.nec.com.ar" xmlns:ns2="http://ws.egate.sol.nec.com.ar">
+  <types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://common.egate.sol.nec.com.ar">
+      <complexType name="Transaction">
+        <sequence>
+          <element name="MRZ" type="xs:string"/>
+          <element name="documentImages" type="ns2:ArrayOf_tns1_DocumentImage"/>
+          <element name="egateId" type="xs:string"/>
+          <element name="gateGroup" type="xs:string"/>
+          <element name="transactionId" type="xs:string"/>
+        </sequence>
+      </complexType>
+      <complexType name="DocumentImage">
+        <sequence>
+          <element name="documentImageType" type="xs:int"/>
+          <element name="image" type="xs:base64Binary"/>
+        </sequence>
+      </complexType>
+      <complexType name="BiometricData">
+        <sequence>
+          <element name="allowed" type="xs:boolean"/>
+          <element name="faceImage" type="xs:base64Binary"/>
+          <element name="fingerprintImage" type="xs:base64Binary"/>
+          <element name="transport" type="xs:string"/>
+        </sequence>
+      </complexType>
+      <complexType name="TransactionClosure">
+        <sequence>
+          <element name="egateId" type="xs:string"/>
+          <element name="eventLog" type="ns2:ArrayOf_tns1_Event"/>
+          <element name="faceMatchHit" type="xs:int"/>
+          <element name="faceMatchScore" type="xs:int"/>
+          <element name="localElegibilityFailed" type="xs:int"/>
+          <element name="manualDoorOpened" type="xs:int"/>
+          <element name="transactionId" type="xs:string"/>
+        </sequence>
+      </complexType>
+      <complexType name="Event">
+        <sequence>
+          <element name="date" type="xs:dateTime"/>
+          <element name="eventDesc" type="xs:string"/>
+          <element name="eventType" type="xs:int"/>
+        </sequence>
+      </complexType>
+      <complexType name="TransactionResult">
+        <sequence>
+          <element name="personData" type="ns1:PersonData"/>
+          <element name="transactionErrors" type="ns2:ArrayOf_tns1_TransactionError"/>
+          <element name="transactionId" type="xs:string"/>
+          <element name="transactionResultCode" type="xs:int"/>
+          <element name="transactionStatus" type="xs:string"/>
+        </sequence>
+      </complexType>
+      <complexType name="PersonData">
+        <sequence>
+          <element name="dob" type="xs:string"/>
+          <element name="docNumber" type="xs:string"/>
+          <element name="docType" type="xs:string"/>
+          <element name="firstName" type="xs:string"/>
+          <element name="issuingCountry" type="xs:string"/>
+          <element name="lastName" type="xs:string"/>
+          <element name="nationality" type="xs:string"/>
+          <element name="passportNumber" type="xs:string"/>
+          <element name="sex" type="xs:string"/>
+          <element name="subDocType" type="xs:string"/>
+        </sequence>
+      </complexType>
+      <complexType name="TransactionError">
+        <sequence>
+          <element name="errorCode" type="xs:int"/>
+          <element name="errorDescription" type="xs:string"/>
+          <element name="errorName" type="xs:string"/>
+        </sequence>
+      </complexType>
+      <complexType name="FaceData">
+        <sequence>
+          <element name="egateId" type="xs:string"/>
+          <element name="feature" type="xs:base64Binary"/>
+          <element name="image" type="xs:base64Binary"/>
+          <element name="transactionId" type="xs:string"/>
+        </sequence>
+      </complexType>
+    </schema>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://ws.egate.sol.nec.com.ar">
+      <complexType name="ArrayOf_tns1_DocumentImage">
+        <complexContent>
+          <restriction base="soapenc:Array">
+            <sequence/>
+            <attribute ref="soapenc:arrayType" n1:arrayType="ns1:DocumentImage[]" xmlns:n1="http://schemas.xmlsoap.org/wsdl/"/>
+          </restriction>
+        </complexContent>
+      </complexType>
+      <complexType name="ArrayOf_tns1_Event">
+        <complexContent>
+          <restriction base="soapenc:Array">
+            <sequence/>
+            <attribute ref="soapenc:arrayType" n1:arrayType="ns1:Event[]" xmlns:n1="http://schemas.xmlsoap.org/wsdl/"/>
+          </restriction>
+        </complexContent>
+      </complexType>
+      <complexType name="ArrayOf_tns1_TransactionError">
+        <complexContent>
+          <restriction base="soapenc:Array">
+            <sequence/>
+            <attribute ref="soapenc:arrayType" n1:arrayType="ns1:TransactionError[]" xmlns:n1="http://schemas.xmlsoap.org/wsdl/"/>
+          </restriction>
+        </complexContent>
+      </complexType>
+    </schema>
+  </types>
+  <message name="test0Request">
+    <part name="a" type="xs:string"/>
+  </message>
+  <message name="test0Response">
+    <part name="return" type="xs:string"/>
+  </message>
+  <message name="getBiometricData1Request">
+    <part name="t" type="ns1:Transaction"/>
+  </message>
+  <message name="getBiometricData1Response">
+    <part name="return" type="ns1:BiometricData"/>
+  </message>
+  <message name="doMatch2Request">
+    <part name="transaction" type="ns1:Transaction"/>
+    <part name="image" type="xs:base64Binary"/>
+  </message>
+  <message name="doMatch2Response">
+    <part name="return" type="xs:int"/>
+  </message>
+  <message name="closeTransaction3Request">
+    <part name="t" type="ns1:TransactionClosure"/>
+  </message>
+  <message name="closeTransaction3Response">
+    <part name="return" type="ns1:TransactionResult"/>
+  </message>
+  <message name="initTransaction4Request">
+    <part name="t" type="ns1:Transaction"/>
+  </message>
+  <message name="initTransaction4Response">
+    <part name="return" type="ns1:TransactionResult"/>
+  </message>
+  <message name="watchListSearch5Request">
+    <part name="fa" type="ns1:FaceData"/>
+  </message>
+  <message name="watchListSearch5Response">
+    <part name="return" type="xs:boolean"/>
+  </message>
+  <portType name="IEGateMgrWS">
+    <operation name="test">
+      <input message="tns:test0Request"/>
+      <output message="tns:test0Response"/>
+    </operation>
+    <operation name="getBiometricData">
+      <input message="tns:getBiometricData1Request"/>
+      <output message="tns:getBiometricData1Response"/>
+    </operation>
+    <operation name="doMatch">
+      <input message="tns:doMatch2Request"/>
+      <output message="tns:doMatch2Response"/>
+    </operation>
+    <operation name="closeTransaction">
+      <input message="tns:closeTransaction3Request"/>
+      <output message="tns:closeTransaction3Response"/>
+    </operation>
+    <operation name="initTransaction">
+      <input message="tns:initTransaction4Request"/>
+      <output message="tns:initTransaction4Response"/>
+    </operation>
+    <operation name="watchListSearch">
+      <input message="tns:watchListSearch5Request"/>
+      <output message="tns:watchListSearch5Response"/>
+    </operation>
+  </portType>
+  <binding name="IEGateMgrWSbinding" type="tns:IEGateMgrWS">
+    <binding xmlns="http://schemas.xmlsoap.org/wsdl/soap/" style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="test">
+      <operation xmlns="http://schemas.xmlsoap.org/wsdl/soap/" soapAction="" style="rpc"/>
+      <input>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </input>
+      <output>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </output>
+    </operation>
+    <operation name="getBiometricData">
+      <operation xmlns="http://schemas.xmlsoap.org/wsdl/soap/" soapAction="" style="rpc"/>
+      <input>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </input>
+      <output>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </output>
+    </operation>
+    <operation name="doMatch">
+      <operation xmlns="http://schemas.xmlsoap.org/wsdl/soap/" soapAction="" style="rpc"/>
+      <input>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </input>
+      <output>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </output>
+    </operation>
+    <operation name="closeTransaction">
+      <operation xmlns="http://schemas.xmlsoap.org/wsdl/soap/" soapAction="" style="rpc"/>
+      <input>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </input>
+      <output>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </output>
+    </operation>
+    <operation name="initTransaction">
+      <operation xmlns="http://schemas.xmlsoap.org/wsdl/soap/" soapAction="" style="rpc"/>
+      <input>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </input>
+      <output>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </output>
+    </operation>
+    <operation name="watchListSearch">
+      <operation xmlns="http://schemas.xmlsoap.org/wsdl/soap/" soapAction="" style="rpc"/>
+      <input>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </input>
+      <output>
+        <body xmlns="http://schemas.xmlsoap.org/wsdl/soap/" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://ws.egate.sol.nec.com.ar"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="IEGateMgrWSservice">
+    <port name="IEGateMgrWSPort" binding="tns:IEGateMgrWSbinding">
+      <address xmlns="http://schemas.xmlsoap.org/wsdl/soap/" location="http://10.100.121.78:8080/soap/IEGateMgrWS"/>
+    </port>
+  </service>
+</definitions>
+

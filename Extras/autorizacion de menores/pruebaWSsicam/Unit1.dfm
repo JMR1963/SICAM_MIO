@@ -1,0 +1,61 @@
+object Form1: TForm1
+  Left = 305
+  Top = 146
+  Width = 264
+  Height = 275
+  Caption = 'Form1'
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object GroupBox1: TGroupBox
+    Left = 24
+    Top = 16
+    Width = 185
+    Height = 177
+    Caption = 'Test'
+    TabOrder = 0
+    object Label2: TLabel
+      Left = 16
+      Top = 32
+      Width = 55
+      Height = 13
+      Caption = 'Documento'
+    end
+    object Label1: TLabel
+      Left = 16
+      Top = 72
+      Width = 86
+      Height = 13
+      Caption = 'Fecha Nacimiento'
+    end
+    object edtDoc: TEdit
+      Left = 16
+      Top = 48
+      Width = 121
+      Height = 21
+      TabOrder = 0
+    end
+    object edtFecha: TEdit
+      Left = 16
+      Top = 88
+      Width = 121
+      Height = 21
+      TabOrder = 1
+    end
+    object BitBtn1: TBitBtn
+      Left = 48
+      Top = 112
+      Width = 75
+      Height = 25
+      Caption = 'ENVIAR'
+      TabOrder = 2
+      OnClick = BitBtn1Click
+    end
+  end
+end

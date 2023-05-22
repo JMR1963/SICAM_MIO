@@ -1,0 +1,223 @@
+object DMRestriccion: TDMRestriccion
+  OnCreate = DataModuleCreate
+  OnDestroy = DataModuleDestroy
+  Height = 325
+  Width = 707
+  object IBDatabase1: TIBDatabase
+    Params.Strings = (
+      'user_name=SYSDBA'
+      'password=.'
+      ''
+      'lc_ctype=ISO8859_1'
+      'sql_dialect=1')
+    LoginPrompt = False
+    DefaultTransaction = IBTransaction1
+    SQLDialect = 1
+    Left = 32
+    Top = 8
+  end
+  object IBTransaction1: TIBTransaction
+    DefaultDatabase = IBDatabase1
+    DefaultAction = TARollback
+    Left = 136
+    Top = 8
+  end
+  object qryBuscarNombre: TIBQuery
+    Database = IBDatabase1
+    Transaction = IBTransaction1
+    AutoCalcFields = False
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      'SELECT'
+      ' RID_SIC, RFECHA_NAC'
+      'FROM'
+      
+        ' CLTRESTRICCIONNOM(:PAPELLIDO1, :PAPELLIDO2, :PNOMBRE1, :PNOMBRE' +
+        '2);')
+    PrecommittedReads = False
+    Left = 256
+    Top = 8
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'PAPELLIDO1'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PAPELLIDO2'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PNOMBRE1'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PNOMBRE2'
+        ParamType = ptUnknown
+      end>
+  end
+  object qryBuscarDoc: TIBQuery
+    Database = IBDatabase1
+    Transaction = IBTransaction1
+    AutoCalcFields = False
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      'SELECT'
+      ' RID_SIC'
+      'FROM'
+      ' CLTRESTRICCIONDOC(:PDOCNUMERO);'
+      ''
+      '')
+    PrecommittedReads = False
+    Left = 536
+    Top = 8
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'PDOCNUMERO'
+        ParamType = ptUnknown
+      end>
+  end
+  object qryDocumentosRobados: TIBQuery
+    Database = IBDatabase1
+    Transaction = IBTransaction1
+    AutoCalcFields = False
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      'SELECT'
+      ' *'
+      'FROM'
+      ' CLTDOCUMENTOSROBADOS(:PDOCNUMERO);'
+      '')
+    PrecommittedReads = False
+    Left = 400
+    Top = 8
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'PDOCNUMERO'
+        ParamType = ptUnknown
+      end>
+  end
+  object OraSession1: TOraSession
+    Username = 'APISQLUSR'
+    HomeName = 'OraHome92'
+    Left = 24
+    Top = 160
+    EncryptedPassword = '8AFF8CFF8DFF9EFF8FFF96FF8CFF8EFF93FF'
+  end
+  object OraQuery1: TOraQuery
+    Aggregates = <>
+    Session = OraSession1
+    Left = 120
+    Top = 160
+  end
+  object OraSession2: TOraSession
+    Username = 'marrese'
+    Server = 'nominas'
+    HomeName = 'OraHome92'
+    Left = 24
+    Top = 224
+    EncryptedPassword = 'CDFFCAFF9BFF92FF9EFF86FF90FF'
+  end
+  object OraQuery2: TOraQuery
+    Aggregates = <>
+    Session = OraSession2
+    Left = 120
+    Top = 224
+  end
+  object IBTransaction1New: TFDTransaction
+    Options.Isolation = xiReadCommitted
+    Connection = IBDatabase1New
+    Left = 136
+    Top = 64
+  end
+  object qryDocumentosRobadosNew: TFDQuery
+    Connection = IBDatabase1New
+    Transaction = IBTransaction1New
+    SQL.Strings = (
+      'SELECT'
+      ' *'
+      'FROM'
+      ' CLTDOCUMENTOSROBADOS(:PDOCNUMERO);')
+    Left = 400
+    Top = 64
+    ParamData = <
+      item
+        Name = 'PDOCNUMERO'
+        DataType = ftString
+        FDDataType = dtAnsiString
+        ParamType = ptInput
+      end>
+  end
+  object qryBuscarDocNew: TFDQuery
+    Connection = IBDatabase1New
+    Transaction = IBTransaction1New
+    SQL.Strings = (
+      'SELECT'
+      ' RID_SIC'
+      'FROM'
+      ' CLTRESTRICCIONDOC(:PDOCNUMERO);')
+    Left = 536
+    Top = 64
+    ParamData = <
+      item
+        Name = 'PDOCNUMERO'
+        ParamType = ptInput
+      end>
+  end
+  object qryBuscarNombreNew: TFDQuery
+    Connection = IBDatabase1New
+    Transaction = IBTransaction1New
+    SQL.Strings = (
+      'SELECT'
+      ' RID_SIC, RFECHA_NAC'
+      'FROM'
+      
+        ' CLTRESTRICCIONNOM(:PAPELLIDO1, :PAPELLIDO2, :PNOMBRE1, :PNOMBRE' +
+        '2);'
+      '')
+    Left = 256
+    Top = 64
+    ParamData = <
+      item
+        Name = 'PAPELLIDO1'
+        DataType = ftString
+        FDDataType = dtWideString
+        ParamType = ptInput
+      end
+      item
+        Name = 'PAPELLIDO2'
+        DataType = ftString
+        FDDataType = dtWideString
+        ParamType = ptInput
+      end
+      item
+        Name = 'PNOMBRE1'
+        DataType = ftString
+        FDDataType = dtWideString
+        ParamType = ptInput
+      end
+      item
+        Name = 'PNOMBRE2'
+        DataType = ftString
+        FDDataType = dtWideString
+        ParamType = ptInput
+      end>
+  end
+  object IBDatabase1New: TFDConnection
+    Params.Strings = (
+      'DriverID=Ora')
+    Left = 32
+    Top = 64
+  end
+end

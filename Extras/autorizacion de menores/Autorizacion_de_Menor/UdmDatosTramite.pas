@@ -1,0 +1,1022 @@
+unit UdmDatosTramite;
+
+interface
+
+uses
+
+  System.SysUtils, System.Classes, data.DB, MemDS, DBAccess, Ora, ws_autorizacion_viajeIntf, vcl.Dialogs;
+
+type
+  rautorizacion = record
+    id: integer;
+    menor: integer;
+    autorizante1: integer;
+    autorizante2: integer;
+    acompaniante: integer;
+    tramite: integer;
+  end;
+
+  TdmMenor = class(TDataModule)
+    OS1: TOraSession;
+    oqGacompaniante: TOraQuery;
+    oqInsMenor: TOraQuery;
+    oqInsAutorizante: TOraQuery;
+    oqInsAutorizante_final: TOraQuery;
+    oqInsTramite: TOraQuery;
+    oqSecPersona: TOraQuery;
+    oqSecAutorizante: TOraQuery;
+    oqSecautorizacion: TOraQuery;
+    oqInsProgenitor: TOraQuery;
+    oqInsTerceros: TOraQuery;
+    oqSecAcompaniantes: TOraQuery;
+    oqGuardarAcompaniante: TOraQuery;
+    ospInsMenor: TOraStoredProc;
+    ospInsAutorizante: TOraStoredProc;
+    ospInsProgenitor: TOraStoredProc;
+    ospInsPersona: TOraStoredProc;
+    ospInsAcompanante: TOraStoredProc;
+    ospInsTramite: TOraStoredProc;
+    ospInsAutorizacion: TOraStoredProc;
+    ospInsProgenitores: TOraStoredProc;
+    oqSecProgenitores: TOraQuery;
+    oqSecTerceros: TOraQuery;
+    ospInsTerceros: TOraStoredProc;
+    oqTipoDoc: TOraQuery;
+    oqNacionalidad: TOraQuery;
+    oqEmisor: TOraQuery;
+    ospInsRevocaciones: TOraStoredProc;
+    oqPersonasRevocadas: TOraQuery;
+    oqMarcarRevocados: TOraQuery;
+    ospMarcarRevocados: TOraStoredProc;
+    ospActualizarMenor: TOraStoredProc;
+    ospActualizarAutorizante: TOraStoredProc;
+    ospActualizarPersona: TOraStoredProc;
+    ospActualizarProgenitor: TOraStoredProc;
+    ospActualizarTramite: TOraStoredProc;
+    ospActualizarAutorizacion: TOraStoredProc;
+    oqIds: TOraQuery;
+    ospBajaProjenitores: TOraStoredProc;
+    ospBajaTerceros: TOraStoredProc;
+    ospInsertRevocacionSiger: TOraStoredProc;
+    procedure DataModuleCreate(Sender: TObject);
+  private
+    { Private declarations }
+    //----guardarAcompaniante_db------//
+    function guardar_progenitor(progenitor: rpersonas): integer;
+    function getIdProgenitores: integer;
+    function getIdTerceros:integer;
+    procedure insertarProgenitor(id, progenitor, tramite: integer);
+    procedure insertarTercero(id, tramite, persona: integer);
+    function guardar_terceros(terceros: rpersonas; id_autorizacion: integer): integer;
+    function guardarAcompaniante(progenitor, terceros: integer; id_autorizacion: integer): integer;
+    //----guardarAcompaniante_db------//
+
+    function guardarPersona(p: rautorizante):integer;
+    //function guardarPaises();
+  public
+    function nacionalidad(nac:string):integer;
+    function tipo_doc(tipo:string):integer;
+    function emisor_doc(emisor:string):integer;
+    function guardarMenor_db(m:rmenor):integer;
+    function guardarAutorizante_db(autorizante: rautorizante):integer;
+    function guardarAcompaniante_db(acompanante: racompanante; id_autorizacion: integer): integer;
+    function guardarTramite_db(datos_tramite: rdatos_tramite; paises:integer; idAutorizacion:integer ): integer;
+    function guardarAutorizante(autorizante: rautorizante; id:integer): integer;
+    function guardarAcompaniantes(acompaniante: rpersonas; id:integer): integer;
+    function siguienteNroPersona:integer;
+    function siguienteNroAutorizante:integer;
+    function siguienteNroAutorizacion:integer;
+    function siguienteNroAcompaniantes:integer;
+    function guardarAutorizacion(au: rautorizacion): integer;
+    function tipo_doc_valido(tipo: string):boolean;
+    function nacionalidad_valida(nac:string):boolean;
+    function emisor_valido(nac: string): boolean;
+    function guardar_revocacion(solicitud:trevocar):boolean;
+    function marcar_persona_revocada(solicitud: trevocar):tresultado_revocar;
+    function revocar_siger(solicitud: trevocar):tresultado_revocar;
+    function persona_solicitudes(solicitud:tsolicitud):tresultado_revocar;
+    function marcar(solicitud:tsolicitud):boolean;
+    function revocar(solicitud: trevocar; id_menor:integer): boolean;
+    //--
+    function actualizarMenor(menor: rmenor; id:integer):integer;
+    function actualizarAcompaniantes(acompaniante: rpersonas; id:integer): integer;
+    function actualizarTramite(datos_tramite: rdatos_tramite; id:integer;paises:integer):integer;
+    function actualizarAutorizacion(au:  rautorizacion; id:integer):integer;
+    procedure getIdsActualizar(var ids: rids);
+    function actualizarPersona(p: rautorizante; id: integer): integer;
+    function actualizarAutorizante_db(autorizante: rautorizante; id:integer): integer;
+    function actualizarAutorizante(autorizante: rautorizante; id:integer): integer;
+    function actualizarAcompaniante_db(acompanante: racompanante; id: integer): integer;
+    function actualizar_progenitor(progenitor: rpersonas; id:integer): integer;
+    procedure borrarAcompaniantes(tramite: integer);
+    procedure setBase(nombre: string);
+
+    { Public declarations }
+  end;
+
+var
+  dmMenor: TdmMenor;
+
+implementation
+
+uses Vcl.Forms;
+
+{$R *.dfm}
+
+{ TdmMenor }
+
+
+//----guardarAcompaniante_db------//
+
+function TdmMenor.guardarAcompaniante_db(acompanante: racompanante; id_autorizacion: integer): integer;
+{
+  Si hay otro progenitor > se guarda en la tabla de personas y se vincula con la tabla pro
+  Me fijo si hay otros acompañantes y los guardo.
+
+}
+var
+  terceros: integer;
+  progenitor, iterceros,i, id_progenitores: integer;
+  id_tercero: integer;
+  completo: boolean;
+begin
+  progenitor := -1;
+  //Se guarda la persona y se guarda en la tabla de progenitores.
+  for i:=1 to length(acompanante.otros_progenitores) do
+  begin
+    progenitor := guardar_progenitor(acompanante.otros_progenitores[i-1]);
+
+    id_progenitores := getIdProgenitores;
+    insertarProgenitor(id_progenitores, id_autorizacion, progenitor);
+    //insertar en la tabla progenitores
+  end;
+  //se guarda la persona y despues en la tabla de terceros.
+  for i:=1 to length(acompanante.terceros) do
+  begin
+    iterceros  := guardar_terceros(acompanante.terceros[i-1], id_autorizacion);
+    id_tercero := getIdTerceros;
+    //id_tabla, autorizacion, persona
+    insertarTercero(id_tercero, id_autorizacion, iterceros);
+    //insertar en la tabla de terceros.
+  end;
+//no va
+{
+  if ((progenitor = -1) and (terceros = 0)) then
+    result := -1
+  else
+    result := guardarAcompaniante(progenitor, iterceros, id_autorizacion);
+}
+end;
+
+function TdmMenor.guardarAutorizante_db(autorizante: rautorizante): integer;
+{
+  Autorizante
+    id
+    persona
+    caracter
+    vinculo
+    telefono
+}
+var
+  persona: integer;
+begin
+  //Guardo la persona autorizante
+  persona := guardarPersona(autorizante);
+  //guardo el registro autorizante
+  result := guardarAutorizante(autorizante, persona);
+end;
+
+function TdmMenor.guardarTramite_db(datos_tramite: rdatos_tramite; paises:integer; idAutorizacion:integer): integer;
+{
+  ID                              INTEGER,
+  DISTRITO                        VARCHAR2(50 CHAR),
+  MATRICULA                       VARCHAR2(50 CHAR),
+  NOMBRES_ESCRIBANO               VARCHAR2(60 CHAR),
+  APELLIDOS_ESCRIBANO             VARCHAR2(60 CHAR),
+  NRO_ACTUAC_NOTARIAL_CERT_FIRMA  VARCHAR2(50 CHAR),
+  FECHA_DEL_INSTRUMENTO           VARCHAR2(50 CHAR),
+  PAISES_TODOS                    VARCHAR2(1 CHAR),
+  PAISES                          INTEGER,
+  VIGENCIA                        VARCHAR2(50 CHAR)
+
+
+}
+begin
+    try
+    ospInsTramite.Close;
+    ospInsTramite.Connection.StartTransaction;
+    ospInsTramite.ParamByName('P_ID').Value                   := idAutorizacion;
+    result :=  ospInsTramite.ParamByName('P_ID').Value;
+    ospInsTramite.ParamByName('P_DISTRITO').Value             := datos_tramite.distrito;
+    ospInsTramite.ParamByName('P_MATRICULA').Value            := datos_tramite.matricula;
+    ospInsTramite.ParamByName('P_NOMBRES_ESCRIBANO').Value    := datos_tramite.nombres_escribano;
+    ospInsTramite.ParamByName('P_APELLIDOS_ESCRIBANO').Value  := datos_tramite.apellidos_escribano;
+    ospInsTramite.ParamByName('P_NRO_ACTUAC_NOTARIAL_CERT_FIR').Value := datos_tramite.numero_actuacion_notarial_cert_firma;
+    ospInsTramite.ParamByName('P_FECHA_DEL_INSTRUMENTO').Value := datos_tramite.fecha_del_instrumento;
+    //Si va a cualquier pais no hay lista de paises.
+    if datos_tramite.cualquier_pais then
+    begin
+      ospInsTramite.ParamByName('P_PAISES_TODOS').Value := 'T';
+      ospInsTramite.ParamByName('P_PAISES').Value := -1;
+    end
+    else
+    begin
+      ospInsTramite.ParamByName('P_PAISES_TODOS').Value := 'F';
+      ospInsTramite.ParamByName('P_PAISES').Value := paises;
+    end;
+
+    ospInsTramite.ParamByName('P_VIGENCIA_DESDE').Value := datos_tramite.fecha_vigencia_desde;
+    ospInsTramite.ParamByName('P_VIGENCIA_HASTA').Value := datos_tramite.fecha_vigencia_hasta;
+
+    ospInsTramite.ParamByName('P_SERIE_FOJA').Value     := datos_tramite.serie_foja;
+    ospInsTramite.ParamByName('P_TIPO_FOJA').Value      := datos_tramite.tipo_foja;
+
+
+    ospInsTramite.ParamByName('P_INSTRUMENTO').Value    := datos_tramite.instrumento;
+    ospInsTramite.ParamByName('P_NRO_FOJA').Value       := datos_tramite.nro_foja;
+
+
+    ospInsTramite.ExecSQL;
+    ospInsTramite.Connection.Commit;
+  except
+  end;
+end;
+
+function TdmMenor.guardar_progenitor(progenitor: rpersonas): integer;
+{
+  progenitor persona abreviada pueden ser varias
+end;
+
+}
+begin
+    ospInsPersona.Close;
+    ospInsPersona.Connection.StartTransaction;
+    result := siguienteNroPersona;
+    ospInsPersona.ParamByName('P_ID').Value                 := result;
+    ospInsPersona.ParamByName('P_APELLIDO').Value           := progenitor.apellido;
+    ospInsPersona.ParamByName('P_SEGUNDO_APELLIDO').Value   := progenitor.segundo_apellido;
+    ospInsPersona.ParamByName('P_NOMBRE').Value             := progenitor.nombre;
+    ospInsPersona.ParamByName('P_OTROS_NOMBRES').Value      := progenitor.otros_nombres;
+    ospInsPersona.ParamByName('P_TIPO_DOCUMENTO').Value     := tipo_doc(progenitor.tipo_de_documento);
+    ospInsPersona.ParamByName('P_NUMERO_DOCUMENTO').Value   := progenitor.numero_de_documento;
+
+    //-Parametros que sobran para el progenitor
+    ospInsPersona.ParamByName('P_NACIONALIDAD').clear;
+    ospInsPersona.ParamByName('P_NACIONALIDAD').bound := true;
+    //--
+    ospInsPersona.ParamByName('P_EMISOR_DOCUMENTO').clear;
+    ospInsPersona.ParamByName('P_EMISOR_DOCUMENTO').bound := true;
+    //--
+    ospInsPersona.ParamByName('P_FECHA_NACIMIENTO').clear;
+    ospInsPersona.ParamByName('P_FECHA_NACIMIENTO').bound := true;
+    //--
+    ospInsPersona.ParamByName('P_SEXO').clear;
+    ospInsPersona.ParamByName('P_SEXO').bound := true;
+    //--
+    ospInsPersona.ParamByName('P_DOMICILIO').clear;
+    ospInsPersona.ParamByName('P_DOMICILIO').bound := true;
+    //--
+    ospInsPersona.ExecSQL;
+    ospInsPersona.Connection.Commit;
+end;
+
+function TdmMenor.guardar_terceros(terceros: rpersonas; id_autorizacion: integer): integer;
+var
+  i, acompa: integer;
+begin
+  result := guardarAcompaniantes(terceros, id_autorizacion);
+end;
+
+function TdmMenor.guardarAcompaniante(progenitor, terceros:integer; id_autorizacion: integer): integer;
+{
+PR_INSERT_ACOMPANIANTE(:, :, :);
+
+}
+begin
+  ospInsAcompanante.Close;
+  ospInsAcompanante.Connection.StartTransaction;
+  ospInsAcompanante.ParamByName('P_ID').Value            := id_autorizacion;
+  ospInsAcompanante.ParamByName('P_PROGENITOR').Value    := progenitor;
+  ospInsAcompanante.ParamByName('P_ACOMPANIANTES').Value := terceros;
+  ospInsAcompanante.ExecSQL;
+  ospInsAcompanante.Connection.Commit;
+end;
+
+//----guardarAcompaniante_db------//
+
+
+//-----guardarMenor_db-------//
+
+function TdmMenor.nacionalidad(nac:string):integer;
+begin
+  try
+    result := -1;
+    oqNacionalidad.Close;
+    oqNacionalidad.ParamByName('pnac').Value := nac;
+    oqNacionalidad.Open;
+    result := oqNacionalidad.fieldbyname('codigo_dnm').Value;
+  except
+  end;
+end;
+
+function TdmMenor.tipo_doc(tipo:string):integer;
+begin
+  try
+    result := -1;
+    oqTipoDoc.Close;
+    oqTipoDoc.ParamByName('pcodigo').Value := tipo;
+    oqTipoDoc.Open;
+    result := oqTipoDoc.fieldbyname('codigo_dnm').Value;
+  except
+  end;
+end;
+
+
+function TdmMenor.emisor_doc(emisor:string):integer;
+begin
+  result := -1;
+  oqNacionalidad.Close;
+  oqNacionalidad.ParamByName('pnac').Value := emisor;
+  oqNacionalidad.Open;
+  result := oqNacionalidad.fieldbyname('codigo_dnm').Value;
+end;
+
+function TdmMenor.guardarMenor_db(m:rmenor):integer;
+{
+  Es otro guardar persona pero guarda un menor
+  begin
+  AUTORIZACIONES_VIAJE.PR_INSERT_PERSONA(:P_APELLIDO, :P_SEGUNDO_APELLIDO, :P_NOMBRE,
+  :P_OTROS_NOMBRES, :P_NACIONALIDAD, :P_TIPO_DOCUMENTO, :P_EMISOR_DOCUMENTO, :P_NUMERO_DOCUMENTO, :P_FECHA_NACIMIENTO, :P_SEXO, :P_DOMICILIO);
+end;
+}
+var
+  nro_persona: integer;
+begin
+  ospInsMenor.Close;
+  ospInsMenor.Connection.StartTransaction;
+  nro_persona := siguienteNroPersona;
+  ospInsMenor.ParamByName('p_id').Value                 := nro_persona;
+  ospInsMenor.ParamByName('P_APELLIDO').Value           := m.apellido;
+  ospInsMenor.ParamByName('P_SEGUNDO_APELLIDO').Value   := m.segundo_apellido;
+  ospInsMenor.ParamByName('P_NOMBRE').Value             := m.nombre;
+  ospInsMenor.ParamByName('P_OTROS_NOMBRES').Value      := m.otros_nombres;
+  ospInsMenor.ParamByName('P_NACIONALIDAD').AsInteger   := nacionalidad(m.nacionalidad);
+  ospInsMenor.ParamByName('P_TIPO_DOCUMENTO').Value     := tipo_doc(m.tipo_de_documento);
+  ospInsMenor.ParamByName('P_EMISOR_DOCUMENTO').Value   := emisor_doc(m.emisor_documento);
+  ospInsMenor.ParamByName('P_NUMERO_DOCUMENTO').Value   := m.numero_de_documento;
+  ospInsMenor.ParamByName('P_FECHA_NACIMIENTO').Value   := m.fecha_de_nacimiento; //to_date
+  ospInsMenor.ParamByName('P_SEXO').Value               := m.Sexo;
+  ospInsMenor.ParamByName('P_DOMICILIO').Value          := m.Domicilio;
+  ospInsMenor.ExecProc;
+  ospInsMenor.Connection.Commit;
+  result:= nro_persona;
+end;
+
+
+//-----guardarMenor_db-------//
+
+
+function TdmMenor.guardarPersona(p: rautorizante): integer;
+{
+  Guarda una persona que es una autorizante a los fines del tramite
+
+}
+begin
+  ospInsPersona.Close;
+  ospInsPersona.Connection.StartTransaction;
+  result := siguienteNroPersona;
+  ospInsPersona.ParamByName('P_ID').Value                 := result;
+  ospInsPersona.ParamByName('P_APELLIDO').Value           := p.apellido;
+  ospInsPersona.ParamByName('P_SEGUNDO_APELLIDO').Value   := p.segundo_apellido;
+  ospInsPersona.ParamByName('P_NOMBRE').Value             := p.nombre;
+  ospInsPersona.ParamByName('P_OTROS_NOMBRES').Value      := p.otros_nombres;
+  ospInsPersona.ParamByName('P_NACIONALIDAD').AsInteger   := nacionalidad(p.nacionalidad);
+  ospInsPersona.ParamByName('P_TIPO_DOCUMENTO').Value     := tipo_doc(p.tipo_de_documento);
+  ospInsPersona.ParamByName('P_EMISOR_DOCUMENTO').Value   := emisor_doc(p.emisor_documento);
+  ospInsPersona.ParamByName('P_NUMERO_DOCUMENTO').Value   := p.numero_de_documento;
+  ospInsPersona.ParamByName('P_FECHA_NACIMIENTO').Value   := p.fecha_de_nacimiento; 
+//    copy(p.fecha_de_nacimiento,1,2) + copy(p.fecha_de_nacimiento,4,2) + copy(p.fecha_de_nacimiento,7,4) ; //ddmmyyyy
+  ospInsPersona.ParamByName('P_SEXO').Value               := p.Sexo;
+  ospInsPersona.ParamByName('P_DOMICILIO').Value          := p.Domicilio;
+  ospInsPersona.ExecSQL;
+  ospInsPersona.Connection.Commit;
+end;
+
+function TdmMenor.guardarAutorizante(autorizante: rautorizante; id:integer): integer;
+{
+  Guarda los datos de un autorizante.
+  El autorizante ya se guardo y estaen la variable id
+   :P_ID, :P_PERSONA, :P_CARACTER, :P_VINCULO, :P_TELEFONO
+
+}
+begin
+  ospInsAutorizante.Close;
+  ospInsAutorizante.Connection.StartTransaction;
+  result := siguienteNroAutorizante;
+  ospInsAutorizante.ParamByName('P_ID').Value := result;
+  ospInsAutorizante.ParamByName('P_PERSONA').Value  := id;
+  ospInsAutorizante.ParamByName('P_CARACTER').Value := autorizante.caracter_primer_autorizante;
+  ospInsAutorizante.ParamByName('P_VINCULO').Value  := autorizante.acredita_vinculo_con;
+  ospInsAutorizante.ParamByName('P_TELEFONO').Value := autorizante.telefono;
+  ospInsAutorizante.ExecSQL;
+  ospInsAutorizante.Connection.Commit;
+end;
+
+function TdmMenor.guardarAcompaniantes(acompaniante: rpersonas; id:integer): integer;
+begin
+  ospInsProgenitor.Close;
+  ospInsProgenitor.Connection.StartTransaction;
+  result := siguienteNroPersona;
+  ospInsProgenitor.ParamByName('P_ID').Value                 := result;
+  ospInsProgenitor.ParamByName('P_APELLIDO').Value           := acompaniante.apellido;
+  ospInsProgenitor.ParamByName('P_SEGUNDO_APELLIDO').Value   := acompaniante.segundo_apellido;
+  ospInsProgenitor.ParamByName('P_NOMBRE').Value             := acompaniante.nombre;
+  ospInsProgenitor.ParamByName('P_OTROS_NOMBRES').Value      := acompaniante.otros_nombres;
+  ospInsProgenitor.ParamByName('P_TIPO_DOCUMENTO').Value     := tipo_doc(acompaniante.tipo_de_documento);
+  ospInsProgenitor.ParamByName('P_NUMERO_DOCUMENTO').Value   := acompaniante.numero_de_documento;
+  //-Parametros que sobran para el progenitor
+  ospInsProgenitor.ParamByName('P_NACIONALIDAD').clear;
+  ospInsProgenitor.ParamByName('P_NACIONALIDAD').bound := true;
+  //--
+  ospInsProgenitor.ParamByName('P_EMISOR_DOCUMENTO').clear;
+  ospInsProgenitor.ParamByName('P_EMISOR_DOCUMENTO').bound := true;
+  //--
+  ospInsProgenitor.ParamByName('P_FECHA_NACIMIENTO').clear;
+  ospInsProgenitor.ParamByName('P_FECHA_NACIMIENTO').bound := true;
+  //--
+  ospInsProgenitor.ParamByName('P_SEXO').clear;
+  ospInsProgenitor.ParamByName('P_SEXO').bound := true;
+  //--
+  ospInsProgenitor.ParamByName('P_DOMICILIO').clear;
+  ospInsProgenitor.ParamByName('P_DOMICILIO').bound := true;
+  //--
+
+
+  ospInsProgenitor.ExecSQL;
+  ospInsProgenitor.Connection.Commit;
+end;
+
+function TdmMenor.siguienteNroAutorizacion: integer;
+begin
+  oqSecautorizacion.Close;
+  oqSecautorizacion.Open;
+  result := oqSecautorizacion.fieldbyname('numero').Value;
+end;
+
+function TdmMenor.siguienteNroAutorizante: integer;
+begin
+  oqSecAutorizante.Close;
+  oqSecAutorizante.Open;
+  result := oqSecAutorizante.fieldbyname('numero').Value;
+end;
+
+function TdmMenor.siguienteNroPersona: integer;
+begin
+  oqSecPersona.Close;
+  oqSecPersona.Open;
+  result := oqSecPersona.FieldByName('numero').AsInteger;
+end;
+
+function TdmMenor.siguienteNroAcompaniantes: integer;
+begin
+  oqSecAcompaniantes.Close;
+  oqSecAcompaniantes.Open;
+  result := oqSecAcompaniantes.FieldByName('numero').AsInteger;
+end;
+
+function TdmMenor.guardarAutorizacion(au: rautorizacion): integer;
+{
+AUTORIZACIONES_VIAJE.PR_INSERT_AUTORIZACION
+}
+begin
+  try
+    ospInsAutorizacion.Close;
+    ospInsAutorizacion.Connection.StartTransaction;
+    ospInsAutorizacion.ParamByName('P_ID').value            := au.id;
+    ospInsAutorizacion.ParamByName('P_MENOR').value         := au.menor;
+    ospInsAutorizacion.ParamByName('P_AUTORIZANTE_1').value := au.autorizante1;
+    if au.autorizante2 = -1 then
+    begin
+      ospInsAutorizacion.ParamByName('P_AUTORIZANTE_2').clear;
+      ospInsAutorizacion.ParamByName('P_AUTORIZANTE_2').bound := true;
+    end
+    else
+      ospInsAutorizacion.ParamByName('P_AUTORIZANTE_2').value := au.autorizante2;
+    ospInsAutorizacion.ParamByName('P_ACOMPANIANTE').value  := au.acompaniante;
+    ospInsAutorizacion.ParamByName('P_TRAMITE').value       := au.tramite;
+
+    ospInsAutorizacion.ExecProc;
+    ospInsAutorizacion.Connection.Commit;
+    result := au.id;
+  except
+    result := -1;
+  end;
+end;
+
+procedure TdmMenor.insertarProgenitor(id, progenitor, tramite: integer);
+//autorizaciones_viaje.PR_INSERT_PROGENITORES(:P_ID, :P_TRAMITE, :P_PROGENITOR);
+begin
+  ospInsProgenitores.Close;
+  ospInsProgenitores.ParamByName('P_ID').Value := id;
+  ospInsProgenitores.ParamByName('P_TRAMITE').Value := progenitor;
+  ospInsProgenitores.ParamByName('P_PROGENITOR').Value := tramite;
+  ospInsProgenitores.ExecProc;
+end;
+
+function TdmMenor.getIdProgenitores: integer;
+begin
+  oqSecProgenitores.Close;
+  oqSecProgenitores.Open;
+  result := oqSecProgenitores.fieldbyname('numero').Value;
+
+end;
+
+function TdmMenor.getIdTerceros: integer;
+begin
+  oqSecTerceros.Close;
+  oqSecTerceros.Open;
+  result := oqSecTerceros.FieldByName('numero').Value;
+end;
+
+procedure TdmMenor.insertarTercero(id, tramite, persona: integer);
+//  autorizaciones_viaje.PR_INSERT_TERCEROS(:P_ID, :P_TRAMITE, :P_TERCERO);
+begin
+  ospInsTerceros.Close;
+  ospInsTerceros.ParamByName('P_ID').Value      := id;
+  ospInsTerceros.ParamByName('P_TRAMITE').Value := tramite;
+  ospInsTerceros.ParamByName('P_TERCERO').Value := persona;
+  ospInsTerceros.ExecProc;
+end;
+
+function TdmMenor.tipo_doc_valido(tipo: string): boolean;
+begin
+  try
+    result := false;
+    oqTipoDoc.Close;
+    oqTipoDoc.ParamByName('pcodigo').Value := tipo;
+    oqTipoDoc.Open;
+    result := not oqTipoDoc.IsEmpty;
+  except
+  end;
+end;
+
+function TdmMenor.nacionalidad_valida(nac: string): boolean;
+begin
+  result := false;
+  oqNacionalidad.Close;
+  oqNacionalidad.ParamByName('pnac').Value := nac;
+  oqNacionalidad.Open;
+  result := not oqNacionalidad.IsEmpty;
+end;
+
+function TdmMenor.emisor_valido(nac: string): boolean;
+begin
+  result := false;
+  oqEmisor.Close;
+  oqEmisor.ParamByName('pemi').Value := nac;
+  oqEmisor.Open;
+  result := not oqEmisor.IsEmpty;
+end;
+
+function TdmMenor.guardar_revocacion(solicitud: trevocar): boolean;
+begin
+  try
+    result := false;
+    ospInsRevocaciones.Close;
+    ospInsRevocaciones.ParamByName('P_DNI').Value       := solicitud.numero_doc;
+    ospInsRevocaciones.ParamByName('P_MATRICULA').Value := solicitud.numero_matricula;
+    ospInsRevocaciones.ParamByName('P_FECHA').Value     := solicitud.fecha; //FormatDateTime('dd/mm/yyyy hh:nn:ss', now());   //'DD/MM/YYYY HH24:MI:SS
+    ospInsRevocaciones.ExecProc;
+
+    ospInsRevocaciones.Connection.Commit;
+    result := true;
+  except
+    result := false;
+  end;
+end;
+
+function TdmMenor.marcar_persona_revocada(solicitud: trevocar): tresultado_revocar;
+var
+  revocados,i: integer;
+begin
+  oqPersonasRevocadas.Close;
+  oqPersonasRevocadas.ParamByName('pnumero_documento').AsString := solicitud.numero_doc;
+  oqPersonasRevocadas.ParamByName('pfecha_revocacion').AsString := solicitud.fecha;
+  oqPersonasRevocadas.Open;
+  if not oqPersonasRevocadas.IsEmpty then
+  begin
+    oqPersonasRevocadas.Last;
+    revocados := oqPersonasRevocadas.RecNo;
+    SetLength(result, revocados);
+    oqPersonasRevocadas.First;
+    i:=0;
+    while not(oqPersonasRevocadas.Eof) do
+    begin
+      result[i] := tautorizacion_numero.Create;
+      result[i].numero_autorizacion := oqPersonasRevocadas.fieldbyname('tramite').AsString;
+      revocar(solicitud, oqPersonasRevocadas.fieldbyname('menor').AsInteger);
+      oqPersonasRevocadas.Next;
+      inc(i);
+    end;
+    //marcar(solicitud);
+  end
+  else
+    result := nil;
+end;
+
+function TdmMenor.marcar(solicitud: tsolicitud): boolean;
+begin           
+  try
+    ospMarcarRevocados.Close;
+    ospMarcarRevocados.ParamByName('P_NUMERO_DOCUMENTO').Value        := solicitud.numero_doc;
+    ospMarcarRevocados.ParamByName('P_FECHA').Value                   := solicitud.fecha;
+    ospMarcarRevocados.ParamByName('P_USUARIO_REVOCADO').Value        := solicitud.fnumero_matricula;
+    ospMarcarRevocados.ExecProc;
+  except
+  end;
+end;
+
+function TdmMenor.persona_solicitudes(solicitud: tsolicitud): tresultado_revocar;
+var
+  revocados,i: integer;
+begin
+  oqPersonasRevocadas.Close;
+  oqPersonasRevocadas.ParamByName('pnumero_documento').AsString := solicitud.numero_doc;
+  oqPersonasRevocadas.ParamByName('pfecha_revocacion').AsString := solicitud.fecha;   //'DDMMYYYY HH24MISS'
+  oqPersonasRevocadas.Open;
+  if not oqPersonasRevocadas.IsEmpty then
+  begin
+    oqPersonasRevocadas.Last;
+    revocados := oqPersonasRevocadas.RecNo;
+    SetLength(result, revocados);
+    oqPersonasRevocadas.First;
+    i:=0;
+    while not(oqPersonasRevocadas.Eof) do
+    begin
+      result[i] := tautorizacion_numero.Create;
+      result[i].numero_autorizacion := oqPersonasRevocadas.fieldbyname('tramite').AsString;
+      oqPersonasRevocadas.Next;
+      inc(i);
+    end;
+  end
+  else
+    result := nil;
+end;
+
+function TdmMenor.revocar(solicitud: trevocar; id_menor:integer): boolean;
+begin
+  try
+  {
+    oqMarcarRevocados.Close;
+    oqMarcarRevocados.ParamByName('p_usuario').Value  := solicitud.fnumero_matricula;
+    oqMarcarRevocados.ParamByName('p_fecha').Value    := solicitud.fecha;
+    oqMarcarRevocados.ParamByName('p_id').Value       := id_menor;
+    oqMarcarRevocados.ExecSQL;
+  }
+    ospMarcarRevocados.Close;
+    ospMarcarRevocados.ParamByName('P_USUARIO_REVOCADO').Value  := solicitud.fnumero_matricula;
+    ospMarcarRevocados.ParamByName('p_fecha').Value             := solicitud.fecha;
+    ospMarcarRevocados.ParamByName('p_id').Value                := id_menor;
+    ospMarcarRevocados.ExecSQL;
+  except
+  end;
+end;
+
+function TdmMenor.actualizarAcompaniantes(acompaniante: rpersonas; id: integer): integer;
+begin
+  try
+    ospActualizarProgenitor.Close;
+    ospActualizarProgenitor.Connection.StartTransaction;
+    ospActualizarProgenitor.ParamByName('P_ID').Value                 := id;
+    ospActualizarProgenitor.ParamByName('P_APELLIDO').Value           := acompaniante.apellido;
+    ospActualizarProgenitor.ParamByName('P_SEGUNDO_APELLIDO').Value   := acompaniante.segundo_apellido;
+    ospActualizarProgenitor.ParamByName('P_NOMBRE').Value             := acompaniante.nombre;
+    ospActualizarProgenitor.ParamByName('P_OTROS_NOMBRES').Value      := acompaniante.otros_nombres;
+    ospActualizarProgenitor.ParamByName('P_TIPO_DOCUMENTO').Value     := tipo_doc(acompaniante.tipo_de_documento);
+    ospActualizarProgenitor.ParamByName('P_NUMERO_DOCUMENTO').Value   := acompaniante.numero_de_documento;
+    //-Parametros que sobran para el progenitor
+    ospActualizarProgenitor.ParamByName('P_NACIONALIDAD').clear;
+    ospActualizarProgenitor.ParamByName('P_NACIONALIDAD').bound := true;
+    //--
+    ospActualizarProgenitor.ParamByName('P_EMISOR_DOCUMENTO').clear;
+    ospActualizarProgenitor.ParamByName('P_EMISOR_DOCUMENTO').bound := true;
+    //--
+    ospActualizarProgenitor.ParamByName('P_FECHA_NACIMIENTO').clear;
+    ospActualizarProgenitor.ParamByName('P_FECHA_NACIMIENTO').bound := true;
+    //--
+    ospActualizarProgenitor.ParamByName('P_SEXO').clear;
+    ospActualizarProgenitor.ParamByName('P_SEXO').bound := true;
+    //--
+    ospActualizarProgenitor.ParamByName('P_DOMICILIO').clear;
+    ospActualizarProgenitor.ParamByName('P_DOMICILIO').bound := true;
+    //--
+    ospActualizarProgenitor.ExecSQL;
+    ospActualizarProgenitor.Connection.Commit;
+    result := id
+  except
+  end;
+end;
+
+function TdmMenor.actualizarAutorizacion(au: rautorizacion; id:integer): integer;
+begin
+  try
+    ospActualizarAutorizacion.Close;
+    ospActualizarAutorizacion.Connection.StartTransaction;
+    ospActualizarAutorizacion.ParamByName('P_ID').value            := au.id;
+    ospActualizarAutorizacion.ParamByName('P_MENOR').value         := au.menor;
+    ospActualizarAutorizacion.ParamByName('P_AUTORIZANTE_1').value := au.autorizante1;
+    if au.autorizante2 = -1 then
+    begin
+      ospActualizarAutorizacion.ParamByName('P_AUTORIZANTE_2').clear;
+      ospActualizarAutorizacion.ParamByName('P_AUTORIZANTE_2').bound := true;
+    end
+    else
+      ospActualizarAutorizacion.ParamByName('P_AUTORIZANTE_2').value := au.autorizante2;
+    ospActualizarAutorizacion.ParamByName('P_ACOMPANIANTE').value  := au.acompaniante;
+    ospActualizarAutorizacion.ParamByName('P_TRAMITE').value       := au.tramite;
+
+    ospActualizarAutorizacion.ExecProc;
+    ospActualizarAutorizacion.Connection.Commit;
+    result := au.id;
+  except
+    result := -1;
+  end;
+
+end;
+
+function TdmMenor.actualizarAutorizante_db(autorizante: rautorizante; id: integer): integer;
+begin
+  actualizarPersona(autorizante, id);
+  //guardo el registro autorizante
+  result := actualizarAutorizante(autorizante, id);
+end;
+
+function TdmMenor.actualizarPersona(p: rautorizante; id: integer): integer;
+begin
+  try
+    ospActualizarPersona.Close;
+    ospActualizarPersona.Connection.StartTransaction;
+    ospActualizarPersona.ParamByName('P_ID').Value                 := id;
+    ospActualizarPersona.ParamByName('P_APELLIDO').Value           := p.apellido;
+    ospActualizarPersona.ParamByName('P_SEGUNDO_APELLIDO').Value   := p.segundo_apellido;
+    ospActualizarPersona.ParamByName('P_NOMBRE').Value             := p.nombre;
+    ospActualizarPersona.ParamByName('P_OTROS_NOMBRES').Value      := p.otros_nombres;
+    ospActualizarPersona.ParamByName('P_NACIONALIDAD').AsInteger   := nacionalidad(p.nacionalidad);
+    ospActualizarPersona.ParamByName('P_TIPO_DOCUMENTO').Value     := tipo_doc(p.tipo_de_documento);
+    ospActualizarPersona.ParamByName('P_EMISOR_DOCUMENTO').Value   := emisor_doc(p.emisor_documento);
+    ospActualizarPersona.ParamByName('P_NUMERO_DOCUMENTO').Value   := p.numero_de_documento;
+    ospActualizarPersona.ParamByName('P_FECHA_NACIMIENTO').Value   := p.fecha_de_nacimiento;
+    ospActualizarPersona.ParamByName('P_SEXO').Value               := p.Sexo;
+    ospActualizarPersona.ParamByName('P_DOMICILIO').Value          := p.Domicilio;
+    ospActualizarPersona.ExecSQL;
+    ospActualizarPersona.Connection.Commit;
+  except
+  end;
+end;
+
+function TdmMenor.actualizarMenor(menor: rmenor; id: integer): integer;
+begin
+  try
+    ospActualizarMenor.Close;
+    ospActualizarMenor.Connection.StartTransaction;
+    ospActualizarMenor.ParamByName('p_id').Value                 := id;
+    ospActualizarMenor.ParamByName('P_APELLIDO').Value           := menor.apellido;
+    ospActualizarMenor.ParamByName('P_SEGUNDO_APELLIDO').Value   := menor.segundo_apellido;
+    ospActualizarMenor.ParamByName('P_NOMBRE').Value             := menor.nombre;
+    ospActualizarMenor.ParamByName('P_OTROS_NOMBRES').Value      := menor.otros_nombres;
+    ospActualizarMenor.ParamByName('P_NACIONALIDAD').AsInteger   := nacionalidad(menor.nacionalidad);
+    ospActualizarMenor.ParamByName('P_TIPO_DOCUMENTO').Value     := tipo_doc(menor.tipo_de_documento);
+    ospActualizarMenor.ParamByName('P_EMISOR_DOCUMENTO').Value   := emisor_doc(menor.emisor_documento);
+    ospActualizarMenor.ParamByName('P_NUMERO_DOCUMENTO').Value   := menor.numero_de_documento;
+    ospActualizarMenor.ParamByName('P_FECHA_NACIMIENTO').Value   := menor.fecha_de_nacimiento; //to_date
+    ospActualizarMenor.ParamByName('P_SEXO').Value               := menor.Sexo;
+    ospActualizarMenor.ParamByName('P_DOMICILIO').Value          := menor.Domicilio;
+    ospActualizarMenor.ExecProc;
+    ospActualizarMenor.Connection.Commit;
+    result := id;
+  except
+    result := -1;
+  end;
+end;
+
+function TdmMenor.actualizarTramite(datos_tramite: rdatos_tramite; id: integer; paises:integer): integer;
+begin
+  try
+    ospActualizarTramite.Close;
+    ospActualizarTramite.Connection.StartTransaction;
+    ospActualizarTramite.ParamByName('P_ID').Value                   := id;
+    ospActualizarTramite.ParamByName('P_DISTRITO').Value             := datos_tramite.distrito;
+    ospActualizarTramite.ParamByName('P_MATRICULA').Value            := datos_tramite.matricula;
+    ospActualizarTramite.ParamByName('P_NOMBRES_ESCRIBANO').Value    := datos_tramite.nombres_escribano;
+    ospActualizarTramite.ParamByName('P_APELLIDOS_ESCRIBANO').Value  := datos_tramite.apellidos_escribano;
+    ospActualizarTramite.ParamByName('P_NRO_ACTUAC_NOTARIAL_CERT_FIR').Value := datos_tramite.numero_actuacion_notarial_cert_firma;
+    ospActualizarTramite.ParamByName('P_FECHA_DEL_INSTRUMENTO').Value := datos_tramite.fecha_del_instrumento;
+    //Si va a cualquier pais no hay lista de paises.
+    if datos_tramite.cualquier_pais then
+    begin
+      ospActualizarTramite.ParamByName('P_PAISES_TODOS').Value := 'T';
+      ospActualizarTramite.ParamByName('P_PAISES').Value := -1;
+    end
+    else
+    begin
+      ospActualizarTramite.ParamByName('P_PAISES_TODOS').Value := 'F';
+      ospActualizarTramite.ParamByName('P_PAISES').Value := paises;
+    end;
+
+    ospActualizarTramite.ParamByName('P_VIGENCIA_DESDE').Value := datos_tramite.fecha_vigencia_desde;
+    ospActualizarTramite.ParamByName('P_VIGENCIA_HASTA').Value := datos_tramite.fecha_vigencia_hasta;
+
+    ospActualizarTramite.ParamByName('P_SERIE_FOJA').Value     := datos_tramite.serie_foja;
+    ospActualizarTramite.ParamByName('P_TIPO_FOJA').Value      := datos_tramite.tipo_foja;
+
+    ospActualizarTramite.ExecSQL;
+    ospActualizarTramite.Connection.Commit;
+    result := id;
+  except
+    result := -1;
+  end;
+end;
+
+procedure TdmMenor.getIdsActualizar(var ids: rids);
+begin
+  
+  ids.menor         := -1;
+  //IDS.tramite       := -1;
+  ids.autorizante1  := -1;
+  ids.autorizante2  := -1;
+
+  oqIds.Close;
+  oqIds.ParamByName('pid').Value := ids.tramite;
+  oqIds.Open;
+  if not oqIds.IsEmpty then
+  begin
+    if not oqIds.fieldbyname('autorizante_1').IsNull then
+      ids.autorizante1 := oqIds.fieldbyname('autorizante_1').Value;
+    if not oqIds.fieldbyname('autorizante_2').IsNull then
+      ids.autorizante2 := oqIds.fieldbyname('autorizante_2').Value;
+    if not oqIds.fieldbyname('menor').IsNull then
+      ids.menor := oqIds.fieldbyname('menor').Value;
+    //ids.menor := oqIds.ParamByName('pid').Value;
+  end;
+end;
+
+
+
+function TdmMenor.actualizarAutorizante(autorizante: rautorizante; id: integer): integer;
+begin
+  try
+    ospActualizarAutorizante.Close;
+    ospActualizarAutorizante.Connection.StartTransaction;
+    ospActualizarAutorizante.ParamByName('P_ID').Value := id;
+    ospActualizarAutorizante.ParamByName('P_PERSONA').Value  := id;
+    ospActualizarAutorizante.ParamByName('P_CARACTER').Value := autorizante.caracter_primer_autorizante;
+    ospActualizarAutorizante.ParamByName('P_VINCULO').Value  := autorizante.acredita_vinculo_con;
+    ospActualizarAutorizante.ParamByName('P_TELEFONO').Value := autorizante.telefono;
+    ospActualizarAutorizante.ExecSQL;
+    ospActualizarAutorizante.Connection.Commit;
+    result := id;
+  except
+    result := -1;
+  end;
+end;
+
+function TdmMenor.actualizarAcompaniante_db(acompanante: racompanante; id: integer): integer;
+{
+  El actualizar acompaniantes borra los acompañantes y los progenitores y los carga de nuevo.
+  Esto sucede porque no se tiene los ids de los acompañantes ni de los progeniitores.
+}
+var
+  terceros: integer;
+  progenitor, iterceros,i, id_progenitores: integer;
+  id_tercero: integer;
+  completo: boolean;
+begin
+  {--Primero borro los que estaban--}
+  dmMenor.borrarAcompaniantes(id);
+  {--Primero--}
+  progenitor := -1;
+  //Se guarda la persona y se guarda en la tabla de progenitores.
+  for i:=1 to length(acompanante.otros_progenitores) do
+  begin
+    progenitor := guardar_progenitor(acompanante.otros_progenitores[i-1]);
+
+    id_progenitores := getIdProgenitores;
+    insertarProgenitor(id_progenitores, id, progenitor);
+    //insertar en la tabla progenitores
+  end;
+  //se guarda la persona y despues en la tabla de terceros.
+  for i:=1 to length(acompanante.terceros) do
+  begin
+    iterceros  := guardar_terceros(acompanante.terceros[i-1], id);
+    id_tercero := getIdTerceros;
+    //id_tabla, autorizacion, persona
+    insertarTercero(id_tercero, id, iterceros);
+    //insertar en la tabla de terceros.
+  end;
+end;
+
+function TdmMenor.actualizar_progenitor(progenitor: rpersonas; id:integer): integer;
+begin
+  try
+    ospActualizarPersona.Close;
+    ospActualizarPersona.Connection.StartTransaction;
+    ospActualizarPersona.ParamByName('P_ID').Value                 := id;
+    ospActualizarPersona.ParamByName('P_APELLIDO').Value           := progenitor.apellido;
+    ospActualizarPersona.ParamByName('P_SEGUNDO_APELLIDO').Value   := progenitor.segundo_apellido;
+    ospActualizarPersona.ParamByName('P_NOMBRE').Value             := progenitor.nombre;
+    ospActualizarPersona.ParamByName('P_OTROS_NOMBRES').Value      := progenitor.otros_nombres;
+    ospActualizarPersona.ParamByName('P_TIPO_DOCUMENTO').Value     := tipo_doc(progenitor.tipo_de_documento);
+    ospActualizarPersona.ParamByName('P_NUMERO_DOCUMENTO').Value   := progenitor.numero_de_documento;
+
+    //-Parametros que sobran para el progenitor
+    ospActualizarPersona.ParamByName('P_NACIONALIDAD').clear;
+    ospActualizarPersona.ParamByName('P_NACIONALIDAD').bound := true;
+    //--
+    ospActualizarPersona.ParamByName('P_EMISOR_DOCUMENTO').clear;
+    ospActualizarPersona.ParamByName('P_EMISOR_DOCUMENTO').bound := true;
+    //--
+    ospInsPersona.ParamByName('P_FECHA_NACIMIENTO').clear;
+    ospInsPersona.ParamByName('P_FECHA_NACIMIENTO').bound := true;
+    //--
+    ospActualizarPersona.ParamByName('P_SEXO').clear;
+    ospActualizarPersona.ParamByName('P_SEXO').bound := true;
+    //--
+    ospActualizarPersona.ParamByName('P_DOMICILIO').clear;
+    ospActualizarPersona.ParamByName('P_DOMICILIO').bound := true;
+    //--
+    ospActualizarPersona.ExecSQL;
+    ospActualizarPersona.Connection.Commit;
+  except
+  end;
+end;
+
+procedure TdmMenor.borrarAcompaniantes(tramite: integer);
+begin
+  try
+    ospBajaProjenitores.Close;
+    ospBajaProjenitores.ParamByName('P_TRAMITE').Value := tramite;
+    ospBajaProjenitores.ExecProc;
+
+    ospBajaTerceros.Close;
+    ospBajaTerceros.ParamByName('P_TRAMITE').Value := tramite;
+    ospBajaTerceros.ExecProc;
+  except
+  end;
+end;
+
+function TdmMenor.revocar_siger(solicitud: trevocar): tresultado_revocar;
+var
+  observacion: string;
+begin
+  try
+    observacion := 'Revocatoria generada por el colegio de escribanos de C.A.B.A. por el escribano ' + solicitud.nombre_escribano ;
+    observacion := observacion + ' numero de matricula: ' + solicitud.numero_matricula + ' numero de actuacion notarial: ';
+    observacion := observacion + solicitud.numero_act_notarial_cert_firma;
+
+    ospInsertRevocacionSiger.Close;
+    ospInsertRevocacionSiger.Connection.StartTransaction;
+    ospInsertRevocacionSiger.ParamByName('P_APE1').Value                    := solicitud.Apellido;
+    ospInsertRevocacionSiger.ParamByName('P_APE2').Value                    := solicitud.Apellido2;
+    ospInsertRevocacionSiger.ParamByName('P_NOM1').Value                    := solicitud.Nombre;
+    ospInsertRevocacionSiger.ParamByName('P_NOM2').Value                    := solicitud.nombre2;
+    ospInsertRevocacionSiger.ParamByName('P_NUMERO_DOC').Value              := solicitud.numero_doc;
+    //fecha de ddmmyyyy a dd/mm/yyyy
+    ospInsertRevocacionSiger.ParamByName('P_FECHA').Value                   :=
+      solicitud.Fecha[1] + solicitud.Fecha[2] + '/' + solicitud.Fecha[3] + solicitud.Fecha[4] + '/' +
+      solicitud.Fecha[5] + solicitud.Fecha[6] + solicitud.Fecha[7] + solicitud.Fecha[8];
+    ospInsertRevocacionSiger.ParamByName('P_NUMERO_MATRICULA').Value        := solicitud.numero_matricula;
+    ospInsertRevocacionSiger.ParamByName('P_NUMERO_ACT_NOTARIAL').Value     := solicitud.numero_act_notarial_cert_firma;
+    ospInsertRevocacionSiger.ParamByName('P_TIPO_DOCUMENTO').Value          := solicitud.tipo_documento;
+    ospInsertRevocacionSiger.ParamByName('P_NACIONALIDAD_DOCUMENTO').Value  := solicitud.nacionalidad_documento;
+    ospInsertRevocacionSiger.ParamByName('P_NACIONALIDAD').Value            := solicitud.Nacionalidad;
+    ospInsertRevocacionSiger.ParamByName('P_FEC_NAC').Value                 := solicitud.Fecha_de_nacimiento;
+    ospInsertRevocacionSiger.ParamByName('P_SEXO').Value                    := solicitud.sexo;
+    ospInsertRevocacionSiger.ParamByName('P_ENTIDAD_EMISORA').Value         := solicitud.Entidad_emisora;
+    ospInsertRevocacionSiger.ParamByName('P_OBSERVACIONES').Value           := observacion;
+
+    ospInsertRevocacionSiger.ExecSQL;
+    ospInsertRevocacionSiger.Connection.Commit;
+  except
+    on e: exception do
+      ShowMessage(e.Message);
+  end;
+end;
+
+procedure TdmMenor.DataModuleCreate(Sender: TObject);
+var
+  ts: tstringlist;
+begin
+  ts := TStringList.Create;
+  ts.LoadFromFile(ExtractFilePath(Application.ExeName) + 'config.ini');
+  os1.Server := ts.Strings[0];
+  os1.Connected := TRUE;
+  ts.Free;
+end;
+
+procedure TdmMenor.setBase(nombre: string);
+begin
+  os1.server := nombre;
+  os1.Connected := true;
+end;
+
+end.

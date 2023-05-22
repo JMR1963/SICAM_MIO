@@ -1,0 +1,132 @@
+// ************************************************************************ //
+// The types declared in this file were generated from data read from the
+// WSDL File described below:
+// WSDL     : http://10.100.10.25/cgi-bin/WSArchAdmin/WSArchAdmin/wsdl/IWSArchAdminImpl
+//  >Import : http://10.100.10.25/cgi-bin/WSArchAdmin/WSArchAdmin/wsdl/IWSArchAdminImpl>0
+// Encoding : utf-8
+// Version  : 1.0
+// (14/02/2022 18:55:53 - - $Rev: 69934 $)
+// ************************************************************************ //
+
+unit IWSArchAdminImpl1;
+
+interface
+
+uses Soap.InvokeRegistry, Soap.SOAPHTTPClient, System.Types, Soap.XSBuiltIns;
+
+type
+
+  // ************************************************************************ //
+  // The following types, referred to in the WSDL document are not being represented
+  // in this file. They are either aliases[@] of other types represented or were referred
+  // to but never[!] declared in the document. The types from the latter category
+  // typically map to predefined/known XML or Embarcadero types; however, they could also 
+  // indicate incorrect WSDL documents that failed to declare or import a schema type.
+  // ************************************************************************ //
+  // !:boolean         - "http://www.w3.org/2001/XMLSchema"[]
+  // !:int             - "http://www.w3.org/2001/XMLSchema"[]
+  // !:string          - "http://www.w3.org/2001/XMLSchema"[Gbl]
+  // !:base64Binary    - "http://www.w3.org/2001/XMLSchema"[Gbl]
+
+  TRecibir             = class;                 { "urn:uWSArchAdminIntf"[GblCplx] }
+
+
+
+  // ************************************************************************ //
+  // XML       : TRecibir, global, <complexType>
+  // Namespace : urn:uWSArchAdminIntf
+  // ************************************************************************ //
+  TRecibir = class(TRemotable)
+  private
+    FData: TByteDynArray;
+    FcMD5: string;
+  published
+    property Data: TByteDynArray  read FData write FData;
+    property cMD5: string         read FcMD5 write FcMD5;
+  end;
+
+
+  // ************************************************************************ //
+  // Namespace : urn:uWSArchAdminIntf-IWSArchAdminImpl
+  // soapAction: urn:uWSArchAdminIntf-IWSArchAdminImpl#%operationName%
+  // transport : http://schemas.xmlsoap.org/soap/http
+  // style     : rpc
+  // use       : encoded
+  // binding   : IWSArchAdminImplbinding
+  // service   : IWSArchAdminImplservice
+  // port      : IWSArchAdminImplPort
+  // URL       : http://10.100.10.25/cgi-bin/WSArchAdmin/WSArchAdmin/soap/IWSArchAdminImpl
+  // ************************************************************************ //
+  IWSArchAdminImpl = interface(IInvokable)
+  ['{C1487C62-C565-0C39-7DB9-77B9321C0F61}']
+    function  EnviarArchivo(const RemotoPathYNombreArch: string; const Datos: TByteDynArray; const checkMD5: string): Boolean; stdcall;
+    function  RecibirArchivo(const RemotoPathYNombreArch: string): TRecibir; stdcall;
+    function  CrearDirectorio(const RemotoPath: string): Boolean; stdcall;
+    function  ExisteDirectorio(const RemotoPath: string): Boolean; stdcall;
+    function  BuscoPrimero(const RemotoPath: string; const filtro: string): string; stdcall;
+    function  ExisteArchivo(const RemotoPathYNombreArch: string): Boolean; stdcall;
+    function  MoverArchivo(const R1: string; const R2: string): Boolean; stdcall;
+    function  UltimoArchivo(const pathGlobal: string; const mask: string): string; stdcall;
+    function  TamArchivo(const ArchRemoto: string): Integer; stdcall;
+    function  EliminoArchivoRemoto(const ArchRemoto: string): Boolean; stdcall;
+    function  EjecutoBatRemoto(const contenido: string): Boolean; stdcall;
+    function  Test: Boolean; stdcall;
+    function  ServicioEnEjecucion(const NombreSRV: string): Boolean; stdcall;
+    function  ejecutoServicio(const NombreSRV: string): Boolean; stdcall;
+  end;
+
+function GetIWSArchAdminImpl(UseWSDL: Boolean=System.False; Addr: string=''; HTTPRIO: THTTPRIO = nil): IWSArchAdminImpl;
+
+
+implementation
+  uses System.SysUtils,egatefunciones;
+
+function GetIWSArchAdminImpl(UseWSDL: Boolean; Addr: string; HTTPRIO: THTTPRIO): IWSArchAdminImpl;
+const
+  defSvc  = 'IWSArchAdminImplservice';
+  defPrt  = 'IWSArchAdminImplPort';
+var
+  RIO: THTTPRIO;
+  defWSDL,defURL:String;
+begin
+
+
+  defWSDL := 'http://'+IPReinicioServidorFacial+'/cgi-bin/WSArchAdmin/WSArchAdmin/wsdl/IWSArchAdminImpl';
+  defURL  := 'http://'+IPReinicioServidorFacial+'/cgi-bin/WSArchAdmin/WSArchAdmin/soap/IWSArchAdminImpl';
+
+
+  Result := nil;
+  if (Addr = '') then
+  begin
+    if UseWSDL then
+      Addr := defWSDL
+    else
+      Addr := defURL;
+  end;
+  if HTTPRIO = nil then
+    RIO := THTTPRIO.Create(nil)
+  else
+    RIO := HTTPRIO;
+  try
+    Result := (RIO as IWSArchAdminImpl);
+    if UseWSDL then
+    begin
+      RIO.WSDLLocation := Addr;
+      RIO.Service := defSvc;
+      RIO.Port := defPrt;
+    end else
+      RIO.URL := Addr;
+  finally
+    if (Result = nil) and (HTTPRIO = nil) then
+      RIO.Free;
+  end;
+end;
+
+
+initialization
+  { IWSArchAdminImpl }
+  InvRegistry.RegisterInterface(TypeInfo(IWSArchAdminImpl), 'urn:uWSArchAdminIntf-IWSArchAdminImpl', 'utf-8');
+  InvRegistry.RegisterDefaultSOAPAction(TypeInfo(IWSArchAdminImpl), 'urn:uWSArchAdminIntf-IWSArchAdminImpl#%operationName%');
+  RemClassRegistry.RegisterXSClass(TRecibir, 'urn:uWSArchAdminIntf', 'TRecibir');
+
+end.

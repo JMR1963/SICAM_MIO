@@ -1,0 +1,133 @@
+// ************************************************************************ //
+// The types declared in this file were generated from data read from the
+// WSDL File described below:
+// WSDL     : http://172.16.0.48/cgi-bin/wspuente/wspuente/wsdl/Iwspuente
+// Encoding : utf-8
+// Version  : 1.0
+// (15/06/2016 02:14:50 - 1.33.2.5)
+// ************************************************************************ //
+
+unit Iwspuente1;
+
+interface
+
+uses InvokeRegistry, SOAPHTTPClient, Types, XSBuiltIns;
+
+type
+
+  // ************************************************************************ //
+  // The following types, referred to in the WSDL document are not being represented
+  // in this file. They are either aliases[@] of other types represented or were referred
+  // to but never[!] declared in the document. The types from the latter category
+  // typically map to predefined/known XML or Borland types; however, they could also 
+  // indicate incorrect WSDL documents that failed to declare or import a schema type.
+  // ************************************************************************ //
+  // !:int             - "http://www.w3.org/2001/XMLSchema"
+  // !:string          - "http://www.w3.org/2001/XMLSchema"
+
+  DatosEntradaNew      = class;                 { "urn:wspuenteIntf" }
+  DatosSalidaNew       = class;                 { "urn:wspuenteIntf" }
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:wspuenteIntf
+  // ************************************************************************ //
+  DatosEntradaNew = class(TRemotable)
+  private
+    Fdni: Integer;
+    Fsexo: WideString;
+  published
+    property dni: Integer read Fdni write Fdni;
+    property sexo: WideString read Fsexo write Fsexo;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:wspuenteIntf
+  // ************************************************************************ //
+  DatosSalidaNew = class(TRemotable)
+  private
+    Fcodigo: Integer;
+    Fmensaje: WideString;
+    FnivelEducacional: WideString;
+    Ftitulo: WideString;
+    Focupacion: WideString;
+    Fposgrado: WideString;
+    FestadoCivil: WideString;
+  published
+    property codigo: Integer read Fcodigo write Fcodigo;
+    property mensaje: WideString read Fmensaje write Fmensaje;
+    property nivelEducacional: WideString read FnivelEducacional write FnivelEducacional;
+    property titulo: WideString read Ftitulo write Ftitulo;
+    property ocupacion: WideString read Focupacion write Focupacion;
+    property posgrado: WideString read Fposgrado write Fposgrado;
+    property estadoCivil: WideString read FestadoCivil write FestadoCivil;
+  end;
+
+
+  // ************************************************************************ //
+  // Namespace : urn:wspuenteIntf-Iwspuente
+  // soapAction: urn:wspuenteIntf-Iwspuente#DameOcupacion
+  // transport : http://schemas.xmlsoap.org/soap/http
+  // style     : rpc
+  // binding   : Iwspuentebinding
+  // service   : Iwspuenteservice
+  // port      : IwspuentePort
+  // URL       : http://172.16.0.48/cgi-bin/wspuente/wspuente/soap/Iwspuente
+  // ************************************************************************ //
+  Iwspuente = interface(IInvokable)
+  ['{F7AAB0A0-4534-4C25-A8A0-8E339823E707}']
+    function  DameOcupacion(const datos: DatosEntradaNew): DatosSalidaNew; stdcall;
+  end;
+
+function GetIwspuente(UseWSDL: Boolean=System.False; Addr: string=''; HTTPRIO: THTTPRIO = nil): Iwspuente;
+
+
+implementation
+
+function GetIwspuente(UseWSDL: Boolean; Addr: string; HTTPRIO: THTTPRIO): Iwspuente;
+const
+  defWSDL = 'http://172.16.0.48/cgi-bin/wspuente/wspuente/wsdl/Iwspuente';
+  defURL  = 'http://172.16.0.48/cgi-bin/wspuente/wspuente/soap/Iwspuente';
+  defSvc  = 'Iwspuenteservice';
+  defPrt  = 'IwspuentePort';
+var
+  RIO: THTTPRIO;
+begin
+  Result := nil;
+  if (Addr = '') then
+  begin
+    if UseWSDL then
+      Addr := defWSDL
+    else
+      Addr := defURL;
+  end;
+  if HTTPRIO = nil then
+    RIO := THTTPRIO.Create(nil)
+  else
+    RIO := HTTPRIO;
+  try
+    Result := (RIO as Iwspuente);
+    if UseWSDL then
+    begin
+      RIO.WSDLLocation := Addr;
+      RIO.Service := defSvc;
+      RIO.Port := defPrt;
+    end else
+      RIO.URL := Addr;
+  finally
+    if (Result = nil) and (HTTPRIO = nil) then
+      RIO.Free;
+  end;
+end;
+
+
+initialization
+  InvRegistry.RegisterInterface(TypeInfo(Iwspuente), 'urn:wspuenteIntf-Iwspuente', 'utf-8');
+  InvRegistry.RegisterDefaultSOAPAction(TypeInfo(Iwspuente), 'urn:wspuenteIntf-Iwspuente#DameOcupacion');
+  RemClassRegistry.RegisterXSClass(DatosEntradaNew, 'urn:wspuenteIntf', 'DatosEntradaNew');
+  RemClassRegistry.RegisterXSClass(DatosSalidaNew, 'urn:wspuenteIntf', 'DatosSalidaNew');
+
+end. 

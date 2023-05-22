@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2023/04/07 17:28:32.000.437,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:28:32.000.783,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:28:46.000.281,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteChilenoImpl.pas</Transaction>
+    <Transaction>2023/04/07 17:28:46.000.403,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteChilenoIntf.pas</Transaction>
+    <Transaction>2023/04/07 17:29:47.000.046,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\puentechilenoIntf.pas</Transaction>
+    <Transaction>2023/04/07 17:29:47.000.325,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\WebService1.pas</Transaction>
+    <Transaction>2023/04/07 17:29:47.000.095,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\SemaforoCL.pas</Transaction>
+    <Transaction>2023/04/07 17:29:47.000.259,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:29:47.000.131,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\ufixWS.pas</Transaction>
+    <Transaction>2023/04/07 17:29:47.000.016,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\puentechilenoImpl.pas</Transaction>
+    <Transaction>2023/04/07 17:30:07.000.514,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.dfm=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\uMainForm.dfm</Transaction>
+    <Transaction>2023/04/07 17:30:07.000.514,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\uMainForm.pas</Transaction>
+    <Transaction>2023/04/07 17:30:18.000.123,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteChileno\SRC\svrPuenteChileno.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

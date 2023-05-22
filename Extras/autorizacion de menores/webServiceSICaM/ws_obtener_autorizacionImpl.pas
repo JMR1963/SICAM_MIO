@@ -1,0 +1,91 @@
+{ Invokable implementation File for Tws_obtener_autorizacion which implements Iws_obtener_autorizacion }
+
+unit ws_obtener_autorizacionImpl;
+
+interface
+
+uses Soap.InvokeRegistry, System.Types, Soap.XSBuiltIns, ws_obtener_autorizacionIntf, Udatosd;
+
+type
+
+  { Tws_obtener_autorizacion }
+  Tws_obtener_autorizacion = class(TInvokableClass, Iws_obtener_autorizacion)
+  public
+    function obtener_autorizacion_escribanos(datos_busqueda:Tdatos_busqueda):tautorizacion; stdcall;
+    function obtener_autorizacion_sacer(datos_busqueda:Tdatos_busqueda):tautorizacion_sacer; stdcall;
+    function obtener_terceros(tramite: string):tterceros; stdcall;
+    function obtener_progenitores(tramite: string):tterceros; stdcall;
+    function obtener_autorizantes(tramite: string):tterceros; stdcall;
+    function autorizacion_menores(datos_busqueda:Tdatos_busqueda):tautorizacion_full; stdcall;
+
+
+  end;
+
+implementation
+
+{ Tws_obtener_autorizacion }
+
+function Tws_obtener_autorizacion.autorizacion_menores(datos_busqueda: Tdatos_busqueda): tautorizacion_full;
+var
+  dm: TDataModule1;
+  res : tautorizacion;
+begin
+  dm := TDataModule1.Create(nil);
+  result := dm.obtener_autorizacion_menores_dm(datos_busqueda);
+  dm.Free;
+
+end;
+
+function Tws_obtener_autorizacion.obtener_autorizacion_escribanos(datos_busqueda: Tdatos_busqueda): tautorizacion;
+var
+  dm: TDataModule1;
+  res : tautorizacion;
+begin
+  dm := TDataModule1.Create(nil);
+  result := dm.obtener_autorizacion_escribanos_dm(datos_busqueda);
+  dm.Free;
+end;
+
+function Tws_obtener_autorizacion.obtener_autorizacion_sacer(
+  datos_busqueda: Tdatos_busqueda): tautorizacion_sacer;
+var
+  dm: TDataModule1;
+begin
+  dm := TDataModule1.Create(nil);
+  result := dm.obtener_autorizacion_sacer_dm(datos_busqueda);
+  dm.Free;
+end;
+
+function Tws_obtener_autorizacion.obtener_autorizantes(tramite: string): tterceros;
+var
+  dm: TDataModule1;
+begin
+  dm := TDataModule1.Create(nil);
+  result := dm.autorizantes(tramite);
+  dm.Free;
+end;
+
+function Tws_obtener_autorizacion.obtener_progenitores(tramite: string): tterceros;
+var
+  dm: TDataModule1;
+begin
+  dm := TDataModule1.Create(nil);
+  result := dm.obtener_progenitores(tramite);
+  dm.Free;
+end;
+
+function Tws_obtener_autorizacion.obtener_terceros(tramite: string): tterceros;
+var
+  dm: TDataModule1;
+begin
+  dm := TDataModule1.Create(nil);
+  result := dm.obtener_terceros(tramite);
+  dm.Free;
+end;
+
+initialization
+  { Invokable classes must be registered }
+  InvRegistry.RegisterInvokableClass(Tws_obtener_autorizacion);
+
+end.
+ 

@@ -1,0 +1,63 @@
+unit ufuncs;
+
+interface
+
+  function GetWSDir: String;
+  {$IFDEF DEBUG}
+  procedure Log(FuncName, ALog: String);
+  {$ENDIF}
+
+implementation
+
+uses
+  SysUtils, Windows;
+
+{$IFDEF DEBUG}
+var
+  LogFile: TextFile;
+  LogFileName: String;
+{$ENDIF}
+
+function GetWSDir: String;
+const
+  BUFFER_SIZE = 2048;
+var
+  buffer : PAnsiChar;
+  len : DWORD;
+begin
+  Result := '';
+  GetMem(buffer, BUFFER_SIZE);
+  FillChar(buffer^, BUFFER_SIZE, 0);
+  len := GetModuleFileName(0, buffer, BUFFER_SIZE);
+  if len > 0 then
+  begin
+    SetLength(Result, len);
+    Move(buffer^, Result[1], len);
+    Result := ExtractFilePath(Result);
+  end;
+  FreeMem(buffer);
+end;
+
+{$IFDEF DEBUG}
+procedure Log(FuncName, ALog: String);
+var
+  s: String;
+begin
+  DateTimeToString(s, 'dd/mm/yyyy hh:mm:ss', Now);
+  Writeln(LogFile, Format('[%s][In function "%s()"] %s', [s, FuncName, ALog]));
+  Flush(LogFile);
+end;
+
+initialization
+  LogFileName := Format('%slog', [GetWSDir]);
+  AssignFile(LogFile, logfilename);
+  if FileExists(logfilename) then
+    Append(Logfile)
+  else
+    Rewrite(Logfile);
+
+finalization
+  CloseFile(LogFile);
+{$ENDIF}
+
+end.

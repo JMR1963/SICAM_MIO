@@ -1,0 +1,19 @@
+program puenteApiMar;
+
+{$APPTYPE CONSOLE}
+
+uses
+  Web.WebBroker,
+  Wem.CGIApp,
+  WebModuleUnit1 in 'WebModuleUnit1.pas' {WebModule1: TWebModule},
+  puenteApiMarImpl in 'puenteApiMarImpl.pas',
+  puenteApiMarIntf in 'puenteApiMarIntf.pas',
+  ServicioConsulta in 'ServicioConsulta.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.WebModuleClass := WebModuleClass;
+  Application.Run;
+end.

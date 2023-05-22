@@ -1,0 +1,523 @@
+// ************************************************************************ //
+// The types declared in this file were generated from data read from the
+// WSDL File described below:
+// WSDL     : http://10.10.10.34:82/cgi-bin/wsinfoanticipadadnm/wsinfoanticipadadnm/wsdl/IwsAnticipadaDNM
+// Encoding : utf-8
+// Version  : 1.0
+// (29/09/2021 07:57:15 - 1.33.2.5)
+// ************************************************************************ //
+
+unit IwsAnticipadaDNM3;
+
+interface
+
+uses InvokeRegistry, SOAPHTTPClient, Types, XSBuiltIns;
+
+type
+
+  // ************************************************************************ //
+  // The following types, referred to in the WSDL document are not being represented
+  // in this file. They are either aliases[@] of other types represented or were referred
+  // to but never[!] declared in the document. The types from the latter category
+  // typically map to predefined/known XML or Borland types; however, they could also 
+  // indicate incorrect WSDL documents that failed to declare or import a schema type.
+  // ************************************************************************ //
+  // !:string          - "http://www.w3.org/2001/XMLSchema"
+  // !:int             - "http://www.w3.org/2001/XMLSchema"
+
+  tpersona             = class;                 { "urn:AnticipadaDNMIntf" }
+  tsolicitud           = class;                 { "urn:AnticipadaDNMIntf" }
+  Trespuesta           = class;                 { "urn:AnticipadaDNMIntf" }
+  Tentrada             = class;                 { "urn:AnticipadaDNMIntf" }
+  Tsalida              = class;                 { "urn:AnticipadaDNMIntf" }
+  Tentrada_2           = class;                 { "urn:AnticipadaDNMIntf" }
+  Tsalida_conPDFs      = class;                 { "urn:AnticipadaDNMIntf" }
+  TCheckcasilla        = class;                 { "urn:AnticipadaDNMIntf" }
+  TRespCheckcasilla    = class;                 { "urn:AnticipadaDNMIntf" }
+  TRespConsulta        = class;                 { "urn:AnticipadaDNMIntf" }
+  TentradaCuidar       = class;                 { "urn:AnticipadaDNMIntf" }
+  TRespCuidar          = class;                 { "urn:AnticipadaDNMIntf" }
+  tthotel              = class;                 { "urn:AnticipadaDNMIntf" }
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  tpersona = class(TRemotable)
+  private
+    FFILA: WideString;
+    FNRO_ASIENTO: WideString;
+    FPAIS_DOCUMENTO: WideString;
+    FTIPO_DOCUMENTO: WideString;
+    FNRO_DOCUMENTO: WideString;
+    FSEXO: WideString;
+    FNACIONALIDAD: WideString;
+    FFECHA_NAC: WideString;
+    FAPELLIDO1: WideString;
+    FAPELLIDO2: WideString;
+    FNOMBRE1: WideString;
+    FNOMBRE2: WideString;
+    FTELEFONO: WideString;
+    FEMAIL: WideString;
+    FARCHIVO: WideString;
+    FESENCIAL: WideString;
+    FFIEBRE: WideString;
+    FTOS: WideString;
+    FDOLOR_GARGANTA: WideString;
+    FOLFATO_GUSTO: WideString;
+    FDIFICULTAD_RESPIRATORIA: WideString;
+    FMOTIVO_VIAJE: WideString;
+    FTIEMPO_PERMANENCIA: WideString;
+    FDIARREA: WideString;
+    FCEFALEA: WideString;
+    FCONTACTO_ESTRECHO: WideString;
+    FFIEBRE_MAYOR_37: WideString;
+    Fcertificado_sin_covid: WideString;
+    Fresidente: WideString;
+    Farchivo_cobertura: WideString;
+    Farchivo_cert_alta: WideString;
+    Fpais_sensible: WideString;
+    Fpcr_positivo: WideString;
+    Ffecha_regreso: WideString;
+    Fforma_traslado: WideString;
+    Fotros_paises: WideString;
+    Ftripulante: WideString;
+    Fhoras_estimadas_regreso: WideString;
+    Fpaises: WideString;
+    Fen_transito: WideString;
+    Feximido_aislamiento: WideString;
+    Frecibio_vacuna: WideString;
+    Ftipo_vacuna: WideString;
+    Ffecha_dosis1: WideString;
+    Ffecha_dosis2: WideString;
+    Ffecha_dosis3: WideString;
+    Fpath_cert_vacunacion: WideString;
+    Ftel_renaper: WideString;
+    Fid_hotel: WideString;
+    Fotro_hotel: WideString;
+    Fsalio_antes_1_jul: WideString;
+    Fvacunatorio_completo: WideString;
+    Ftipo_vacuna_2: WideString;
+    Ftipo_vacuna_3: WideString;
+  published
+    property FILA: WideString read FFILA write FFILA;
+    property NRO_ASIENTO: WideString read FNRO_ASIENTO write FNRO_ASIENTO;
+    property PAIS_DOCUMENTO: WideString read FPAIS_DOCUMENTO write FPAIS_DOCUMENTO;
+    property TIPO_DOCUMENTO: WideString read FTIPO_DOCUMENTO write FTIPO_DOCUMENTO;
+    property NRO_DOCUMENTO: WideString read FNRO_DOCUMENTO write FNRO_DOCUMENTO;
+    property SEXO: WideString read FSEXO write FSEXO;
+    property NACIONALIDAD: WideString read FNACIONALIDAD write FNACIONALIDAD;
+    property FECHA_NAC: WideString read FFECHA_NAC write FFECHA_NAC;
+    property APELLIDO1: WideString read FAPELLIDO1 write FAPELLIDO1;
+    property APELLIDO2: WideString read FAPELLIDO2 write FAPELLIDO2;
+    property NOMBRE1: WideString read FNOMBRE1 write FNOMBRE1;
+    property NOMBRE2: WideString read FNOMBRE2 write FNOMBRE2;
+    property TELEFONO: WideString read FTELEFONO write FTELEFONO;
+    property EMAIL: WideString read FEMAIL write FEMAIL;
+    property ARCHIVO: WideString read FARCHIVO write FARCHIVO;
+    property ESENCIAL: WideString read FESENCIAL write FESENCIAL;
+    property FIEBRE: WideString read FFIEBRE write FFIEBRE;
+    property TOS: WideString read FTOS write FTOS;
+    property DOLOR_GARGANTA: WideString read FDOLOR_GARGANTA write FDOLOR_GARGANTA;
+    property OLFATO_GUSTO: WideString read FOLFATO_GUSTO write FOLFATO_GUSTO;
+    property DIFICULTAD_RESPIRATORIA: WideString read FDIFICULTAD_RESPIRATORIA write FDIFICULTAD_RESPIRATORIA;
+    property MOTIVO_VIAJE: WideString read FMOTIVO_VIAJE write FMOTIVO_VIAJE;
+    property TIEMPO_PERMANENCIA: WideString read FTIEMPO_PERMANENCIA write FTIEMPO_PERMANENCIA;
+    property DIARREA: WideString read FDIARREA write FDIARREA;
+    property CEFALEA: WideString read FCEFALEA write FCEFALEA;
+    property CONTACTO_ESTRECHO: WideString read FCONTACTO_ESTRECHO write FCONTACTO_ESTRECHO;
+    property FIEBRE_MAYOR_37: WideString read FFIEBRE_MAYOR_37 write FFIEBRE_MAYOR_37;
+    property certificado_sin_covid: WideString read Fcertificado_sin_covid write Fcertificado_sin_covid;
+    property residente: WideString read Fresidente write Fresidente;
+    property archivo_cobertura: WideString read Farchivo_cobertura write Farchivo_cobertura;
+    property archivo_cert_alta: WideString read Farchivo_cert_alta write Farchivo_cert_alta;
+    property pais_sensible: WideString read Fpais_sensible write Fpais_sensible;
+    property pcr_positivo: WideString read Fpcr_positivo write Fpcr_positivo;
+    property fecha_regreso: WideString read Ffecha_regreso write Ffecha_regreso;
+    property forma_traslado: WideString read Fforma_traslado write Fforma_traslado;
+    property otros_paises: WideString read Fotros_paises write Fotros_paises;
+    property tripulante: WideString read Ftripulante write Ftripulante;
+    property horas_estimadas_regreso: WideString read Fhoras_estimadas_regreso write Fhoras_estimadas_regreso;
+    property paises: WideString read Fpaises write Fpaises;
+    property en_transito: WideString read Fen_transito write Fen_transito;
+    property eximido_aislamiento: WideString read Feximido_aislamiento write Feximido_aislamiento;
+    property recibio_vacuna: WideString read Frecibio_vacuna write Frecibio_vacuna;
+    property tipo_vacuna: WideString read Ftipo_vacuna write Ftipo_vacuna;
+    property fecha_dosis1: WideString read Ffecha_dosis1 write Ffecha_dosis1;
+    property fecha_dosis2: WideString read Ffecha_dosis2 write Ffecha_dosis2;
+    property fecha_dosis3: WideString read Ffecha_dosis3 write Ffecha_dosis3;
+    property path_cert_vacunacion: WideString read Fpath_cert_vacunacion write Fpath_cert_vacunacion;
+    property tel_renaper: WideString read Ftel_renaper write Ftel_renaper;
+    property id_hotel: WideString read Fid_hotel write Fid_hotel;
+    property otro_hotel: WideString read Fotro_hotel write Fotro_hotel;
+    property salio_antes_1_jul: WideString read Fsalio_antes_1_jul write Fsalio_antes_1_jul;
+    property vacunatorio_completo: WideString read Fvacunatorio_completo write Fvacunatorio_completo;
+    property tipo_vacuna_2: WideString read Ftipo_vacuna_2 write Ftipo_vacuna_2;
+    property tipo_vacuna_3: WideString read Ftipo_vacuna_3 write Ftipo_vacuna_3;
+  end;
+
+  tpersonas  = array of tpersona;               { "urn:AnticipadaDNMIntf" }
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  tsolicitud = class(TRemotable)
+  private
+    FTRANSITODIRECCION: WideString;
+    FPROCEDENCIADESTINO: WideString;
+    FESCALA1: WideString;
+    FESCALA2: WideString;
+    FFECHA_PROGRAMADA_TRANSITO: WideString;
+    FPASO: WideString;
+    FCAMINANTE: WideString;
+    FMEDIO_DE_TRANSPORTE: WideString;
+    FPRIVADO: WideString;
+    FEMPRESA_DE_TRANSPORTE: WideString;
+    FADICIONAL_EMP_TRAN: WideString;
+    FMATRICULA: WideString;
+    FCOD_PROVINCIA: WideString;
+    FCOD_LOCALIDAD: WideString;
+    FDOMICILIO: WideString;
+    FGrupo_personas: tpersonas;
+  public
+    destructor Destroy; override;
+  published
+    property TRANSITODIRECCION: WideString read FTRANSITODIRECCION write FTRANSITODIRECCION;
+    property PROCEDENCIADESTINO: WideString read FPROCEDENCIADESTINO write FPROCEDENCIADESTINO;
+    property ESCALA1: WideString read FESCALA1 write FESCALA1;
+    property ESCALA2: WideString read FESCALA2 write FESCALA2;
+    property FECHA_PROGRAMADA_TRANSITO: WideString read FFECHA_PROGRAMADA_TRANSITO write FFECHA_PROGRAMADA_TRANSITO;
+    property PASO: WideString read FPASO write FPASO;
+    property CAMINANTE: WideString read FCAMINANTE write FCAMINANTE;
+    property MEDIO_DE_TRANSPORTE: WideString read FMEDIO_DE_TRANSPORTE write FMEDIO_DE_TRANSPORTE;
+    property PRIVADO: WideString read FPRIVADO write FPRIVADO;
+    property EMPRESA_DE_TRANSPORTE: WideString read FEMPRESA_DE_TRANSPORTE write FEMPRESA_DE_TRANSPORTE;
+    property ADICIONAL_EMP_TRAN: WideString read FADICIONAL_EMP_TRAN write FADICIONAL_EMP_TRAN;
+    property MATRICULA: WideString read FMATRICULA write FMATRICULA;
+    property COD_PROVINCIA: WideString read FCOD_PROVINCIA write FCOD_PROVINCIA;
+    property COD_LOCALIDAD: WideString read FCOD_LOCALIDAD write FCOD_LOCALIDAD;
+    property DOMICILIO: WideString read FDOMICILIO write FDOMICILIO;
+    property Grupo_personas: tpersonas read FGrupo_personas write FGrupo_personas;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  Trespuesta = class(TRemotable)
+  private
+    FRta: WideString;
+    FestabanCargado: tpersonas;
+  public
+    destructor Destroy; override;
+  published
+    property Rta: WideString read FRta write FRta;
+    property estabanCargado: tpersonas read FestabanCargado write FestabanCargado;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  Tentrada = class(TRemotable)
+  private
+    FTRANSITODIRECCION: WideString;
+    FPAIS_DOCUMENTO: WideString;
+    FNRO_DOCUMENTO: WideString;
+    FFECHA_NAC: WideString;
+  published
+    property TRANSITODIRECCION: WideString read FTRANSITODIRECCION write FTRANSITODIRECCION;
+    property PAIS_DOCUMENTO: WideString read FPAIS_DOCUMENTO write FPAIS_DOCUMENTO;
+    property NRO_DOCUMENTO: WideString read FNRO_DOCUMENTO write FNRO_DOCUMENTO;
+    property FECHA_NAC: WideString read FFECHA_NAC write FFECHA_NAC;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  Tsalida = class(TRemotable)
+  private
+    FRta: WideString;
+    Ftelefono: WideString;
+    Fdomicilio: WideString;
+    Flocalidad: WideString;
+    Fprovincia: WideString;
+    FCUESTIONARIO: WideString;
+    FTRANSITODIRECCION: WideString;
+    FFECHA_NAC: WideString;
+  published
+    property Rta: WideString read FRta write FRta;
+    property telefono: WideString read Ftelefono write Ftelefono;
+    property domicilio: WideString read Fdomicilio write Fdomicilio;
+    property localidad: WideString read Flocalidad write Flocalidad;
+    property provincia: WideString read Fprovincia write Fprovincia;
+    property CUESTIONARIO: WideString read FCUESTIONARIO write FCUESTIONARIO;
+    property TRANSITODIRECCION: WideString read FTRANSITODIRECCION write FTRANSITODIRECCION;
+    property FECHA_NAC: WideString read FFECHA_NAC write FFECHA_NAC;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  Tentrada_2 = class(TRemotable)
+  private
+    FTRANSITODIRECCION: WideString;
+    FAPELLIDO_1: WideString;
+    FNOMBRE_1: WideString;
+    FNRO_DOCUMENTO: WideString;
+    FFECHA_NAC: WideString;
+    FNRO_LIBRETA: WideString;
+  published
+    property TRANSITODIRECCION: WideString read FTRANSITODIRECCION write FTRANSITODIRECCION;
+    property APELLIDO_1: WideString read FAPELLIDO_1 write FAPELLIDO_1;
+    property NOMBRE_1: WideString read FNOMBRE_1 write FNOMBRE_1;
+    property NRO_DOCUMENTO: WideString read FNRO_DOCUMENTO write FNRO_DOCUMENTO;
+    property FECHA_NAC: WideString read FFECHA_NAC write FFECHA_NAC;
+    property NRO_LIBRETA: WideString read FNRO_LIBRETA write FNRO_LIBRETA;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  Tsalida_conPDFs = class(TRemotable)
+  private
+    FRta: WideString;
+    Ftelefono: WideString;
+    Fdomicilio: WideString;
+    Flocalidad: WideString;
+    Fprovincia: WideString;
+    FCUESTIONARIO: WideString;
+    FCertificado: WideString;
+    Fcobertura: WideString;
+    FTRANSITODIRECCION: WideString;
+    FFECHA_NAC: WideString;
+  published
+    property Rta: WideString read FRta write FRta;
+    property telefono: WideString read Ftelefono write Ftelefono;
+    property domicilio: WideString read Fdomicilio write Fdomicilio;
+    property localidad: WideString read Flocalidad write Flocalidad;
+    property provincia: WideString read Fprovincia write Fprovincia;
+    property CUESTIONARIO: WideString read FCUESTIONARIO write FCUESTIONARIO;
+    property Certificado: WideString read FCertificado write FCertificado;
+    property cobertura: WideString read Fcobertura write Fcobertura;
+    property TRANSITODIRECCION: WideString read FTRANSITODIRECCION write FTRANSITODIRECCION;
+    property FECHA_NAC: WideString read FFECHA_NAC write FFECHA_NAC;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  TCheckcasilla = class(TRemotable)
+  private
+    FPAIS_DOCUMENTO: WideString;
+    FNRO_DOCUMENTO: WideString;
+    FSEXO: WideString;
+    FFECHA_EMISION: WideString;
+    FEMAIL: WideString;
+  published
+    property PAIS_DOCUMENTO: WideString read FPAIS_DOCUMENTO write FPAIS_DOCUMENTO;
+    property NRO_DOCUMENTO: WideString read FNRO_DOCUMENTO write FNRO_DOCUMENTO;
+    property SEXO: WideString read FSEXO write FSEXO;
+    property FECHA_EMISION: WideString read FFECHA_EMISION write FFECHA_EMISION;
+    property EMAIL: WideString read FEMAIL write FEMAIL;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  TRespCheckcasilla = class(TRemotable)
+  private
+    FRta: WideString;
+    FDescripcion: WideString;
+  published
+    property Rta: WideString read FRta write FRta;
+    property Descripcion: WideString read FDescripcion write FDescripcion;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  TRespConsulta = class(TRemotable)
+  private
+    FRta: WideString;
+    Fdatos: TCheckcasilla;
+  public
+    destructor Destroy; override;
+  published
+    property Rta: WideString read FRta write FRta;
+    property datos: TCheckcasilla read Fdatos write Fdatos;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  TentradaCuidar = class(TRemotable)
+  private
+    FCODIGO_INGRESO: WideString;
+    FNUMERO_DE_TRAMITE: WideString;
+  published
+    property CODIGO_INGRESO: WideString read FCODIGO_INGRESO write FCODIGO_INGRESO;
+    property NUMERO_DE_TRAMITE: WideString read FNUMERO_DE_TRAMITE write FNUMERO_DE_TRAMITE;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  TRespCuidar = class(TRemotable)
+  private
+    FRta: WideString;
+    Fdescripcion: WideString;
+  published
+    property Rta: WideString read FRta write FRta;
+    property descripcion: WideString read Fdescripcion write Fdescripcion;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf
+  // ************************************************************************ //
+  tthotel = class(TRemotable)
+  private
+    Fnombre: WideString;
+    Fprovincia: WideString;
+    Flocalidad: WideString;
+    Fid: WideString;
+  published
+    property nombre: WideString read Fnombre write Fnombre;
+    property provincia: WideString read Fprovincia write Fprovincia;
+    property localidad: WideString read Flocalidad write Flocalidad;
+    property id: WideString read Fid write Fid;
+  end;
+
+  thoteles   = array of tthotel;                { "urn:AnticipadaDNMIntf" }
+
+  // ************************************************************************ //
+  // Namespace : urn:AnticipadaDNMIntf-IwsAnticipadaDNM
+  // soapAction: urn:AnticipadaDNMIntf-IwsAnticipadaDNM#%operationName%
+  // transport : http://schemas.xmlsoap.org/soap/http
+  // style     : rpc
+  // binding   : IwsAnticipadaDNMbinding
+  // service   : IwsAnticipadaDNMservice
+  // port      : IwsAnticipadaDNMPort
+  // URL       : http://10.10.10.34:82/cgi-bin/wsinfoanticipadadnm/wsinfoanticipadadnm/soap/IwsAnticipadaDNM
+  // ************************************************************************ //
+  IwsAnticipadaDNM = interface(IInvokable)
+  ['{C24827D0-D19A-43C4-BCD0-DFB973522903}']
+    function  cargarSolicitud(const solicitud: tsolicitud): Trespuesta; stdcall;
+    function  consultarSolicitud(const entrada: Tentrada): Tsalida; stdcall;
+    function  consultarSolicitud_2(const entrada: Tentrada_2): Tsalida; stdcall;
+    function  ConsultarXnroDDJJ(const ddjj: WideString): Tsalida; stdcall;
+    function  consultarSolicitud_conPdfs(const entrada: Tentrada): Tsalida_conPDFs; stdcall;
+    function  consultarXnroDDJJ_conPdfs(const ddjj: WideString): Tsalida_conPDFs; stdcall;
+    function  dameCert(const id_persona: WideString): WideString; stdcall;
+    function  dameCobertura(const id_persona: WideString): WideString; stdcall;
+    function  dameCertAsintomatico(const id_persona: WideString): WideString; stdcall;
+    function  PrecargaCasilla(const solicitud: TCheckcasilla): TRespCheckcasilla; stdcall;
+    function  DamePrecargaCasilla(const id: Integer): TRespConsulta; stdcall;
+    function  ConsultaCuidar(const Entrada: TentradaCuidar): TRespCuidar; stdcall;
+    function  recuperarCorreo(const solicitud: TCheckcasilla): TRespCheckcasilla; stdcall;
+    function  anular(const solicitud: TCheckcasilla): TRespCheckcasilla; stdcall;
+    function  hoteles: thoteles; stdcall;
+  end;
+
+//function GetIwsAnticipadaDNM(UseWSDL: Boolean=System.False; Addr: string=''; HTTPRIO: THTTPRIO = nil): IwsAnticipadaDNM;
+function GetIwsAnticipadaDNM(Addr: string=''; HTTPRIO: THTTPRIO = nil): IwsAnticipadaDNM;
+
+
+implementation
+
+function GetIwsAnticipadaDNM(Addr: string; HTTPRIO: THTTPRIO): IwsAnticipadaDNM;
+const
+  //defWSDL = 'http://10.10.10.34:82/cgi-bin/wsinfoanticipadadnm/wsinfoanticipadadnm/wsdl/IwsAnticipadaDNM';
+  //defURL  = 'http://10.10.10.34:82/cgi-bin/wsinfoanticipadadnm/wsinfoanticipadadnm/soap/IwsAnticipadaDNM';
+  defSvc  = 'IwsAnticipadaDNMservice';
+  defPrt  = 'IwsAnticipadaDNMPort';
+var
+  RIO: THTTPRIO;
+begin
+ Result := nil;
+
+  if HTTPRIO = nil then
+    RIO := THTTPRIO.Create(nil)
+  else
+    RIO := HTTPRIO;
+  try
+    Result := (RIO as IwsAnticipadaDNM);
+    RIO.URL := Addr;
+  finally
+    if (Result = nil) and (HTTPRIO = nil) then
+      RIO.Free;
+  end;
+end;
+
+
+destructor tsolicitud.Destroy;
+var
+  I: Integer;
+begin
+  for I := 0 to Length(FGrupo_personas)-1 do
+    if Assigned(FGrupo_personas[I]) then
+      FGrupo_personas[I].Free;
+  SetLength(FGrupo_personas, 0);
+  inherited Destroy;
+end;
+
+destructor Trespuesta.Destroy;
+var
+  I: Integer;
+begin
+  for I := 0 to Length(FestabanCargado)-1 do
+    if Assigned(FestabanCargado[I]) then
+      FestabanCargado[I].Free;
+  SetLength(FestabanCargado, 0);
+  inherited Destroy;
+end;
+
+destructor TRespConsulta.Destroy;
+begin
+  if Assigned(Fdatos) then
+    Fdatos.Free;
+  inherited Destroy;
+end;
+
+initialization
+  InvRegistry.RegisterInterface(TypeInfo(IwsAnticipadaDNM), 'urn:AnticipadaDNMIntf-IwsAnticipadaDNM', 'utf-8');
+  InvRegistry.RegisterDefaultSOAPAction(TypeInfo(IwsAnticipadaDNM), 'urn:AnticipadaDNMIntf-IwsAnticipadaDNM#%operationName%');
+  RemClassRegistry.RegisterXSClass(tpersona, 'urn:AnticipadaDNMIntf', 'tpersona');
+  RemClassRegistry.RegisterXSInfo(TypeInfo(tpersonas), 'urn:AnticipadaDNMIntf', 'tpersonas');
+  RemClassRegistry.RegisterXSClass(tsolicitud, 'urn:AnticipadaDNMIntf', 'tsolicitud');
+  RemClassRegistry.RegisterXSClass(Trespuesta, 'urn:AnticipadaDNMIntf', 'Trespuesta');
+  RemClassRegistry.RegisterXSClass(Tentrada, 'urn:AnticipadaDNMIntf', 'Tentrada');
+  RemClassRegistry.RegisterXSClass(Tsalida, 'urn:AnticipadaDNMIntf', 'Tsalida');
+  RemClassRegistry.RegisterXSClass(Tentrada_2, 'urn:AnticipadaDNMIntf', 'Tentrada_2');
+  RemClassRegistry.RegisterXSClass(Tsalida_conPDFs, 'urn:AnticipadaDNMIntf', 'Tsalida_conPDFs');
+  RemClassRegistry.RegisterXSClass(TCheckcasilla, 'urn:AnticipadaDNMIntf', 'TCheckcasilla');
+  RemClassRegistry.RegisterXSClass(TRespCheckcasilla, 'urn:AnticipadaDNMIntf', 'TRespCheckcasilla');
+  RemClassRegistry.RegisterXSClass(TRespConsulta, 'urn:AnticipadaDNMIntf', 'TRespConsulta');
+  RemClassRegistry.RegisterXSClass(TentradaCuidar, 'urn:AnticipadaDNMIntf', 'TentradaCuidar');
+  RemClassRegistry.RegisterXSClass(TRespCuidar, 'urn:AnticipadaDNMIntf', 'TRespCuidar');
+  RemClassRegistry.RegisterXSClass(tthotel, 'urn:AnticipadaDNMIntf', 'tthotel');
+  RemClassRegistry.RegisterXSInfo(TypeInfo(thoteles), 'urn:AnticipadaDNMIntf', 'thoteles');
+
+end. 

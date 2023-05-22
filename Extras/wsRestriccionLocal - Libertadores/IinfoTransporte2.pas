@@ -1,0 +1,113 @@
+// ************************************************************************ //
+// The types declared in this file were generated from data read from the
+// WSDL File described below:
+// WSDL     : http://172.16.192.152/cgi-bin/wsInfoTransporte/wsInfoTransporte/wsdl/IinfoTransporte
+// Encoding : utf-8
+// Version  : 1.0
+// (06/11/2020 15:57:57 - 1.33.2.5)
+// ************************************************************************ //
+
+unit IinfoTransporte2;
+
+interface
+
+uses InvokeRegistry, SOAPHTTPClient, Types, XSBuiltIns;
+
+type
+
+  // ************************************************************************ //
+  // The following types, referred to in the WSDL document are not being represented
+  // in this file. They are either aliases[@] of other types represented or were referred
+  // to but never[!] declared in the document. The types from the latter category
+  // typically map to predefined/known XML or Borland types; however, they could also 
+  // indicate incorrect WSDL documents that failed to declare or import a schema type.
+  // ************************************************************************ //
+  // !:string          - "http://www.w3.org/2001/XMLSchema"
+
+  trtaTransporte       = class;                 { "urn:infoTransporteIntf" }
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:infoTransporteIntf
+  // ************************************************************************ //
+  trtaTransporte = class(TRemotable)
+  private
+    Fok: WideString;
+    Fvuelo: WideString;
+    Fpasajero: WideString;
+    FhayTransporte: WideString;
+  published
+    property ok: WideString read Fok write Fok;
+    property vuelo: WideString read Fvuelo write Fvuelo;
+    property pasajero: WideString read Fpasajero write Fpasajero;
+    property hayTransporte: WideString read FhayTransporte write FhayTransporte;
+  end;
+
+
+  // ************************************************************************ //
+  // Namespace : urn:infoTransporteIntf-IinfoTransporte
+  // soapAction: urn:infoTransporteIntf-IinfoTransporte#InfTransporte
+  // transport : http://schemas.xmlsoap.org/soap/http
+  // style     : rpc
+  // binding   : IinfoTransportebinding
+  // service   : IinfoTransporteservice
+  // port      : IinfoTransportePort
+  // URL       : http://172.16.192.152/cgi-bin/wsInfoTransporte/wsInfoTransporte/soap/IinfoTransporte
+  // ************************************************************************ //
+  IinfoTransporte = interface(IInvokable)
+  ['{0BEE2930-D775-EE23-17FA-10E348933F5A}']
+    function  InfTransporte(const Ape1: WideString; const ape2: WideString; const nom1: WideString; const nom2: WideString; const nroDoc: WideString; const nrolibreta: WideString; const sentidoVuelo: WideString; const tipopaso: WideString; const paso: WideString; const fecha_nac: WideString
+                            ): trtaTransporte; stdcall;
+  end;
+
+function GetIinfoTransporte(UseWSDL: Boolean=System.False; Addr: string=''; HTTPRIO: THTTPRIO = nil): IinfoTransporte;
+
+
+implementation
+
+function GetIinfoTransporte(UseWSDL: Boolean; Addr: string; HTTPRIO: THTTPRIO): IinfoTransporte;
+const
+//  defWSDL = 'http://172.16.192.152/cgi-bin/wsInfoTransporte/wsInfoTransporte/wsdl/IinfoTransporte';
+//  defURL  = 'http://172.16.192.152/cgi-bin/wsInfoTransporte/wsInfoTransporte/soap/IinfoTransporte';
+  defWSDL = '';
+  defURL  = '';
+  defSvc  = 'IinfoTransporteservice';
+  defPrt  = 'IinfoTransportePort';
+var
+  RIO: THTTPRIO;
+begin
+  Result := nil;
+  if (Addr = '') then
+  begin
+    if UseWSDL then
+      Addr := defWSDL
+    else
+      Addr := defURL;
+  end;
+  if HTTPRIO = nil then
+    RIO := THTTPRIO.Create(nil)
+  else
+    RIO := HTTPRIO;
+  try
+    Result := (RIO as IinfoTransporte);
+    if UseWSDL then
+    begin
+      RIO.WSDLLocation := Addr;
+      RIO.Service := defSvc;
+      RIO.Port := defPrt;
+    end else
+      RIO.URL := Addr;
+  finally
+    if (Result = nil) and (HTTPRIO = nil) then
+      RIO.Free;
+  end;
+end;
+
+
+initialization
+  InvRegistry.RegisterInterface(TypeInfo(IinfoTransporte), 'urn:infoTransporteIntf-IinfoTransporte', 'utf-8');
+  InvRegistry.RegisterDefaultSOAPAction(TypeInfo(IinfoTransporte), 'urn:infoTransporteIntf-IinfoTransporte#InfTransporte');
+  RemClassRegistry.RegisterXSClass(trtaTransporte, 'urn:infoTransporteIntf', 'trtaTransporte');
+
+end. 

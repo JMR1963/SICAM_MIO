@@ -1,0 +1,328 @@
+// ************************************************************************ //
+// The types declared in this file were generated from data read from the
+// WSDL File described below:
+// WSDL     : http://10.10.99.8/CHUTROFINAL/ws/DATOSFYH.php?wsdl
+// Encoding : ISO-8859-1
+// Version  : 1.0
+// (25/02/2021 23:49:00 - 1.33.2.5)
+// ************************************************************************ //
+
+unit DATOSFYH1;
+
+interface
+
+uses InvokeRegistry, SOAPHTTPClient, Types, XSBuiltIns,ufixWs;
+
+type
+
+  // ************************************************************************ //
+  // The following types, referred to in the WSDL document are not being represented
+  // in this file. They are either aliases[@] of other types represented or were referred
+  // to but never[!] declared in the document. The types from the latter category
+  // typically map to predefined/known XML or Borland types; however, they could also 
+  // indicate incorrect WSDL documents that failed to declare or import a schema type.
+  // ************************************************************************ //
+  // !:int             - "http://www.w3.org/2001/XMLSchema"
+  // !:string          - "http://www.w3.org/2001/XMLSchema"
+
+  DatosEntrada         = class;                 { "urn:mininteriorwsdl" }
+  padres               = class;                 { "urn:mininteriorwsdl" }
+  DatosSalida          = class;                 { "urn:mininteriorwsdl" }
+  DatosEntradaM2       = class;                 { "urn:mininteriorwsdl" }
+  persona              = class;                 { "urn:mininteriorwsdl" }
+  DatosSalidaM2        = class;                 { "urn:mininteriorwsdl" }
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:mininteriorwsdl
+  // ************************************************************************ //
+  DatosEntrada = class(TRemotable)
+  private
+    Fdni: Integer;
+    Fsexo: WideString;
+  published
+    property dni: Integer read Fdni write Fdni;
+    property sexo: WideString read Fsexo write Fsexo;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:mininteriorwsdl
+  // ************************************************************************ //
+  padres = class(TRemotable)
+  private
+    Fdni: Integer;
+    Fsexo: WideString;
+    Fapellido: WideString;
+    Fnombre: WideString;
+    Ffecha_nacimiento: WideString;
+  published
+    property dni: Integer read Fdni write Fdni;
+    property sexo: WideString read Fsexo write Fsexo;
+    property apellido: WideString read Fapellido write Fapellido;
+    property nombre: WideString read Fnombre write Fnombre;
+    property fecha_nacimiento: WideString read Ffecha_nacimiento write Ffecha_nacimiento;
+  end;
+
+  padresArray = array of padres;                { "urn:mininteriorwsdl" }
+
+
+  // ************************************************************************ //
+  // Namespace : urn:mininteriorwsdl
+  // ************************************************************************ //
+  DatosSalida = class(TRemotable)
+  private
+    FID_TRAMITE_PRINCIPAL: Integer;
+    FID_TRAMITE_TARJETA_REIMPRESA: Integer;
+    FEJEMPLAR: WideString;
+    FVENCIMIENTO: WideString;
+    FEMISION: WideString;
+    Fapellido: WideString;
+    Fnombres: WideString;
+    FfechaNacimiento: WideString;
+    Fcuil: WideString;
+    Fcalle: WideString;
+    Fnumero: WideString;
+    Fpiso: WideString;
+    Fdepartamento: WideString;
+    Fcpostal: WideString;
+    Fbarrio: WideString;
+    Fmonoblock: WideString;
+    Fciudad: WideString;
+    Fmunicipio: WideString;
+    Fprovincia: WideString;
+    Fpais: WideString;
+    FcodigoError: Integer;
+    Fcodigof: Integer;
+    Fmensaf: WideString;
+    Forigenf: WideString;
+    Ffechaf: WideString;
+    Fidciudadano: WideString;
+    Ffoto: WideString;
+    Fhuella1: WideString;
+    FdenominacionHuella1: WideString;
+    FmanoHuella1: WideString;
+    Fhuella2: WideString;
+    FdenominacionHuella2: WideString;
+    FmanoHuella2: WideString;
+    Fnacionalidad: WideString;
+    FemisionPasaporte: WideString;
+    FvencimientoPasaporte: WideString;
+    FdniProgenitor1: WideString;
+    FdniProgenitor2: WideString;
+    FcoleccionPadres: padresArray;
+    FcodidgoArea: WideString;
+    Ftelefono: WideString;
+    Fmail: WideString;
+    FnroError: Integer;
+    FdescripcionError: WideString;
+  public
+    destructor Destroy; override;
+  published
+    property ID_TRAMITE_PRINCIPAL: Integer read FID_TRAMITE_PRINCIPAL write FID_TRAMITE_PRINCIPAL;
+    property ID_TRAMITE_TARJETA_REIMPRESA: Integer read FID_TRAMITE_TARJETA_REIMPRESA write FID_TRAMITE_TARJETA_REIMPRESA;
+    property EJEMPLAR: WideString read FEJEMPLAR write FEJEMPLAR;
+    property VENCIMIENTO: WideString read FVENCIMIENTO write FVENCIMIENTO;
+    property EMISION: WideString read FEMISION write FEMISION;
+    property apellido: WideString read Fapellido write Fapellido;
+    property nombres: WideString read Fnombres write Fnombres;
+    property fechaNacimiento: WideString read FfechaNacimiento write FfechaNacimiento;
+    property cuil: WideString read Fcuil write Fcuil;
+    property calle: WideString read Fcalle write Fcalle;
+    property numero: WideString read Fnumero write Fnumero;
+    property piso: WideString read Fpiso write Fpiso;
+    property departamento: WideString read Fdepartamento write Fdepartamento;
+    property cpostal: WideString read Fcpostal write Fcpostal;
+    property barrio: WideString read Fbarrio write Fbarrio;
+    property monoblock: WideString read Fmonoblock write Fmonoblock;
+    property ciudad: WideString read Fciudad write Fciudad;
+    property municipio: WideString read Fmunicipio write Fmunicipio;
+    property provincia: WideString read Fprovincia write Fprovincia;
+    property pais: WideString read Fpais write Fpais;
+    property codigoError: Integer read FcodigoError write FcodigoError;
+    property codigof: Integer read Fcodigof write Fcodigof;
+    property mensaf: WideString read Fmensaf write Fmensaf;
+    property origenf: WideString read Forigenf write Forigenf;
+    property fechaf: WideString read Ffechaf write Ffechaf;
+    property idciudadano: WideString read Fidciudadano write Fidciudadano;
+    property foto: WideString read Ffoto write Ffoto;
+    property huella1: WideString read Fhuella1 write Fhuella1;
+    property denominacionHuella1: WideString read FdenominacionHuella1 write FdenominacionHuella1;
+    property manoHuella1: WideString read FmanoHuella1 write FmanoHuella1;
+    property huella2: WideString read Fhuella2 write Fhuella2;
+    property denominacionHuella2: WideString read FdenominacionHuella2 write FdenominacionHuella2;
+    property manoHuella2: WideString read FmanoHuella2 write FmanoHuella2;
+    property nacionalidad: WideString read Fnacionalidad write Fnacionalidad;
+    property emisionPasaporte: WideString read FemisionPasaporte write FemisionPasaporte;
+    property vencimientoPasaporte: WideString read FvencimientoPasaporte write FvencimientoPasaporte;
+    property dniProgenitor1: WideString read FdniProgenitor1 write FdniProgenitor1;
+    property dniProgenitor2: WideString read FdniProgenitor2 write FdniProgenitor2;
+    property coleccionPadres: padresArray read FcoleccionPadres write FcoleccionPadres;
+    property codidgoArea: WideString read FcodidgoArea write FcodidgoArea;
+    property telefono: WideString read Ftelefono write Ftelefono;
+    property mail: WideString read Fmail write Fmail;
+    property nroError: Integer read FnroError write FnroError;
+    property descripcionError: WideString read FdescripcionError write FdescripcionError;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:mininteriorwsdl
+  // ************************************************************************ //
+  DatosEntradaM2 = class(TRemotable)
+  private
+    FprimerApellido: WideString;
+    FprimerNombre: WideString;
+    FanioNacimiento: WideString;
+  published
+    property primerApellido: WideString read FprimerApellido write FprimerApellido;
+    property primerNombre: WideString read FprimerNombre write FprimerNombre;
+    property anioNacimiento: WideString read FanioNacimiento write FanioNacimiento;
+  end;
+
+
+
+  // ************************************************************************ //
+  // Namespace : urn:mininteriorwsdl
+  // ************************************************************************ //
+  persona = class(TRemotable)
+  private
+    Fdni: Integer;
+    Fsexo: WideString;
+    Fnombre: WideString;
+    Fapellido: WideString;
+    FfechaNacimiento: WideString;
+    FcodidgoArea: WideString;
+    Ftelefono: WideString;
+    Fmail: WideString;
+  published
+    property dni: Integer read Fdni write Fdni;
+    property sexo: WideString read Fsexo write Fsexo;
+    property nombre: WideString read Fnombre write Fnombre;
+    property apellido: WideString read Fapellido write Fapellido;
+    property fechaNacimiento: WideString read FfechaNacimiento write FfechaNacimiento;
+    property codidgoArea: WideString read FcodidgoArea write FcodidgoArea;
+    property telefono: WideString read Ftelefono write Ftelefono;
+    property mail: WideString read Fmail write Fmail;
+  end;
+
+  personasArray = array of persona;             { "urn:mininteriorwsdl" }
+
+
+  // ************************************************************************ //
+  // Namespace : urn:mininteriorwsdl
+  // ************************************************************************ //
+  DatosSalidaM2 = class(TRemotable)
+  private
+    Fcodigo: Integer;
+    Fmensaje: WideString;
+    Fpersonas: personasArray;
+  public
+    destructor Destroy; override;
+  published
+    property codigo: Integer read Fcodigo write Fcodigo;
+    property mensaje: WideString read Fmensaje write Fmensaje;
+    property personas: personasArray read Fpersonas write Fpersonas;
+  end;
+
+
+  // ************************************************************************ //
+  // Namespace : urn:miniteriorwsdl
+  // soapAction: urn:mininteriorwsdl#%operationName%
+  // transport : http://schemas.xmlsoap.org/soap/http
+  // style     : rpc
+  // binding   : mininteriorwsdlBinding
+  // service   : mininteriorwsdl
+  // port      : mininteriorwsdlPort
+  // URL       : http://10.10.99.8/CHUTROFINAL/ws/DATOSFYH.php
+  // ************************************************************************ //
+  mininteriorwsdlPortType = interface(IInvokable)
+  ['{52F048FF-A578-F381-19F0-44C1BA3317AA}']
+    function  obtenerUltimoEjemplar(const DatosEntrada: DatosEntrada): DatosSalida; stdcall;
+    function  obtenerMatriculaSexo(const DatosEntrada: DatosEntradaM2): DatosSalidaM2; stdcall;
+  end;
+
+function GetmininteriorwsdlPortType(UseWSDL: Boolean=System.False; Addr: string=''; HTTPRIO: THTTPRIO = nil): mininteriorwsdlPortType;
+
+
+implementation
+
+function GetmininteriorwsdlPortType(UseWSDL: Boolean; Addr: string; HTTPRIO: THTTPRIO): mininteriorwsdlPortType;
+const
+  defWSDL = ''; //'http://10.10.99.8/CHUTROFINAL/ws/DATOSFYH.php?wsdl';
+  defURL  = ''; //'http://10.10.99.8/CHUTROFINAL/ws/DATOSFYH.php';
+  defSvc  = 'mininteriorwsdl';
+  defPrt  = 'mininteriorwsdlPort';
+var
+  RIO: THTTPRIO;
+  //defWSDL ,  defURL :string;
+  d : twsdemora;
+begin
+  Result := nil;
+  d := TWSDemora.Create; //jpb
+  if (Addr = '') then
+  begin
+    if UseWSDL then
+      Addr := defWSDL
+    else
+      Addr := defURL;
+  end;
+  if HTTPRIO = nil then
+    RIO := THTTPRIO.Create(nil)
+  else
+    RIO := HTTPRIO;
+  try
+    rio.HTTPWebNode.OnBeforePost :=   d.configureHttpRequest; //JPB
+    Result := (RIO as mininteriorwsdlPortType);
+    if UseWSDL then
+    begin
+      RIO.WSDLLocation := Addr;
+      RIO.Service := defSvc;
+      RIO.Port := defPrt;
+    end else
+      RIO.URL := Addr;
+  finally
+    if (Result = nil) and (HTTPRIO = nil) then
+      RIO.Free;
+  end;
+end;
+
+
+destructor DatosSalida.Destroy;
+var
+  I: Integer;
+begin
+  for I := 0 to Length(FcoleccionPadres)-1 do
+    if Assigned(FcoleccionPadres[I]) then
+      FcoleccionPadres[I].Free;
+  SetLength(FcoleccionPadres, 0);
+  inherited Destroy;
+end;
+
+destructor DatosSalidaM2.Destroy;
+var
+  I: Integer;
+begin
+  for I := 0 to Length(Fpersonas)-1 do
+    if Assigned(Fpersonas[I]) then
+      Fpersonas[I].Free;
+  SetLength(Fpersonas, 0);
+  inherited Destroy;
+end;
+
+initialization
+  InvRegistry.RegisterInterface(TypeInfo(mininteriorwsdlPortType), 'urn:miniteriorwsdl', 'ISO-8859-1');
+  InvRegistry.RegisterDefaultSOAPAction(TypeInfo(mininteriorwsdlPortType), 'urn:mininteriorwsdl#%operationName%');
+  RemClassRegistry.RegisterXSClass(DatosEntrada, 'urn:mininteriorwsdl', 'DatosEntrada');
+  RemClassRegistry.RegisterXSClass(padres, 'urn:mininteriorwsdl', 'padres');
+  RemClassRegistry.RegisterXSInfo(TypeInfo(padresArray), 'urn:mininteriorwsdl', 'padresArray');
+  RemClassRegistry.RegisterXSClass(DatosSalida, 'urn:mininteriorwsdl', 'DatosSalida');
+  RemClassRegistry.RegisterXSClass(DatosEntradaM2, 'urn:mininteriorwsdl', 'DatosEntradaM2');
+  RemClassRegistry.RegisterXSClass(persona, 'urn:mininteriorwsdl', 'persona');
+  RemClassRegistry.RegisterXSInfo(TypeInfo(personasArray), 'urn:mininteriorwsdl', 'personasArray');
+  RemClassRegistry.RegisterXSClass(DatosSalidaM2, 'urn:mininteriorwsdl', 'DatosSalidaM2');
+
+end. 

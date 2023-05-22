@@ -1,0 +1,169 @@
+{ Invokable implementation File for TWsServiciosMaritimos which implements IWsServiciosMaritimos }
+
+unit WsServiciosMaritimosImpl;
+
+interface
+
+uses Soap.InvokeRegistry, System.Types, soap.XSBuiltIns, WsServiciosMaritimosIntf, ubaseDatos;
+
+type
+
+  { TWsServiciosMaritimos }
+  TWsServiciosMaritimos = class(TInvokableClass, IWsServiciosMaritimos)
+  public
+    function getServicios(paso: integer; fecha_desde, fecha_hasta: string): Tservicios; stdcall;
+    function setAprobado(servicio: integer; username:string): boolean; stdcall;
+    function setEstado(servicio: integer; estado: Testado; username:string): boolean; stdcall;
+    function getServiciosOtrosPasos(paso: integer; fecha_desde, fecha_hasta: string): Tservicios; stdcall;
+    function setDiferido(servicio: integer; observacion:string; usuario: string;fecha_declarada:string): string; stdcall;
+    function catalogosPasosFronterizos: TpasosFronterizos; stdcall;
+    function catalogosTasas:Ttasas;  stdcall;
+    function catalogoTipoBuque: TtipoBuques;  stdcall;
+    function catalogoServicioMaritimo: tServiciosMaritimos; stdcall;
+    function confirmarServicio(idServicio:integer; updServicio:TudpServicio): string; stdcall;
+    function getServiciosLocalesYOtros(paso: integer; fecha_desde, fecha_hasta: string): Tservicios; stdcall;
+    function fechaIntervencion(servicio: integer): string; stdcall;
+    function fechaHoraNominas: String; stdcall;
+    function setAprobadoYQ(servicio: integer; username: string): boolean; stdcall;
+    function fechaProcesando(servicio: integer): string;stdcall;
+  end;
+
+implementation
+
+{ TWsServiciosMaritimos }
+
+function TWsServiciosMaritimos.catalogoServicioMaritimo: tServiciosMaritimos;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.catalogoServicioMaritimo;
+end;
+
+function TWsServiciosMaritimos.catalogosPasosFronterizos: TpasosFronterizos;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.catalogosPasosFronterizos;
+end;
+
+function TWsServiciosMaritimos.catalogosTasas: Ttasas;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.catalogosTasas;
+end;
+
+function TWsServiciosMaritimos.catalogoTipoBuque: TtipoBuques;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.catalogoTipoBuque;
+end;
+
+function TWsServiciosMaritimos.confirmarServicio(idServicio: integer;
+  updServicio: TudpServicio): string;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.confirmarServicio(idServicio, updServicio);
+end;
+
+function TWsServiciosMaritimos.fechaHoraNominas: String;
+var
+  bd: TbaseDatos;
+begin
+  bd      := TbaseDatos.create;
+  result  := bd.fechaHoraNominas;
+end;
+
+function TWsServiciosMaritimos.fechaIntervencion(servicio: integer): string;
+var
+  bd: TbaseDatos;
+begin
+  bd      := TbaseDatos.create;
+  result  := bd.fechaIntervencion(servicio);
+end;
+
+function TWsServiciosMaritimos.fechaProcesando(servicio: integer): string;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  RESULT := BD.fechaProcesando(SERVICIO);
+
+end;
+
+function TWsServiciosMaritimos.getServicios(paso: integer; fecha_desde, fecha_hasta: string): Tservicios;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.getServicios(paso, fecha_desde, fecha_hasta);
+end;
+
+function TWsServiciosMaritimos.getServiciosLocalesYOtros(paso: integer;
+  fecha_desde, fecha_hasta: string): Tservicios;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.getServiciosLocalesYOtros(paso, fecha_desde, fecha_hasta);
+
+end;
+
+function TWsServiciosMaritimos.getServiciosOtrosPasos(paso: integer;
+  fecha_desde, fecha_hasta: string): Tservicios;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+//  result := bd.getServiciosOtrosPasos(paso, fecha_desde, fecha_hasta);
+end;
+
+Function TWsServiciosMaritimos.setAprobado(servicio: integer; username: string): boolean;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.setAprobado(servicio, username);
+end;
+
+
+
+function TWsServiciosMaritimos.setAprobadoYQ(servicio: integer;
+  username: string): boolean;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+
+  result := bd.setAprobadoYQ(servicio, username);
+end;
+
+function TWsServiciosMaritimos.setDiferido(servicio: integer; observacion:string; usuario: string; fecha_declarada:string): string;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.setDiferido(servicio, observacion, usuario, fecha_declarada);
+end;
+
+function TWsServiciosMaritimos.setEstado(servicio: integer; estado: Testado; username:string): boolean;
+var
+  bd: TbaseDatos;
+begin
+  bd := TbaseDatos.create;
+  result := bd.setEstado(servicio, estado, username);
+end;
+
+initialization
+  { Invokable classes must be registered }
+  InvRegistry.RegisterInvokableClass(TWsServiciosMaritimos);
+
+end.
+ 

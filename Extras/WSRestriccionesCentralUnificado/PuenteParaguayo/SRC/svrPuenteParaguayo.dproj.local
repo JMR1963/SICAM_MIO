@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2023/04/07 17:48:43.000.066,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:48:43.000.413,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:49:05.000.405,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteParaguayoImpl.pas</Transaction>
+    <Transaction>2023/04/07 17:49:05.000.550,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteParaguayoIntf.pas</Transaction>
+    <Transaction>2023/04/07 17:50:29.000.992,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteParaguayo\SRC\PuenteParaguayoImpl.pas</Transaction>
+    <Transaction>2023/04/07 17:50:30.000.252,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteParaguayo\SRC\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:50:30.000.062,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteParaguayo\SRC\ufixWS.pas</Transaction>
+    <Transaction>2023/04/07 17:50:30.000.158,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteParaguayo\SRC\uMainForm.pas</Transaction>
+    <Transaction>2023/04/07 17:50:30.000.312,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteParaguayo\SRC\WSPersonas.pas</Transaction>
+    <Transaction>2023/04/07 17:50:30.000.022,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteParaguayo\SRC\PuenteParaguayoIntf.pas</Transaction>
+    <Transaction>2023/04/07 17:53:18.000.223,C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteParaguayo\SRC\svrPuenteParaguayo.dproj=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

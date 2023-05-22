@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2023/05/06 17:16:01.000.538,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2023/05/07 21:57:54.000.567,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/05/07 21:57:55.000.085,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/05/07 21:58:15.000.333,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\GNawsImpl.pas</Transaction>
+    <Transaction>2023/05/07 21:58:15.000.456,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\GNawsIntf.pas</Transaction>
+    <Transaction>2023/05/07 21:58:51.000.937,=C:\Sicam - Varios\web_service\GNAWS\src\TRANSITOSGNAImpl.pas</Transaction>
+    <Transaction>2023/05/07 21:58:51.000.970,=C:\Sicam - Varios\web_service\GNAWS\src\TRANSITOSGNAIntf.pas</Transaction>
+    <Transaction>2023/05/07 21:58:52.000.274,=C:\Sicam - Varios\web_service\GNAWS\src\uWS.pas</Transaction>
+    <Transaction>2023/05/07 21:58:52.000.039,=C:\Sicam - Varios\web_service\GNAWS\src\uGNAws.pas</Transaction>
+    <Transaction>2023/05/07 21:58:52.000.152,=C:\Sicam - Varios\web_service\GNAWS\src\uMainForm.pas</Transaction>
+    <Transaction>2023/05/07 21:59:51.000.269,C:\Sicam - Varios\web_service\GNAWS\svrGNWAS.dproj=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

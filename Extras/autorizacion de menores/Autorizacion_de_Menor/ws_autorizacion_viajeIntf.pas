@@ -1,0 +1,279 @@
+{ Invokable interface Iws_autorizacion_viaje }
+
+unit ws_autorizacion_viajeIntf;
+
+interface
+
+uses Soap.InvokeRegistry, System.Types, Soap.XSBuiltIns;
+
+type
+  rids = record
+    menor, tramite, autorizante1, autorizante2: integer;
+  end;
+
+  rmenor = class(tremotable)
+  private
+    fapellido            : string;
+    fsegundo_apellido    : string;
+    fnombre              : string;
+    fotros_nombres       : string;
+    fnacionalidad        : string;
+    ftipo_de_documento   : string;
+    femisor_documento    : string;
+    fnumero_de_documento : string;
+    ffecha_de_nacimiento : string;
+    fSexo                : string;
+    fDomicilio           : string;
+  published
+    property apellido : string read fapellido write fapellido;
+    property segundo_apellido : string read fsegundo_apellido write fsegundo_apellido;
+    property nombre : string read fnombre write fnombre;
+    property otros_nombres : string read fotros_nombres write fotros_nombres;
+    property nacionalidad : string read fnacionalidad write fnacionalidad;
+    property tipo_de_documento : string read ftipo_de_documento write ftipo_de_documento;
+    property emisor_documento : string read femisor_documento write femisor_documento;
+    property numero_de_documento : string read fnumero_de_documento write fnumero_de_documento;
+    property fecha_de_nacimiento : string read ffecha_de_nacimiento write ffecha_de_nacimiento;
+    property Sexo : string read fSexo write fSexo;
+    property Domicilio : string read fDomicilio write fDomicilio;
+  end;
+
+  rautorizante = class(tremotable)
+  private
+    fapellido                      : string;
+    fsegundo_apellido              : string;
+    fnombre                        : string;
+    fotros_nombres                 : string;
+    fnacionalidad                  : string;
+    ftipo_de_documento             : string;
+    femisor_documento              : string;
+    fnumero_de_documento           : string;
+    ffecha_de_nacimiento           : string;
+    fSexo                          : string;
+    fDomicilio                     : string;
+    fcaracter_primer_autorizante   : string;
+    facredita_vinculo_con          : string;
+    fTelefono                      : string;
+    frequiere_aut_adicional_de      : string;
+  published
+    property apellido : string read fapellido write fapellido;
+    property segundo_apellido : string read fsegundo_apellido write fsegundo_apellido;
+    property nombre : string read fnombre write fnombre;
+    property otros_nombres : string read fotros_nombres write fotros_nombres;
+    property nacionalidad : string read fnacionalidad write fnacionalidad;
+    property tipo_de_documento : string read ftipo_de_documento write ftipo_de_documento;
+    property emisor_documento : string read femisor_documento write femisor_documento;
+    property numero_de_documento : string read fnumero_de_documento write fnumero_de_documento;
+    property fecha_de_nacimiento : string read ffecha_de_nacimiento write ffecha_de_nacimiento;
+    property sexo : string read fSexo write fSexo;
+    property domicilio : string read fDomicilio write fDomicilio;
+    property caracter_primer_autorizante : string read fcaracter_primer_autorizante write fcaracter_primer_autorizante;
+    property acredita_vinculo_con : string read facredita_vinculo_con write facredita_vinculo_con;
+    property telefono : string read fTelefono write fTelefono;
+    property requiere_aut_adicional_de : string read frequiere_aut_adicional_de write frequiere_aut_adicional_de;
+  end;
+
+  rpersonas = class(tremotable)
+  private
+    fapellido            : string;
+    fsegundo_apellido    : string;
+    fnombre              : string;
+    fotros_nombres       : string;
+    ftipo_de_documento   : string;
+    fnumero_de_documento : string;
+  published
+    property apellido             : string read fapellido write fapellido;
+    property segundo_apellido     : string read fsegundo_apellido write fsegundo_apellido;
+    property nombre               : string read fnombre write fnombre;
+    property otros_nombres        : string read fotros_nombres write fotros_nombres;
+    property tipo_de_documento    : string read ftipo_de_documento write ftipo_de_documento;
+    property numero_de_documento  : string read fnumero_de_documento write fnumero_de_documento;
+  end;
+
+  personas_varias = array of rpersonas;
+
+  racompanante = class(tremotable)
+  public
+    fviaja_solo      : boolean;
+    //fotros_progenitores : array of rpersonas;
+    //fterceros        : array of rpersonas;
+    fotros_progenitores  : personas_varias;
+    fterceros            : personas_varias;
+  published
+    property  otros_progenitores : personas_varias read fotros_progenitores write fotros_progenitores;
+    property  terceros           : personas_varias read fterceros write fterceros;
+    property  viaja_solo         : boolean read fviaja_solo write fviaja_solo;
+  end;
+
+  apaises = array of string;
+
+
+  rdatos_tramite = class(Tremotable)
+  private
+    fdistrito            : string;
+    fmatricula           : string;
+    fnombres_escribano   : string;
+    fapellidos_escribano : string;
+    fnumero_actuacion_notarial_cert_firma : string;
+    ffecha_del_instrumento : string;
+    fpaises : apaises;
+    fcualquier_pais : boolean;
+    fvigencia_hasta_mayoria_edad: boolean;
+    ffecha_vigencia_desde: string;
+    ffecha_vigencia_hasta: string;
+    fserie_foja: string;
+    ftipo_foja: string;
+    finstrumento: string;
+    fnro_foja: string;
+  published
+    property distrito            : string read fdistrito write fdistrito;
+    property matricula           : string read fmatricula write fmatricula;
+    property nombres_escribano   : string read fnombres_escribano write fnombres_escribano;
+    property apellidos_escribano : string read fapellidos_escribano write fapellidos_escribano;
+    property numero_actuacion_notarial_cert_firma : string read fnumero_actuacion_notarial_cert_firma write fnumero_actuacion_notarial_cert_firma;
+    property fecha_del_instrumento : string read ffecha_del_instrumento write ffecha_del_instrumento;
+    property cualquier_pais: boolean read fcualquier_pais write fcualquier_pais;
+    property paises : apaises read fpaises write fpaises;
+    property serie_foja : string read fserie_foja write fserie_foja;
+    property tipo_foja : string read ftipo_foja write ftipo_foja;
+    property vigencia_hasta_mayoria_edad : boolean read fvigencia_hasta_mayoria_edad write fvigencia_hasta_mayoria_edad;
+    property fecha_vigencia_desde : string read ffecha_vigencia_desde write ffecha_vigencia_desde;
+    property fecha_vigencia_hasta : string read ffecha_vigencia_hasta write ffecha_vigencia_hasta;
+    property instrumento : string read finstrumento write finstrumento;
+    property nro_foja    : string read fnro_foja    write fnro_foja;
+  end;
+
+
+  TNumeroSolicitud = class(tremotable)
+  private
+    Fnumero_solicitud: integer;
+  published
+    property numero_solicitud : integer read Fnumero_solicitud write Fnumero_solicitud;
+  end;
+
+  Tpedido = class(tremotable)
+  private
+    Fmenor         : rmenor;
+    Fautorizante_1 : rautorizante;           
+    Fautorizante_2 : rautorizante;
+    Facompanante   : racompanante;
+    Fdatos_tramite : rdatos_tramite;
+  published
+    property menor : rmenor read fmenor write fmenor;
+    property autorizante_1 : rautorizante read fautorizante_1 write fautorizante_1;
+    property autorizante_2 : rautorizante read fautorizante_2 write fautorizante_2;
+    property acompanante   : racompanante read facompanante write facompanante;
+    property datos_tramite : rdatos_tramite read fdatos_tramite write fdatos_tramite;
+  end;
+
+
+  tresultado = class(Tremotable)
+  public
+    faceptado : boolean;
+    ferror    : string;
+    fnumero_autorizacion: integer;
+  published
+    property aceptado : boolean read faceptado write faceptado;
+    property error    : string read ferror write ferror;
+    property numero_autorizacion: integer read fnumero_autorizacion write fnumero_autorizacion;
+  end;
+
+  {
+  -	numero_doc: string;
+-	fecha: string;
+-	numero_matricula: string;
+-	numero_act_notarial_cert_firma: string;
+-	tipo_documento: string;
+-	nacionalidad_documento: string;
+-	Entidad_emisora: string;
+-	Nombre: string;
+-	Nombre2: string;
+-	Apellido: string;
+-	Apellido2: string;
+-	Nacionalidad : string
+-	Fecha_de_nacimiento: string
+-	Sexo: string;
+
+
+  }
+  trevocar = class(Tremotable)
+  public
+    fnumero_doc :string;
+    ffecha      :string;
+    fnumero_matricula               : string;
+    fnumero_act_notarial_cert_firma : string;
+    //--nuevos
+    ftipo_documento          : string;
+    fnacionalidad_documento  : string;
+    fEntidad_emisora         : string;
+    fNombre                  : string;
+    fNombre2                 : string;
+    fApellido                : string;
+    fApellido2               : string;
+    fNacionalidad            : string;
+    fFecha_de_nacimiento     : string;
+    fSexo                    : string;
+    fnombre_escribano        : string;
+  published
+    property numero_doc                       : string read fnumero_doc                     write fnumero_doc;
+    property numero_matricula                 : string read fnumero_matricula               write fnumero_matricula;
+    property numero_act_notarial_cert_firma   : string read fnumero_act_notarial_cert_firma write fnumero_act_notarial_cert_firma;
+    property fecha                            : string read ffecha write ffecha;
+    //--
+    property tipo_documento                  : string read ftipo_documento         write ftipo_documento;
+    property nacionalidad_documento          : string read fnacionalidad_documento write fnacionalidad_documento;
+    property Entidad_emisora                 : string read fEntidad_emisora        write fEntidad_emisora;
+    property Nombre                          : string read fNombre                 write fNombre;
+    property Nombre2                         : string read fNombre2                write fNombre2;
+    property Apellido                        : string read fApellido               write fApellido;
+    property Apellido2                       : string read fApellido2              write fApellido2;
+    property Nacionalidad                    : string read fNacionalidad           write fNacionalidad;
+    property Fecha_de_nacimiento             : string read fFecha_de_nacimiento    write fFecha_de_nacimiento;
+    property Sexo                            : string read fSexo                   write fSexo;
+    property nombre_escribano                : string read fnombre_escribano       write fnombre_escribano;
+  end;
+
+  tsolicitud = class(Tremotable)
+  public
+    fnumero_doc:string;
+    ffecha:string;
+    fnumero_matricula: string;
+    fnumero_act_notarial_cert_firma: string;
+  published
+    property numero_doc                       : string read fnumero_doc                     write fnumero_doc;
+    property numero_matricula                 : string read fnumero_matricula               write fnumero_matricula;
+    property numero_act_notarial_cert_firma   : string read fnumero_act_notarial_cert_firma write fnumero_act_notarial_cert_firma;
+    property fecha                            : string read ffecha write ffecha;
+  end;
+
+  tautorizacion_numero = class(tremotable)
+  public
+    fnumero_autorizacion: string;
+  published
+    property numero_autorizacion : string read fnumero_autorizacion write fnumero_autorizacion;
+  end;
+
+  tresultado_revocar = array of tautorizacion_numero;
+
+
+  { Invokable interfaces must derive from IInvokable }
+  Iws_autorizacion_viaje = interface(IInvokable)
+  ['{39343D9C-A279-40C4-AD81-B4096248109C}']
+     function grabar(pedido: Tpedido): tresultado;  stdcall;
+    //function revocar(solicitud:tsolicitud): tresultado_revocar; stdcall;
+     function revocar(solicitud: trevocar): tresultado_revocar; stdcall;
+     function solicitudes_menor(solicitud: tsolicitud): tresultado_revocar; stdcall;
+     function modificar(pedido: Tpedido; solicitud:TNumeroSolicitud): tresultado; stdcall;
+    { Methods of Invokable interface must not use the default }
+    { calling convention; stdcall is recommended }
+  end;
+
+implementation
+
+{ racompanante }
+
+initialization
+  { Invokable interfaces must be registered }
+  InvRegistry.RegisterInterface(TypeInfo(Iws_autorizacion_viaje));
+
+end.

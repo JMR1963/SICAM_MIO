@@ -1,0 +1,74 @@
+unit UDM;
+
+interface
+
+uses
+  System.SysUtils, ssytem.Classes, Data.DB, MemDS, DBAccess, Ora, IpuenteApiMar3,
+  System.Classes;
+
+type
+  Tdm = class(TDataModule)
+    OraSession1: TOraSession;
+    OraQuery1: TOraQuery;
+  private
+    { Private declarations }
+
+  public
+    { Public declarations }
+     procedure msgLOG(msg: String);
+     function ConsultarApiMaritimo(Paso, Ape1,ape2, nom1,nom2,fecha_nac,nroDoc,nrolibreta:string):string;
+  end;
+
+var
+  dm: Tdm;
+
+implementation
+
+{$R *.dfm}
+
+{ Tdm }
+
+function Tdm.ConsultarApiMaritimo(Paso, Ape1, ape2, nom1, nom2, fecha_nac,
+  nroDoc, nrolibreta: string): string;
+  var ws:IpuenteApiMar;
+      r:string;
+begin
+  try
+     ws:=GetIpuenteApiMar(False);
+     r:=ws.dameApi(Paso, Ape1, ape2, nom1, nom2, fecha_nac,nroDoc, nrolibreta);
+     Result:=r;
+   except
+     on E: Exception do
+     begin
+      msgLOG(e.Message);
+      Result:=r;
+     end;
+  end;
+end;
+
+procedure Tdm.msgLOG(msg: String);
+var
+  archivo: TStringList;
+  arch:String;
+begin
+     try             
+      archivo := TStringList.Create;
+      try
+        arch:= ExtractFilePath(ParamStr(0))+'LOG.log';
+
+        if FileExists(arch) then
+        begin
+          archivo.LoadFromFile(arch);
+          
+        end;
+
+        archivo.Add(FormatDateTime('dd-mm-yyyy hh:nn:ss', System.SysUtils.Now)+' - '+msg);
+        archivo.SaveToFile(arch);
+      finally
+        archivo.Free;
+      end;
+    except
+    end;
+end;
+
+end.

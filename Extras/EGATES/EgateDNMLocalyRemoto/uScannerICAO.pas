@@ -1,0 +1,216 @@
+unit uScannerICAO;
+
+interface
+
+uses uIcao, EGateMgrWSIntf;
+
+type
+  TscannerICAO = class
+  private
+    // ---------------Informacion extraida de las lineas-------------
+    FDoc_Type: AnsiString;
+    FDoc_emitter: AnsiString;
+    FSurnames: AnsiString;
+    FNames: AnsiString;
+    FDoc_number: AnsiString;
+    FNationality: AnsiString;
+    FSex: AnsiString;
+    FOptional_data: AnsiString;
+    FOptional_data2: AnsiString;
+    Fdate_of_birth: AnsiString;
+    FDate_of_expiry: AnsiString;
+    FDirLogNombresLargos: AnsiString;
+    FMostrarCartelNyALargos: Boolean;
+
+  protected
+    // ----------------Informacion de captura------------------------
+    Fnlines: integer; // numero de lineas capturadas
+    Flines: TicaoLines; // Las lineas en un formato especial
+  public
+
+    property DirLogNombresLargos: AnsiString read FDirLogNombresLargos
+      write FDirLogNombresLargos;
+
+    // ----29-09-2010
+    property MostrarCartelNyALargos: Boolean read FMostrarCartelNyALargos
+      write FMostrarCartelNyALargos;
+
+    property documentType: AnsiString read FDoc_Type write FDoc_Type;
+    property documentEmitter: AnsiString read FDoc_emitter write FDoc_emitter;
+    property surnames: AnsiString read FSurnames write FSurnames;
+    property names: AnsiString read FNames write FNames;
+    property documentNumber: AnsiString read FDoc_number write FDoc_number;
+    property nationality: AnsiString read FNationality write FNationality;
+    property sex: AnsiString read FSex write FSex;
+    property optionalData: AnsiString read FOptional_data write FOptional_data;
+    property optionalData2: AnsiString read FOptional_data2
+      write FOptional_data2;
+    property dateOfBirth: AnsiString read Fdate_of_birth write Fdate_of_birth;
+    property dateOfExpiry: AnsiString read FDate_of_expiry
+      write FDate_of_expiry;
+
+    procedure ExtractMRZ(); virtual;
+    procedure linesAticao(line: string; pos: integer); virtual;
+
+    function sacarCaracteresEspecialesDoc_number(str: AnsiString): AnsiString;
+    function superaLimiteStr(str: AnsiString): Boolean;
+    property nlines: integer read Fnlines write Fnlines;
+    procedure escribirPendiente(str: AnsiString);
+    function ToPersonData: PersonData;
+  end;
+
+implementation
+
+{ TscannerICAO }
+
+uses System.Classes, System.SysUtils;
+
+function normalizoDir(aPath: String): String;
+begin
+  if aPath[Length(aPath)] <> '\' then
+    Result := aPath + '\'
+  else
+    Result := aPath;
+end;
+
+procedure TscannerICAO.escribirPendiente(str: AnsiString);
+var
+  archivo: TStringList;
+begin
+  if Trim(DirLogNombresLargos) = '' then
+    Exit;
+  try
+    if not DirectoryExists(DirLogNombresLargos) then
+      ForceDirectories(DirLogNombresLargos);
+
+    archivo := TStringList.Create;
+    try
+      if FileExists(normalizoDir(DirLogNombresLargos) + 'nombresLargos.log')
+      then
+        archivo.LoadFromFile(normalizoDir(DirLogNombresLargos) +
+          'nombresLargos.log');
+
+      archivo.Add(FormatDateTime('mm-dd-yyyy hh:nn:ss', System.SysUtils.Now) +
+        ';' + str);
+      archivo.SaveToFile(normalizoDir(DirLogNombresLargos) +
+        'nombresLargos.log');
+    finally
+      archivo.Free;
+    end;
+  except
+  end;
+end;
+
+procedure TscannerICAO.ExtractMRZ;
+var
+  mrz2l: ^MRZ_2L;
+  mrz3l: ^MRZ_3L;
+begin
+  try
+    if Fnlines = 2 then
+    begin
+      // aloco el lugar para el mrz
+      New(mrz2l);
+      try
+        // genero el mrz
+        GenerateMRZ_2LIcao(Flines, mrz2l^);
+        ExtractFromMRZ_2LIcao(FDoc_Type, FDoc_emitter, FSurnames, FNames,
+          FDoc_number, FNationality, FSex, FOptional_data, Fdate_of_birth,
+          FDate_of_expiry, mrz2l^);
+
+      finally
+        dispose(mrz2l)
+      end;
+    end
+    else
+    begin
+      // GetMem(mrz3l, SizeOf(MRZ_3L));
+      New(mrz3l);
+      try
+        GenerateMRZ_3LIcao(Flines, mrz3l^);
+        ExtractFromMRZ_3LIcao(FDoc_Type, FDoc_emitter, FSurnames, FNames,
+          FDoc_number, FNationality, FSex, FOptional_data, FOptional_data2,
+          Fdate_of_birth, FDate_of_expiry, mrz3l^);
+      finally
+        dispose(mrz3l);
+      end;
+    end;
+    FDoc_number := sacarCaracteresEspecialesDoc_number(FDoc_number);
+
+    MostrarCartelNyALargos := superaLimiteStr(FSurnames + FNames);
+  except
+  end;
+
+end;
+
+procedure TscannerICAO.linesAticao(line: string; pos: integer);
+var
+  i: integer;
+begin
+  for i := 1 to Length(line) - 1 do
+    Flines[pos][i - 1] := byte(line[i]);
+end;
+
+function TscannerICAO.sacarCaracteresEspecialesDoc_number(str: AnsiString)
+  : AnsiString;
+var
+  nro: AnsiString;
+  i: integer;
+begin
+  nro := '';
+  for i := 1 to Length(str) do
+  begin
+    if str[i] in ['a' .. 'z', 'ñ', 'Ñ', 'A' .. 'Z', '/', '-', '_', '0' .. '9']
+    then
+      nro := nro + str[i];
+  end;
+
+  Result := nro;
+
+end;
+
+function TscannerICAO.superaLimiteStr(str: AnsiString): Boolean;
+var
+  i, c: integer;
+  strLog: AnsiString;
+begin
+  c := 0;
+  for i := 1 to Length(str) - 1 do
+  begin
+    if not(str[i] in [' ', '<']) then
+      c := c + 1;
+  end;
+
+  Result := c >= 25;
+
+  if Result then
+  begin
+    strLog := FDoc_number + ';' + FSurnames + ';' + FNames;
+    escribirPendiente(strLog);
+  end;
+
+end;
+
+function TscannerICAO.ToPersonData: PersonData;
+begin
+  Result := PersonData.Create;
+
+  Result.docType := FDoc_Type;
+
+  Result.subDocType := 'SIN';
+
+  if FDoc_Type = 'ID' then
+    Result.subDocType := 'DNI';
+
+  Result.firstName := FNames;
+  Result.lastName := FSurnames;
+  Result.dob := Fdate_of_birth;
+  Result.docNumber := FDoc_number;
+  Result.sex := FSex;
+  Result.nationality := FNationality;
+  Result.issuingCountry := FDoc_emitter;
+  Result.passportNumber := FOptional_data;
+
+end;
+
+end.

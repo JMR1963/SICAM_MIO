@@ -1,0 +1,29 @@
+program webservsicam;
+
+{
+  Dos WebServices 
+
+
+
+}
+
+{$APPTYPE CONSOLE}
+
+uses
+  WebBroker,
+  CGIApp,
+  UwsSicam in 'UwsSicam.pas' {WebModule1: TWebModule},
+  webusersicamImpl in 'webusersicamImpl.pas',
+  webusersicamIntf in 'webusersicamIntf.pas',
+  ubaseDatos in 'ubaseDatos.pas',
+  uBase64 in '..\..\..\stable\7 Biometrico\src\Units\uBase64.pas',
+  ufixWS in 'ufixWS.pas',
+  IwsRenaper2 in 'IwsRenaper2.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(TWebModule1, WebModule1);
+  Application.Run;
+end.

@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2023/04/07 17:18:07.000.218,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:18:07.000.546,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:18:21.000.998,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteBolivianoImpl.pas</Transaction>
+    <Transaction>2023/04/07 17:18:22.000.115,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrPuenteBolivianoIntf.pas</Transaction>
+    <Transaction>2023/04/07 17:19:38.000.828,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteBoliviano\src\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:19:38.000.639,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteBoliviano\src\IpuenteBoliviano1.pas</Transaction>
+    <Transaction>2023/04/07 17:19:38.000.711,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteBoliviano\src\puenteBolivianoIntf.pas</Transaction>
+    <Transaction>2023/04/07 17:19:38.000.858,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteBoliviano\src\wsImpedimentosBolivia.pas</Transaction>
+    <Transaction>2023/04/07 17:19:38.000.668,=C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteBoliviano\src\puenteBolivianoImpl.pas</Transaction>
+    <Transaction>2023/04/07 17:19:56.000.322,C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteBoliviano\src\uMainForm.pas=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/04/07 17:19:56.000.322,C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteBoliviano\src\uMainForm.dfm=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.dfm</Transaction>
+    <Transaction>2023/04/07 17:20:12.000.827,C:\Git-WS\extras\WSRestriccionesCentralUnificado\PuenteBoliviano\src\svrPuenteBoliviano.dproj=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

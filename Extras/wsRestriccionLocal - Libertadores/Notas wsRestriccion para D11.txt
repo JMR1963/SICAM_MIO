@@ -1,0 +1,3 @@
+﻿El "wsRestriccion - Libertadores" utiliza componente IBX para una conexion a interbase, con 3 IBTQuerys para la ejecucion de consultas del tipo SELECT sobre store procedures, los datos de asignacion de nombre de DatabaseName/usuario/contraseña se leen desde un archivo config.ini. Tambien se utilizan omponente TOraSession y yTOraQuery. 
+Para reemplazar los componentes IBX deje preparado los componente FireDAC utilizados en SICaM. Si se decide utilizar FireDAC, se realizaran los cambios faltantes para reemplazar los IBX por estos.
+El componente pregunta si se quiere conectar a Interbase, se coloco esta pregunta ya que si se deja directo al momento de ejecutar devuelve, error poque busca un servidor Interbase y las DLLs para el cliente windows.

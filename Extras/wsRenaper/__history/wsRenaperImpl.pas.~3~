@@ -1,0 +1,617 @@
+{ Invokable implementation File for TwsRenaper which implements IwsRenaper }
+
+unit wsRenaperImpl;
+
+interface
+
+
+uses Soap.InvokeRegistry, System.Types, Soap.XSBuiltIns, wsRenaperIntf, Umini, UwsdlRenaper,
+     System.SysUtils, System.IniFiles, uFunciones, udm1;
+
+
+type
+
+  { TwsRenaper }
+   TwsRenaper= class(TInvokableClass, IwsRenaper)
+  public
+
+    function consultaCiudadanosDniSexo(nroDni, sexo: string): ciudadanos;  stdcall;
+    function consultaCiudadanosNombre(apellido, nombre, nacimiento: string): ciudadanos; stdcall;
+    function consultaCiudadanosDetalle(id: string):DatosSalida; stdcall;
+    function consultaCiudadanosXML(apellido, nombre, nacimiento: string): string; stdcall;
+    function consultaUnificada(nroDni, sexo: string): ciudadanosYDetalle; stdcall;
+    function VtoDOC(nroDni, sexo, tipoDOC: string): salidaVto; stdcall;
+    function obtenerMatriculaSexoDNM(const DatosEntrada: DatosEntradaM2DNM): DatosSalidaM2DNM;  stdcall;
+
+  end;
+
+implementation
+
+uses ufuncs,
+DATOSFYH1;
+//,DATOSFYH29102019;
+//,DATOSFYH2;
+
+
+
+function TwsRenaper.consultaCiudadanosDniSexo(nroDni, sexo: string): ciudadanos;
+var
+  ws : mininteriorwsdlPortType;
+  entrada: DatosEntrada;
+  salida: DatosSalida;
+  direcciones: adirecciones;
+  inifile: TIniFile;
+  path : string;
+
+begin
+  try
+
+    inifile := TIniFile.Create(Format('%sconfig.ini', [ExtractFilePath(ParamStr(0))]));
+    try
+      path := inifile.ReadString('config', 'path', 'http://10.10.99.8/CHUTROFINAL/ws/DATOSFYH.php');
+      uFunciones.timeout := STRTOINT(inifile.ReadString('config', 'timeout', '10000'));
+
+    finally
+      inifile.Free;
+    end;
+
+    ws := GetmininteriorwsdlPortType(False,path);
+    entrada := DatosEntrada.Create;
+    entrada.dni  := strtoint(nroDni);
+    entrada.sexo := UpperCase(sexo);
+    salida := DatosSalida.Create;
+ //   ShowMessage('antes consulta');
+    salida := ws.obtenerUltimoEjemplar(entrada);
+  //  ShowMessage('pase consulta');
+    SetLength(result, 1);
+    result[0] := ciudadano.Create;
+    result[0].idPers    := salida.idciudadano;
+    result[0].nrodni    := nroDni;
+    result[0].sexo      := UpperCase(sexo);
+    result[0].apellido  := salida.apellido;
+    result[0].nombres   := salida.nombres;
+    result[0].fechanac  := salida.fechaNacimiento;
+  //  result[0].biometria := salida.;
+    result[0].nacionalidad  := salida.nacionalidad;
+
+
+  //  ShowMessage('antes de direcciones') ;
+    SetLength(direcciones, 1);
+    direcciones[0] := direccion.Create;
+    with direcciones[0] do
+    begin
+      pais := salida.pais;
+      provincia := salida.provincia;
+      municipio := salida.municipio;
+      ciudad := salida.ciudad;
+      calle := salida.calle;
+      numero := salida.numero;
+      piso := salida.piso;
+      departamento := salida.departamento;
+    end;
+  //   ShowMessage('asigno');
+    Result[0].direcciones := direcciones;
+  //  result[0].numeroError   := salida.codigoError;
+  //  result[0].foto          := copy( salida.foto,23,length( salida.foto)-22);
+  //  result[0].descripcionError := salida.descripcionError;
+  //  result[0].huellaWsq     := copy(salida.huella1,23,length(salida.huella1)-22);
+ //   ShowMessage('fin');
+  except
+  end;
+end;
+
+function TwsRenaper.consultaCiudadanosNombre(apellido, nombre, nacimiento: string): ciudadanos;
+begin
+    result := consultaCiudadanos(apellido, nombre, nacimiento);
+end;
+
+
+function TwsRenaper.consultaCiudadanosDetalle(id: string): UwsdlRenaper.DatosSalida;
+var
+  ws: migracioneswsdlPortType;
+  de: UwsdlRenaper.DatosEntrada;
+begin
+try
+  de := UwsdlRenaper.DatosEntrada.Create;
+  ws := GetmigracioneswsdlPortType();
+  de.idPersona := strtoint(id);
+  result := ws.obtenerPersona(de);
+except
+  on e:exception do
+end;
+end;
+
+function TwsRenaper.consultaCiudadanosXML(apellido, nombre, nacimiento: string): string;
+begin
+  result := consultaCiudadanosXML(apellido, nombre, nacimiento);
+end;
+
+
+function TwsRenaper.consultaUnificada(nroDni, sexo: string): ciudadanosYDetalle;
+var
+{     codigo viejo
+  ciuda: ciudadanos;
+  detalle: DatosSalida;
+  i: integer;
+}
+  ws : mininteriorwsdlPortType;
+  entrada: DatosEntrada;
+  salida: DatosSalida;
+  direcciones: adirecciones;
+    inifile: TIniFile;
+  path : string;
+
+  estabien: Boolean;
+
+  pai, PROV, MUN,CIU, CA, CP:STRING;
+  encontre: Boolean;
+
+begin
+  try
+    inifile := TIniFile.Create(Format('%sconfig.ini', [ExtractFilePath(ParamStr(0))]));
+    try
+      
+      path := inifile.ReadString('config', 'path', 'http://10.10.99.8/CHUTROFINAL/ws/DATOSFYH.php');
+      uFunciones.timeout := STRTOINT(inifile.ReadString('config', 'timeout', '10000'));
+    finally
+      inifile.Free;
+    end;
+
+
+      pai := '';
+      PROV:= '';
+      MUN:='';
+      CIU:='';
+      CA:='';
+      cp:='';
+
+    ws := GetmininteriorwsdlPortType(False,path);
+    entrada := DatosEntrada.Create;
+    entrada.dni  := strtoint(nroDni);
+    entrada.sexo := UpperCase(sexo);
+    salida := DatosSalida.Create;
+ //   ShowMessage('antes consulta');
+    salida := ws.obtenerUltimoEjemplar(entrada);
+  //  ShowMessage('pase consulta');
+    if (Trim(salida.apellido) = '') and (Trim(salida.nombres) =  '') and (Trim(salida.fechaNacimiento) =  '') then
+    begin
+       //entrada.dni  := strtoint(nroDni);
+       if UpperCase(sexo) = 'M' then
+         sexo:= 'F'
+       else
+         sexo:= 'M';
+
+       entrada.sexo := UpperCase(sexo);
+       //salida := DatosSalida.Create;
+       salida := ws.obtenerUltimoEjemplar(entrada);
+    end;
+
+    SetLength(result, 1);
+    result[0] := ciudadanoYDetalle.Create;
+    result[0].idPers    := salida.idciudadano;
+    result[0].nrodni    := nroDni;
+    result[0].sexo      := UpperCase(sexo);
+    result[0].apellido  := salida.apellido;
+    result[0].nombres   := salida.nombres;
+    result[0].fechanac  := salida.fechaNacimiento;
+    result[0].biometria := '';
+    result[0].nacionalidad  := salida.nacionalidad;
+    Result[0].emisionPasaporte := salida.emisionPasaporte;
+    Result[0].vencimientoPasaporte := salida.vencimientoPasaporte;
+    Result[0].dniProgenitor1:= salida.dniProgenitor1;
+    Result[0].dniProgenitor2:=salida.dniProgenitor2;
+    Result[0].emisionDNI:= salida.EMISION;
+    Result[0].vencimientoDNI:=salida.VENCIMIENTO;
+    Result[0].nro_tramite:=IntToStr(salida.ID_TRAMITE_PRINCIPAL);
+    Result[0].ejemplar:=salida.EJEMPLAR;
+
+
+
+
+
+
+    //  ShowMessage('antes de direcciones') ;
+    SetLength(direcciones, 1);
+    direcciones[0] := direccion.Create;
+    with direcciones[0] do
+    begin
+      pais := salida.pais;
+      provincia := salida.provincia;
+      municipio := salida.municipio;
+      ciudad := salida.ciudad;
+      calle := salida.calle;
+      numero := salida.numero;
+      piso := salida.piso;
+      departamento := salida.departamento;
+      cpostal := salida.cpostal;
+      piso    := salida.piso ;
+      barrio  := salida.barrio;
+      monoblock := salida.monoblock;
+      telefono := salida.telefono;
+      caracteristica := salida.codidgoArea  ;
+      mail := salida.mail;
+
+    end;
+  //   ShowMessage('asigno');
+    Result[0].direcciones := direcciones;
+    result[0].numeroError   := salida.codigoError;
+    result[0].foto          := copy( salida.foto,22,length( salida.foto)-20);
+    result[0].descripcionError := salida.descripcionError;
+    result[0].huellaWsq     := copy(salida.huella1,23,length(salida.huella1)-22);
+ //   ShowMessage('fin');
+    dm1:=TDM1.Create(nil);
+
+    if (Trim(salida.apellido) <> '') and (Trim(salida.nombres) <> '') then
+    begin
+          if salida.pais <> '' then
+            pai:=   UpperCase(Trim(salida.pais))
+          else
+            pai:= '';
+
+
+          if salida.provincia <> '' then
+            PROV:=   UpperCase(Trim(salida.provincia))
+          else
+            PROV:= '';
+
+          if  UpperCase(Trim(salida.municipio)) <> '' then
+             MUN:=    UpperCase(Trim(salida.municipio))
+          else
+            MUN :=   '';
+
+          if  UpperCase(Trim(salida.municipio)) <> '' then
+             CIU:=    UpperCase(Trim(salida.ciudad))
+          else
+             CIU:= '';
+
+          if  UpperCase(Trim(salida.municipio)) <> '' then
+             CA:=     UpperCase(Trim(salida.calle))
+          else
+             CA:= '';
+
+          if  UpperCase(Trim(salida.municipio)) <> '' then
+                    cp:=     UpperCase(Trim(salida.cpostal))
+          else
+             cp:= '';
+
+          if PROV = 'JURISDICCION FEDERAL'   then
+          BEGIN
+              CP  :=   '8111';
+              PROV:=   'BUENOS AIRES';
+              MUN:=    'BAHIA BLANCA';
+              CIU:=    'PUERTO BELGRANO' ;
+              CA:=     'PUERTO BELGRANO';
+          end;
+
+
+
+          if (pai <> 'ARGENTINA')  THEN
+          begin
+
+            CA:=     ca+ ' - '+CIU+ ' - cp:'+cp;
+            CIU:=    MUN;
+            MUN:=    PROV ;
+            PROV:=   'CIUDAD DE BUENOS AIRES';
+            cp:=     '1000' ;
+            if pai = '' then
+                pai := 'NO INFORMADO'
+          end
+          else
+          begin
+
+
+                estabien := true;
+                try
+                  if (StrToInt(salida.cpostal) < 999) or (StrToInt(salida.cpostal) > 10000) then
+                  begin
+                     estabien := false;
+                     CA := CA+' - CP:' + salida.cpostal;
+
+
+                  end;
+                except
+                     estabien := false;
+                     CA := CA+' - CP:' + salida.cpostal;
+                end;
+
+                if (salida.cpostal = '')  or  (not estaBien) then
+                begin
+                  if  UpperCase(Trim(PROV)) <> '' then
+                  BEGIN
+                    encontre:= False;
+                    if UpperCase(Trim(PROV)) =  'BUENOS AIRES'  then
+                    begin
+                        CP:= '1900';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) = 'CATAMARCA'   then
+                    begin
+                        CP:=   '4700';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'CHACO'   then
+                    begin
+                        CP :=        '3500';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'CHUBUT'   then
+                    begin
+                        CP      :=     '9100';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'CIUDAD DE BUENOS AIRES'  then
+                    begin
+                        CP := '1000';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'CORDOBA'  then
+                    begin
+                        CP :=       '5000';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV))=  'CORRIENTES' then
+                    begin
+                        CP :=     '3400';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV))=  'ENTRE RIOS'   then
+                    begin
+                        CP :=    '3200';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV))  =  'FORMOSA'   then
+                    begin
+                        CP   :=    '3600';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) = 'JUJUY'   then
+                    begin
+                        CP  :=    '4600';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'LA PAMPA'   then
+                    begin
+                        CP :=     '6300';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'LA RIOJA'  then
+                    begin
+                        CP  :=     '5300';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'MENDOZA'  then
+                    begin
+                        CP  :=    '5500';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =   'MISIONES'  then
+                    begin
+                        CP  :=     '3300';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =   'NEUQUEN'  then
+                    begin
+                        CP   :=     '8300';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =   'RIO NEGRO'   then
+                    begin
+                        CP   :=    '8500';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'SALTA'   then
+                    begin
+                        CP  :=     '4400';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =    'SAN JUAN'  then
+                    begin
+                        CP  :=     '5400';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'SAN LUIS'   then
+                    begin
+                        CP  :=    '5700';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'SANTA CRUZ'  then
+                    begin
+                        CP  :=     '9400';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =  'SANTA FE'  then
+                    begin
+                        CP :=     '3000';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV))  =   'SANTIAGO DEL ESTERO'  then
+                    begin
+                        CP:=   '4200';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =   'TIERRA DEL FUEGO'  then
+                    begin
+                        CP:=    '9410';
+                        encontre:=True;
+                    end;
+                    if UpperCase(Trim(PROV)) =    'TUCUMAN'   then
+                    begin
+                        CP:=     '4000';
+                        encontre:=True;
+                    end;
+
+                    if not encontre then
+                    begin
+                      pai:= 'ARGENTINA INCONSISTENCIA';
+                      CA := CA+' - CP:' + salida.cpostal;
+                    end;
+
+                  end
+                  else
+                  begin
+                     pai:= 'ARGENTINA INCONSISTENCIA';
+                     CA := CA+' - CP:' + salida.cpostal;
+                  end;
+                end;
+
+
+
+          end;
+
+          dm1.cargar(formatdatetime('dd/mm/yyyy',now),
+                nroDni,
+                sexo,
+                salida.apellido,
+                salida.nombres,
+                pai ,
+                PROV,
+                MUN,
+                CIU ,
+                CA,
+                salida.numero,
+                salida.piso,
+                salida.departamento,
+                salida.barrio,
+                salida.monoblock,
+                CP,
+                salida.telefono,
+                '',
+                salida.codidgoArea,
+                salida.mail);
+      end;
+
+
+      FreeAndNil(dm1);
+
+
+except
+end;
+
+
+end;
+
+
+function TwsRenaper.VtoDOC(nroDni, sexo, tipoDOC: string): salidaVto;
+var
+
+  ws : mininteriorwsdlPortType;
+  entrada: DatosEntrada;
+  salida: datosSalida;
+  inifile: TIniFile;
+  path : string;
+
+
+begin
+  try
+    entrada := DatosEntrada.Create;
+    salida := datosSalida.Create;
+    Result := salidaVto.Create;
+    try
+    inifile := TIniFile.Create(Format('%sconfig.ini', [ExtractFilePath(ParamStr(0))]));
+    try
+      path := inifile.ReadString('config', 'path', 'http://10.10.99.8/CHUTROFINAL/ws/DATOSFYH.php');
+      uFunciones.timeout  := STRTOINT(inifile.ReadString('config', 'timeout', '10000'));
+    finally
+      inifile.Free;
+    end;
+
+      ws := GetmininteriorwsdlPortType(False,path);
+      if (Copy(nroDni,1,1) = 'M') or (Copy(nroDni,1,1) = 'F') then
+         nroDni :=    Copy(nroDni,2,Length(nroDni)-1);
+      entrada.dni  := strtoint(nroDni);
+      entrada.sexo := UpperCase(sexo);
+
+      salida := ws.obtenerUltimoEjemplar(entrada);
+
+      result.error:= salida.NROERROR;
+      Result.Descripcionerror := salida.descripcionError;
+      if tipoDOC = 'ID' then
+        result.vto     := salida.VENCIMIENTO
+      else
+        result.vto     := salida.vencimientoPasaporte;
+
+    except
+
+      result.error:= -1;
+      Result.Descripcionerror := 'ERROR AL INVOCAR A RENAPER';
+      result.vto := '01/01/1900';
+
+    end;
+  finally
+      FreeAndNil(entrada);
+      FreeAndNil(salida);
+  end;
+end;
+
+function  TwsRenaper.obtenerMatriculaSexoDNM(const DatosEntrada: DatosEntradaM2DNM): DatosSalidaM2DNM;
+var
+  de : datosentradaM2;
+  ds : datosSalidaM2;
+  ws : mininteriorwsdlPortType;
+  i:Integer;
+  arr : personasArrayDNM;
+  pER: personaDNm;
+
+  inifile: TIniFile;
+  path : string;
+
+begin
+
+  TRY
+    de := datosentradaM2.create;
+    ds := DatosSalidaM2.Create;
+
+    Result:= DatosSalidaM2DNM.Create;
+    try
+
+    inifile := TIniFile.Create(Format('%sconfig.ini', [ExtractFilePath(ParamStr(0))]));
+    try
+      path := inifile.ReadString('config', 'path', 'http://10.10.99.8/CHUTROFINAL/ws/DATOSFYH.php');
+      ufixWS.timeout  := STRTOINT(inifile.ReadString('config', 'timeout', '10000'));
+    finally
+      inifile.Free;
+    end;
+
+    ws := GetmininteriorwsdlPortType(False,path);
+
+      de.primerApellido := DatosEntrada.primerApellido;
+      de.primerNombre := DatosEntrada.primerNombre;
+      de.anioNacimiento := DatosEntrada.anioNacimiento;
+
+      ds:= ws.obtenerMatriculaSexo(de);
+
+      if Length(ds.personas) <> 0 then
+      begin
+        SetLength(ARR,Length(ds.personas));
+        for i := 0 to Length(ds.personas)-1 do
+        begin
+          PER := personaDNm.CREATE;
+          per.dni:=ds.personas[i].dni;
+          per.sexo:=UpperCase(ds.personas[i].sexo) ;
+          pER.nombre :=ds.personas[i].nombre;
+          pER.apellido :=ds.personas[i].apellido;
+          pER.fechaNacimiento := ds.personas[i].fechaNacimiento;
+          arr[i]:= pER;
+//          FreeAndNil(per);
+        end;
+      end;
+      Result.codigo:= ds.codigo;
+      Result.mensaje := ds.mensaje;
+      Result.personas:= arr;
+
+    except
+
+    end;
+  finally
+    FreeAndNil(de);
+    FreeAndNil(ds);
+
+  end;
+
+end;
+
+initialization
+  { Invokable classes must be registered }
+  InvRegistry.RegisterInvokableClass(TwsRenaper);
+
+end.

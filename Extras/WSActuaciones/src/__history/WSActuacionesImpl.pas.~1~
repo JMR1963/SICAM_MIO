@@ -1,0 +1,127 @@
+{ Invokable implementation File for TWSActuaciones which implements IWSActuaciones }
+
+unit WSActuacionesImpl;
+
+interface
+
+uses InvokeRegistry, Types, XSBuiltIns, WSActuacionesIntf;
+
+type
+
+  { TWSActuaciones }
+  TWSActuaciones = class(TInvokableClass, IWSActuaciones)
+  public
+    function GetDisposiciones(const nro_dispo:Int64;const anio:Integer):TResultado; stdcall;
+    function GetExpedientes(const nro_exp:Int64):TResultado; stdcall;
+    function GetFotoExpedientes(const nro_presol:Int64):String; stdcall;
+    function GetHabilitaciones(const nro_habilitacion:string):TResultado; stdcall;
+    function GetFotoHabilitaciones(id_pers,ID_LOC:WideString): String; stdcall;
+    function GetSituacionMigratoria(documento:WideString): TSituacionMig; stdcall;
+  end;
+
+implementation
+
+uses UDMActuaciones, SysUtils;
+
+{ TWSActuaciones }
+
+
+
+function TWSActuaciones.GetDisposiciones(const nro_dispo: Int64;const anio:Integer): TResultado;
+var
+  DMActuaciones:TDMActuaciones;
+begin
+  DMActuaciones := TDMActuaciones.create(nil);
+  try
+    Result := DMActuaciones.RestConsultaDisposicion(nro_dispo,anio);
+  finally
+    FreeAndNil(DMActuaciones);
+  end;
+end;
+
+
+function TWSActuaciones.GetExpedientes(const nro_exp: Int64): TResultado;
+var
+  DMActuaciones:TDMActuaciones;
+begin
+  DMActuaciones := TDMActuaciones.create(nil);
+  try
+    Result := DMActuaciones.RestConsultaExpedientes(nro_exp);
+  finally
+    FreeAndNil(DMActuaciones);
+  end;
+end;
+
+function TWSActuaciones.GetFotoExpedientes(const nro_presol: Int64): String;
+var
+  DMActuaciones:TDMActuaciones;
+begin
+  //Esto es para que no se muestre la foto
+ { Result := '';
+  Exit; }
+
+
+  DMActuaciones := TDMActuaciones.create(nil);
+  try
+    Result := DMActuaciones.RestFotoExpedientes(nro_presol);
+  finally
+    FreeAndNil(DMActuaciones);
+  end;
+end;
+
+function TWSActuaciones.GetFotoHabilitaciones(id_pers,ID_LOC:WideString): String; stdcall;
+var
+  DMActuaciones:TDMActuaciones;
+begin
+  //Esto es para que no se muestre la foto
+  Result := '';
+  Exit;
+
+  {
+  DMActuaciones := TDMActuaciones.create(nil);
+  try
+    Result := DMActuaciones.RestFotoHabilitaciones(id_pers,ID_LOC);
+  finally
+    FreeAndNil(DMActuaciones);
+  end;    }
+end;
+
+function TWSActuaciones.GetHabilitaciones(const nro_habilitacion: string): TResultado;
+var
+  DMActuaciones:TDMActuaciones;
+begin
+  DMActuaciones := TDMActuaciones.create(nil);
+  try
+    Result := DMActuaciones.RestConsultaHabilitaciones(nro_habilitacion);
+  finally
+    FreeAndNil(DMActuaciones);
+  end;
+end;
+
+function TWSActuaciones.GetSituacionMigratoria( documento: WideString): TSituacionMig;
+var
+  DMActuaciones:TDMActuaciones;
+  aux:   TSituacionMig;
+  Sit_mig, fecha_vto : string;
+
+begin
+  //Result := 'Debe ingresar el documento a buscar';
+
+  DMActuaciones := TDMActuaciones.create(nil);
+  try
+    fecha_vto := '';
+    Result := TSituacionMig.Create;
+    Sit_mig:= DMActuaciones.RestSituacionMigratoria(documento, fecha_vto);
+    Result.SituacionMig:= Sit_mig;
+    Result.FechaVto := fecha_vto;
+  finally
+    FreeAndNil(DMActuaciones);
+  end;
+
+end;
+
+initialization
+  { Invokable classes must be registered }
+  InvRegistry.RegisterInvokableClass(TWSActuaciones);
+
+end.

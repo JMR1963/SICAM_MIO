@@ -1,0 +1,12 @@
+object DMActuaciones: TDMActuaciones
+  OldCreateOrder = False
+  OnCreate = DataModuleCreate
+  Left = 218
+  Top = 132
+  Height = 263
+  Width = 364
+  object OracleConexion: TOraSession
+    Left = 72
+    Top = 16
+  end
+end

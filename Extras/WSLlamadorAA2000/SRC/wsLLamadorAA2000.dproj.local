@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2021/02/03 11:39:15.000.186,=C:\Users\vdazurmendi\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2021/02/03 11:40:21.000.953,=C:\Users\vdazurmendi\Documents\Embarcadero\Studio\Projects\wsLLamadorAA2000BImpl.pas</Transaction>
+    <Transaction>2021/02/03 11:40:22.000.109,=C:\Users\vdazurmendi\Documents\Embarcadero\Studio\Projects\wsLLamadorAA2000BIntf.pas</Transaction>
+    <Transaction>2021/02/03 11:41:22.000.071,C:\Users\vdazurmendi\Documents\Embarcadero\Studio\Projects\wsLLamadorAA2000BIntf.pas=C:\Aplicaciones\wsLLamadorAA2000_B\SRC\wsLLamadorAA2000BIntf.pas</Transaction>
+    <Transaction>2021/02/03 11:41:25.000.119,C:\Users\vdazurmendi\Documents\Embarcadero\Studio\Projects\wsLLamadorAA2000BImpl.pas=C:\Aplicaciones\wsLLamadorAA2000_B\SRC\wsLLamadorAA2000BImpl.pas</Transaction>
+    <Transaction>2021/02/03 11:41:29.000.624,C:\Users\vdazurmendi\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.dfm=C:\Aplicaciones\wsLLamadorAA2000_B\SRC\WebModuleUnit1.dfm</Transaction>
+    <Transaction>2021/02/03 11:41:29.000.624,C:\Users\vdazurmendi\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas=C:\Aplicaciones\wsLLamadorAA2000_B\SRC\WebModuleUnit1.pas</Transaction>
+    <Transaction>2021/02/03 11:41:47.000.790,C:\Users\vdazurmendi\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Aplicaciones\wsLLamadorAA2000_B\SRC\wsLLamadorAA2000.dproj</Transaction>
+    <Transaction>2021/02/03 12:19:14.000.823,=C:\Aplicaciones\wsLLamadorAA2000_B\SRC\manager.pas</Transaction>
+  </Transactions>
+</BorlandProject>

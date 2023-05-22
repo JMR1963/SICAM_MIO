@@ -1,0 +1,126 @@
+object DMRestriccion: TDMRestriccion
+  OldCreateOrder = False
+  OnCreate = DataModuleCreate
+  OnDestroy = DataModuleDestroy
+  Left = 643
+  Top = 253
+  Height = 387
+  Width = 506
+  object IBDatabase1: TIBDatabase
+    Params.Strings = (
+      'user_name=SYSDBA'
+      'password=.'
+      ''
+      'lc_ctype=ISO8859_1')
+    LoginPrompt = False
+    DefaultTransaction = IBTransaction1
+    SQLDialect = 1
+    Left = 31
+    Top = 33
+  end
+  object IBTransaction1: TIBTransaction
+    DefaultDatabase = IBDatabase1
+    DefaultAction = TARollback
+    Left = 123
+    Top = 49
+  end
+  object qryBuscarNombre: TIBQuery
+    Database = IBDatabase1
+    Transaction = IBTransaction1
+    AutoCalcFields = False
+    SQL.Strings = (
+      'SELECT'
+      ' RID_SIC, RFECHA_NAC'
+      'FROM'
+      
+        ' CLTRESTRICCIONNOM(:PAPELLIDO1, :PAPELLIDO2, :PNOMBRE1, :PNOMBRE' +
+        '2);')
+    Left = 75
+    Top = 122
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'PAPELLIDO1'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PAPELLIDO2'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PNOMBRE1'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PNOMBRE2'
+        ParamType = ptUnknown
+      end>
+  end
+  object qryBuscarDoc: TIBQuery
+    Database = IBDatabase1
+    Transaction = IBTransaction1
+    AutoCalcFields = False
+    SQL.Strings = (
+      'SELECT'
+      ' RID_SIC'
+      'FROM'
+      ' CLTRESTRICCIONDOC(:PDOCNUMERO);'
+      ''
+      '')
+    Left = 202
+    Top = 111
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'PDOCNUMERO'
+        ParamType = ptUnknown
+      end>
+  end
+  object qryDocumentosRobados: TIBQuery
+    Database = IBDatabase1
+    Transaction = IBTransaction1
+    AutoCalcFields = False
+    SQL.Strings = (
+      'SELECT'
+      ' *'
+      'FROM'
+      ' CLTDOCUMENTOSROBADOS(:PDOCNUMERO);'
+      '')
+    Left = 221
+    Top = 27
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'PDOCNUMERO'
+        ParamType = ptUnknown
+      end>
+  end
+  object OraSession1: TOraSession
+    Username = 'APISQLUSR'
+    Password = 'usrapisql'
+    HomeName = 'OraHome92'
+    Left = 232
+    Top = 224
+  end
+  object OraQuery1: TOraQuery
+    Session = OraSession1
+    Left = 328
+    Top = 224
+  end
+  object OraSession2: TOraSession
+    Username = 'marrese'
+    Password = '25dmayo'
+    Server = 'nominas'
+    HomeName = 'OraHome92'
+    Left = 232
+    Top = 288
+  end
+  object OraQuery2: TOraQuery
+    Session = OraSession2
+    Left = 328
+    Top = 288
+  end
+end

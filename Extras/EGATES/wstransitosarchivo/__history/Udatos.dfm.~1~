@@ -1,0 +1,39 @@
+object dmdatos: Tdmdatos
+  OldCreateOrder = False
+  Left = 428
+  Top = 126
+  Height = 336
+  Width = 423
+  object OraSession1: TOraSession
+    Username = 'usuarios'
+    Password = 'boromir24'
+    AutoCommit = False
+    Left = 120
+    Top = 72
+  end
+  object oqFechahora: TOraQuery
+    Session = OraSession1
+    SQL.Strings = (
+      'select to_char(sysdate, '#39'DDMMYYYY hh24miss'#39') as fecha from dual')
+    Left = 128
+    Top = 136
+  end
+  object oqOrganismos_externos: TOraQuery
+    Session = OraSession1
+    SQL.Strings = (
+      'select'
+      '  password'
+      'from'
+      '  pwd_data.organismos_externos oe'
+      'where'
+      '  oe.usuario= :puser')
+    Left = 128
+    Top = 200
+    ParamData = <
+      item
+        DataType = ftString
+        Name = 'puser'
+        Value = ''
+      end>
+  end
+end

@@ -1,0 +1,413 @@
+object DMBaseIB: TDMBaseIB
+  OldCreateOrder = False
+  OnCreate = DataModuleCreate
+  Height = 350
+  Width = 533
+  object bdMain: TIBDatabase
+    DatabaseName = '172.16.192.151:c:\base puertas\gate.gdb'
+    Params.Strings = (
+      'user_name=SYSDBA'
+      'password=gl4dy5')
+    LoginPrompt = False
+    DefaultTransaction = trnMain
+    ServerType = 'IBServer'
+    AllowStreamedConnected = False
+    Left = 113
+    Top = 44
+  end
+  object trnMain: TIBTransaction
+    AllowAutoStart = False
+    DefaultDatabase = bdMain
+    Params.Strings = (
+      'read_committed'
+      'rec_version'
+      'nowait')
+    Left = 192
+    Top = 12
+  end
+  object qry_PERSON_DATA: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 272
+    Top = 128
+  end
+  object SPINSTRANSACTION: TIBStoredProc
+    Database = bdMain
+    Transaction = trnMain
+    StoredProcName = 'INSTRANSACTION'
+    Left = 176
+    Top = 168
+    ParamData = <
+      item
+        DataType = ftWideString
+        Name = 'PIDTRAN'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftWideString
+        Name = 'PEGATE'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftWideString
+        Name = 'PSENTIDO'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'PIDGATE_LOG'
+        ParamType = ptInput
+      end>
+  end
+  object qryI_PERSON_DATA: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      ''
+      
+        'INSERT INTO PERSON_DATA (TRANSACTIONID, DOC_TIPO, DOC_SUBTIPO, D' +
+        'OC_NUMERO, NOMBRE, APELLIDO, ISSUING_COUNTRY, NACIONALIDAD, PASA' +
+        'PORTE, SEXO, TRANSPORTE, TIPO_PASAJERO, POSEE_IMPEDIMENTO,FECHA_' +
+        'NAC,FACE_SCORE,DACTILAR_SCORE,FECHA_EXPIRACION,MRZ) VALUES'
+      
+        ' (:TRANSACTIONID, :DOC_TIPO, :DOC_SUBTIPO, :DOC_NUMERO, :NOMBRE,' +
+        ' :APELLIDO, :ISSUING_COUNTRY, :NACIONALIDAD, :PASAPORTE, :SEXO, ' +
+        ':TRANSPORTE, :TIPO_PASAJERO, :POSEE_IMPEDIMENTO,:FECHA_NAC,0,0,:' +
+        'FECHA_EXPIRACION,:MRZ);')
+    Left = 56
+    Top = 208
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TRANSACTIONID'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DOC_TIPO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DOC_SUBTIPO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'DOC_NUMERO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'NOMBRE'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'APELLIDO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ISSUING_COUNTRY'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'NACIONALIDAD'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'PASAPORTE'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'SEXO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'TRANSPORTE'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'TIPO_PASAJERO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'POSEE_IMPEDIMENTO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'FECHA_NAC'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'FECHA_EXPIRACION'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'MRZ'
+        ParamType = ptUnknown
+      end>
+  end
+  object SPINSTRANRESULT: TIBStoredProc
+    Database = bdMain
+    Transaction = trnMain
+    StoredProcName = 'INSTRANRESULT'
+    Left = 120
+    Top = 248
+    ParamData = <
+      item
+        DataType = ftInteger
+        Name = 'RIDTRANRES'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftWideString
+        Name = 'PTRANSACTIONID'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'PERROR'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'PRESCODE'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftWideString
+        Name = 'PSTATUS'
+        ParamType = ptInput
+      end>
+  end
+  object qryRestricciones: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      'update PERSON_DATA'
+      'set  TRANSPORTE =:TRANSPORTE,'
+      '       TIPO_PASAJERO =:TIPO_PASAJERO,'
+      '       POSEE_IMPEDIMENTO =:POSEE_IMPEDIMENTO'
+      'where TRANSACTIONID = :TRANSACTIONID')
+    Left = 352
+    Top = 72
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TRANSPORTE'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'TIPO_PASAJERO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'POSEE_IMPEDIMENTO'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'TRANSACTIONID'
+        ParamType = ptUnknown
+      end>
+  end
+  object qryI_TRANSACTION_CLOSURE: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      ''
+      
+        'INSERT INTO TRANSACTION_CLOSURE (TRANSACTIONID, MANUAL_OPENED, E' +
+        'LEGIBILIDAD) VALUES '
+      '(:TRANSACTIONID, :MANUAL_OPENED, :ELEGIBILIDAD);')
+    Left = 232
+    Top = 80
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TRANSACTIONID'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'MANUAL_OPENED'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'ELEGIBILIDAD'
+        ParamType = ptUnknown
+      end>
+  end
+  object qryFACE_SCORE: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 240
+    Top = 264
+  end
+  object qryDACTILAR_SCORE: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 368
+    Top = 216
+  end
+  object ibtblConfiguracion: TIBTable
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    TableName = 'CONFIGURACION'
+    UniDirectional = False
+    Left = 424
+    Top = 144
+    object ibtblConfiguracionID: TIntegerField
+      FieldName = 'ID'
+      Required = True
+    end
+    object ibtblConfiguracionCLAVE: TIBStringField
+      FieldName = 'CLAVE'
+      Size = 50
+    end
+    object ibtblConfiguracionVALOR: TIBStringField
+      FieldName = 'VALOR'
+      Size = 200
+    end
+    object ibtblConfiguracionNOTAS: TIBStringField
+      FieldName = 'NOTAS'
+      Size = 250
+    end
+  end
+  object qry_IDLOC: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 432
+    Top = 224
+  end
+  object qry1: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 48
+    Top = 104
+  end
+  object qry2: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 40
+    Top = 160
+  end
+  object SPINSEVENTO: TIBStoredProc
+    Database = bdMain
+    Transaction = trnMain
+    StoredProcName = 'INSEVENTO'
+    Left = 280
+    Top = 208
+    ParamData = <
+      item
+        DataType = ftInteger
+        Name = 'RIDEVENT'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftWideString
+        Name = 'PTRANSACTIONID'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'PEVENTTYPE'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftDateTime
+        Name = 'PFECHA'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftWideString
+        Name = 'PEVENTDESC'
+        ParamType = ptInput
+      end>
+  end
+  object qry3: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 40
+    Top = 296
+  end
+  object qryPersonFlight: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 392
+    Top = 280
+  end
+  object qry_INS_MANIFIESTO: TIBQuery
+    Database = bdMain
+    Transaction = trnMain
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      ''
+      'INSERT INTO MANIFIESTOS (TRANSACTIONID, NOMBRE) '
+      'VALUES (:TRANSACTIONID, :NOMBRE);')
+    Left = 192
+    Top = 232
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'TRANSACTIONID'
+        ParamType = ptUnknown
+      end
+      item
+        DataType = ftUnknown
+        Name = 'NOMBRE'
+        ParamType = ptUnknown
+      end>
+  end
+end

@@ -1,0 +1,148 @@
+{ Invokable interface ITRANSITOSGNA }
+
+unit TRANSITOSGNAIntf;
+
+interface
+
+uses Soap.InvokeRegistry, System.Types, Soap.XSBuiltIns;
+
+type
+
+
+
+  TRespuestaFilas = class(TRemotable)
+  private
+    FAPELLIDOS : String;
+    FNOMBRES : String;
+    FSEXO : String;
+    FNACIONALIDAD : String;
+    FTIPO_DOC : String;
+    FNRO_DOC : String;
+    FFECHA_CRUCE : String;
+    FPASO_CRUCE : String;
+    FTIPO_CRUCE : String;
+    FFECHA_NACIMIENTO : String;
+  published
+    property APELLIDOS : String read FAPELLIDOS write FAPELLIDOS;
+    property NOMBRES : String read FNOMBRES write FNOMBRES;
+    property SEXO : String read FSEXO write FSEXO;
+    property NACIONALIDAD : String read FNACIONALIDAD write FNACIONALIDAD;
+    property TIPO_DOC : String read FTIPO_DOC write FTIPO_DOC;
+    property NRO_DOC : String read FNRO_DOC write FNRO_DOC;
+    property FECHA_CRUCE : String read FFECHA_CRUCE write FFECHA_CRUCE;
+    property PASO_CRUCE : String read FPASO_CRUCE write FPASO_CRUCE;
+    property TIPO_CRUCE : String read FTIPO_CRUCE write FTIPO_CRUCE;
+    property FECHA_NACIMIENTO : String read FFECHA_NACIMIENTO write FFECHA_NACIMIENTO ;
+  end;
+
+  TRespuesta = array of TRespuestaFilas;
+
+  TRespuestaAmpliadaFilas = class(TRemotable)
+  private
+    FAPELLIDOS : String;
+    FNOMBRES : String;
+    FSEXO : String;
+    FNACIONALIDAD : String;
+    FTIPO_DOC : String;
+    FNRO_DOC : String;
+    FFECHA_CRUCE : String;
+    FPASO_CRUCE : String;
+    FTIPO_CRUCE : String;
+
+    FPROCEDENCIA_DETINO : String;
+    FPAIS_EMISO_DOC : String;
+    FIDENTIFICADOR_TRANSPORTE : String;
+    FFECHA_NACIMIENTO : String;
+
+
+  published
+    property APELLIDOS : String read FAPELLIDOS write FAPELLIDOS;
+    property NOMBRES : String read FNOMBRES write FNOMBRES;
+    property SEXO : String read FSEXO write FSEXO;
+    property NACIONALIDAD : String read FNACIONALIDAD write FNACIONALIDAD;
+    property TIPO_DOC : String read FTIPO_DOC write FTIPO_DOC;
+    property NRO_DOC : String read FNRO_DOC write FNRO_DOC;
+    property FECHA_CRUCE : String read FFECHA_CRUCE write FFECHA_CRUCE;
+    property PASO_CRUCE : String read FPASO_CRUCE write FPASO_CRUCE;
+    property TIPO_CRUCE : String read FTIPO_CRUCE write FTIPO_CRUCE;
+
+
+    property PROCEDENCIA_DETINO : String read FPROCEDENCIA_DETINO write FPROCEDENCIA_DETINO;
+    property PAIS_EMISO_DOC : String read FPAIS_EMISO_DOC write FPAIS_EMISO_DOC;
+    property IDENTIFICADOR_TRANSPORTE : String read FIDENTIFICADOR_TRANSPORTE write FIDENTIFICADOR_TRANSPORTE;
+    property FECHA_NACIMIENTO : String read FFECHA_NACIMIENTO write FFECHA_NACIMIENTO ;
+
+  end;
+
+  TRespuestaAmpliada = array of TRespuestaAmpliadaFilas;
+
+
+
+
+  TConsulta = class(TRemotable)
+  private
+    FUSUARIO   : string;
+    FCLAVE     : String;
+    FOPERADOR  : String;
+    FNOMBRE1   : String;
+    FNOMBRE2   : String;
+    FAPELLIDO1 : String;
+    FAPELLIDO2 : String;
+    FNUMDOC : Integer;
+  published
+    property USUARIO   : String read FUSUARIO write FUSUARIO;
+    property CLAVE     : String read FCLAVE write FCLAVE;
+    property OPERADOR  : String read FOPERADOR write FOPERADOR;
+    property NOMBRE1   : String read FNOMBRE1 write FNOMBRE1;
+    property NOMBRE2   : String read FNOMBRE2 write FNOMBRE2;
+    property APELLIDO1 : String read FAPELLIDO1 write FAPELLIDO1;
+    property APELLIDO2 : String read FAPELLIDO2 write FAPELLIDO2;
+    property NUMDOC    : Integer read FNUMDOC write FNUMDOC;
+  end;
+
+  TConsultaNew = class(TRemotable)
+  private
+    FUSUARIO   : string;
+    FCLAVE     : String;
+    FOPERADOR  : String;
+    FNOMBRE1   : String;
+    FNOMBRE2   : String;
+    FAPELLIDO1 : String;
+    FAPELLIDO2 : String;
+    FNUMDOC    : Integer;
+    FFECHANAC     : String;
+    FNACIONALIDAD : String;
+  published
+    property USUARIO      : String read FUSUARIO write FUSUARIO;
+    property CLAVE        : String read FCLAVE write FCLAVE;
+    property OPERADOR     : String read FOPERADOR write FOPERADOR;
+    property NOMBRE1      : String read FNOMBRE1 write FNOMBRE1;
+    property NOMBRE2      : String read FNOMBRE2 write FNOMBRE2;
+    property APELLIDO1    : String read FAPELLIDO1 write FAPELLIDO1;
+    property APELLIDO2    : String read FAPELLIDO2 write FAPELLIDO2;
+    property NUMDOC       : Integer read FNUMDOC write FNUMDOC;
+    property FECHANAC     : String read FFECHANAC write FFECHANAC;
+    property NACIONALIDAD : string read FNACIONALIDAD write FNACIONALIDAD;
+  end;
+
+  { Invokable interfaces must derive from IInvokable }
+  ITRANSITOSGNA = interface(IInvokable)
+  ['{84683188-4449-4546-A909-A70B6D0F6374}']
+
+    { Methods of Invokable interface must not use the default }
+    { calling convention; stdcall is recommended }
+    function doRequest(Consulta: TConsulta): TRespuesta; stdcall;
+    function doRequestStr(Consulta: TConsulta) : String; stdcall;
+    function doRequestPersons(fecha: string; matricula : string) : TRespuesta; stdcall; //; transitoDireccion : string
+    function doRequestNew(ConsultaNew: TConsultaNew): TRespuesta;  stdcall;
+
+    function doRequestAmpliada(Consulta: TConsulta): TRespuestaAmpliada; stdcall;
+  end;
+
+implementation
+
+initialization
+  { Invokable interfaces must be registered }
+  InvRegistry.RegisterInterface(TypeInfo(ITRANSITOSGNA));
+
+end.

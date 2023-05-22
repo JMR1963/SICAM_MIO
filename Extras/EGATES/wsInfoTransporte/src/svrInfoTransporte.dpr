@@ -1,0 +1,28 @@
+program svrInfoTransporte;
+{$APPTYPE GUI}
+
+uses
+  Vcl.Forms,
+  Web.WebReq,
+  IdHTTPWebBrokerBridge,
+  infotransporte in 'infotransporte.pas' {WebModule1: TWebModule},
+  infoTransporteImpl in 'infoTransporteImpl.pas',
+  infoTransporteIntf in 'infoTransporteIntf.pas',
+  IpuenteApiMar1 in 'IpuenteApiMar1.pas',
+  IpuenteApiMar2 in 'IpuenteApiMar2.pas',
+  IpuenteApiMar3 in 'IpuenteApiMar3.pas',
+  UDM in 'UDM.pas' {dm: TDataModule},
+  uMainForm in 'uMainForm.pas' {MainForm};
+
+{$R *.res}
+
+begin
+  if WebRequestHandler <> nil then
+    WebRequestHandler.WebModuleClass := TWebModule1;
+
+  Application.Initialize;
+  Application.CreateForm(TWebModule1, WebModule1);
+  Application.CreateForm(Tdm, dm);
+  Application.CreateForm(TMainForm, MainForm);
+  Application.Run;
+end.

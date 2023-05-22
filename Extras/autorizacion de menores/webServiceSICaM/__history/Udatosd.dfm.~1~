@@ -1,0 +1,389 @@
+object DataModule1: TDataModule1
+  OldCreateOrder = False
+  Left = 517
+  Top = 180
+  Height = 347
+  Width = 604
+  object osConeccion: TOraSession
+    Username = 'autusr'
+    Password = 'usraut'
+    Server = 'nominas'
+    Left = 104
+    Top = 16
+  end
+  object ospBusqueda_escribanos: TOraStoredProc
+    StoredProcName = 'autorizaciones_viaje.PR_OBTENER_AUTORIZA_ESCRIBANO'
+    Session = osConeccion
+    SQL.Strings = (
+      'begin'
+      
+        '  autorizaciones_viaje.PR_OBTENER_AUTORIZA_ESCRIBANO(:P_NUMERO_D' +
+        'OC, :P_FECHA_NAC, :P_NRO_ACT_NOTARIAL_CERT_FIRMA, :P_SERIE_FOJA,' +
+        ' :P_TIPO_FOJA, :P_MENOR, :P_AUTORIZANTE_1, :P_AUTORIZANTE_2, :P_' +
+        'NOMBRES_ESCRIBANO, :P_APELLIDOS_ESCRIBANO, :P_FECHA_DEL_INSTRUME' +
+        'NTO, :P_PAISES_TODOS, :P_APELLIDO_MENOR, :P_SAPELLIDO_MENOR, :P_' +
+        'NOMBRE_MENOR, :P_SNOMBRE_MENOR, :P_NACIONALIDAD_MENOR, :P_TIPO_D' +
+        'OC_MENOR, :P_EMISOR_DOC_MENOR, :P_ID, :P_NOMBRE_AUTORIZANTE1, :P' +
+        '_OTROS_NOMBRES_AUTORIZANTE1, :P_APELLIDO_AUTORIZANTE1, :P_S_APEL' +
+        'LIDO_AUTORIZANTE1, :P_NOMBRE_AUTORIZANTE2, :P_OTROS_NOMBRES_AUTO' +
+        'RIZANTE2, :P_APELLIDO_AUTORIZANTE2, :P_S_APELLIDO_AUTORIZANTE2);'
+      'end;')
+    Left = 104
+    Top = 72
+    ParamData = <
+      item
+        DataType = ftString
+        Name = 'P_NUMERO_DOC'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftString
+        Name = 'P_FECHA_NAC'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NRO_ACT_NOTARIAL_CERT_FIRMA'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SERIE_FOJA'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_TIPO_FOJA'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftFloat
+        Name = 'P_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftFloat
+        Name = 'P_AUTORIZANTE_1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftFloat
+        Name = 'P_AUTORIZANTE_2'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NOMBRES_ESCRIBANO'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_APELLIDOS_ESCRIBANO'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_FECHA_DEL_INSTRUMENTO'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_PAISES_TODOS'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_APELLIDO_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SAPELLIDO_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NOMBRE_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SNOMBRE_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NACIONALIDAD_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_TIPO_DOC_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_EMISOR_DOC_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftFloat
+        Name = 'P_ID'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NOMBRE_AUTORIZANTE1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_OTROS_NOMBRES_AUTORIZANTE1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_APELLIDO_AUTORIZANTE1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_S_APELLIDO_AUTORIZANTE1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NOMBRE_AUTORIZANTE2'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_OTROS_NOMBRES_AUTORIZANTE2'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_APELLIDO_AUTORIZANTE2'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_S_APELLIDO_AUTORIZANTE2'
+        ParamType = ptOutput
+      end>
+  end
+  object ospBusquedaSacer: TOraStoredProc
+    StoredProcName = 'autorizaciones_viaje.PR_OBTENER_AUTORIZACION_SACER'
+    Session = osConeccion
+    SQL.Strings = (
+      'begin'
+      
+        '  autorizaciones_viaje.PR_OBTENER_AUTORIZACION_SACER(:P_NUMERO_D' +
+        'OC, :P_FECHA_NAC, :P_NRO_SOLICITUD, :P_FECHA_SOLICITUD, :P_APELL' +
+        'IDO_MENOR, :P_NOMBRE_MENOR, :P_NACIONALIDAD, :P_PA_APELLIDO_1, :' +
+        'P_PA_APELLIDO_2, :P_PA_NOMBRE_1, :P_PA_NOMBRE_2, :P_PA_TIPO_DOCU' +
+        'MENTO, :P_PA_NRO_DOCUMENTO, :P_PA_NACIONALIDAD, :P_SA_APELLIDO_1' +
+        ', :P_SA_APELLIDO_2, :P_SA_NOMBRE_1, :P_SA_NOMBRE_2, :P_SA_TIPO_D' +
+        'OCUMENTO, :P_SA_NRO_DOCUMENTO, :P_SA_NACIONALIDAD, :P_ACOMPANIAN' +
+        'TE_DESCRIPCION);'
+      'end;')
+    Left = 104
+    Top = 120
+    ParamData = <
+      item
+        DataType = ftString
+        Name = 'P_NUMERO_DOC'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftString
+        Name = 'P_FECHA_NAC'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NRO_SOLICITUD'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftDateTime
+        Name = 'P_FECHA_SOLICITUD'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_APELLIDO_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NOMBRE_MENOR'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_NACIONALIDAD'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_PA_APELLIDO_1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_PA_APELLIDO_2'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_PA_NOMBRE_1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_PA_NOMBRE_2'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_PA_TIPO_DOCUMENTO'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_PA_NRO_DOCUMENTO'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_PA_NACIONALIDAD'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SA_APELLIDO_1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SA_APELLIDO_2'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SA_NOMBRE_1'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SA_NOMBRE_2'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SA_TIPO_DOCUMENTO'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SA_NRO_DOCUMENTO'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_SA_NACIONALIDAD'
+        ParamType = ptOutput
+      end
+      item
+        DataType = ftString
+        Name = 'P_ACOMPANIANTE_DESCRIPCION'
+        ParamType = ptOutput
+      end>
+  end
+  object ospTerceros: TOraStoredProc
+    StoredProcName = 'autorizaciones_viaje.FN_TERCEROS'
+    Session = osConeccion
+    SQL.Strings = (
+      'begin'
+      '  :RESULT := autorizaciones_viaje.FN_TERCEROS(:P_TRAMITE);'
+      'end;')
+    Left = 112
+    Top = 176
+    ParamData = <
+      item
+        DataType = ftCursor
+        Name = 'RESULT'
+        ParamType = ptOutput
+        Value = 'Object'
+      end
+      item
+        DataType = ftFloat
+        Name = 'P_TRAMITE'
+        ParamType = ptInput
+      end>
+  end
+  object oqProgenitores: TOraQuery
+    Session = osConeccion
+    SQL.Strings = (
+      'SELECT'
+      '  PE.ID,'
+      '  PE.APELLIDO,'
+      '  PE.SEGUNDO_APELLIDO,'
+      '  PE.NOMBRE,'
+      '  PE.OTROS_NOMBRES,'
+      '  PE.TIPO_DOCUMENTO,'
+      '  PE.NUMERO_DOCUMENTO'
+      'FROM'
+      '  AUTORIZACIONES_VIAJE.progenitores  AT'
+      'INNER JOIN'
+      '  AUTORIZACIONES_VIAJE.PERSONA PE ON(AT.progenitor = PE.ID)'
+      'WHERE'
+      '  AT.TRAMITE = :ptramite'
+      'ORDER BY'
+      '  PE.ID')
+    Left = 224
+    Top = 24
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'ptramite'
+      end>
+  end
+  object OqAcompaniantes: TOraQuery
+    Session = osConeccion
+    SQL.Strings = (
+      'select '
+      
+        '    p1.nombre ||'#39' '#39' ||  p1.otros_nombres nombre1, p1.apellido ||' +
+        #39' '#39' || p1.segundo_apellido apellido1,'
+      
+        '    p2.nombre ||'#39' '#39' ||  p2.otros_nombres nombre2, p2.apellido ||' +
+        #39' '#39' || p2.segundo_apellido apellido2'
+      'FROM '
+      '    AUTORIZACIONES_VIAJE.AUTORIZACION au'
+      'inner join '
+      '    AUTORIZACIONES_VIAJE.persona p1'
+      'on'
+      '    p1.id = au.autorizante_1'
+      'inner join '
+      '   AUTORIZACIONES_VIAJE.persona p2'
+      'on'
+      '    p2.id = au.autorizante_2'
+      'where '
+      '    au.id = :pau')
+    Left = 232
+    Top = 88
+    ParamData = <
+      item
+        DataType = ftUnknown
+        Name = 'pau'
+      end>
+  end
+  object ospAutorizacionesMenores: TOraStoredProc
+    StoredProcName = 'AUTORIZACIONES_VIAJE.PR_OBTENER_AUTORIZACION_MENOR'
+    Session = osConeccion
+    Left = 224
+    Top = 176
+  end
+end

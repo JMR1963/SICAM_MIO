@@ -1,0 +1,81 @@
+{ Invokable implementation File for TpuenteBoliviano which implements IpuenteBoliviano }
+
+unit puenteBolivianoImpl;
+
+interface
+
+uses Soap.InvokeRegistry, System.Types, Soap.XSBuiltIns, puenteBolivianoIntf,wsImpedimentosBolivia, forms, dialogs, sysutils,
+      inifiles;
+
+
+type
+
+  { TpuenteBoliviano }
+  TpuenteBoliviano = class(TInvokableClass, IpuenteBoliviano)
+  public
+    function ConsultaBolivia(Consulta: DatosEntradaPte): DatosSalidaPte; stdcall;
+  end;
+
+implementation
+
+
+function TpuenteBoliviano.ConsultaBolivia(Consulta: DatosEntradaPte): DatosSalidaPte;
+var ws : wsImpedimentosBoliviaSoap;
+    r: DatosSalida;
+    a: DatosEntrada;
+    res :DatosSalidaPte;
+    usuario, clave, wsBOL : string;
+    ini : tinifile;
+
+begin
+  r:= DatosSalida.Create;
+  res:= DatosSalidaPte.Create;
+  try
+    ini := TIniFile.Create('.\config.ini'); //ExtractFilePath(application.exename)+
+    usuario:= ini.ReadString('CONFIG','USUARIO','');
+    clave:= ini.ReadString('CONFIG','CLAVE','');
+    wsBOL:= ini.ReadString('CONFIG','WSBOL','');
+    ws :=  GetwsImpedimentosBoliviaSoap(false, wsBOL); //, uglobal.WSPUENTE
+    a := DatosEntrada.Create;
+    a.CODPAIS:= consulta.CODPAIS;
+    A.NOMBRE1:= consulta.NOMBRE1;
+    A.NOMBRE2:= consulta.NOMBRE2;
+    A.APELLIDO1:= consulta.APELLIDO1;
+    A.APELLIDO2:= consulta.APELLIDO2;
+    A.NUMDOC:= consulta.NUMDOC;
+    A.PUESTOCONTROL:= consulta.PUESTOCONTROL;
+    A.TIPODOC:= consulta.TIPODOC;
+    A.EMISORDOC := consulta.EMISORDOC;
+    A.FECHANAC := consulta.FECHANAC;
+    A.GENERO:= consulta.GENERO;
+    A.NACIONALIDAD := consulta.NACIONALIDAD;
+    A.NUMEROIDENIFICACION := consulta.NUMEROIDENIFICACION;
+    a.USUARIO := 'PRUEBA';
+    a.CLAVE := 'bc8d59dd17141b22494512d8fffc89d9';
+    r := ws.ConsultaImpedimentosBolivia(a);
+    res.COD_RTA := r.COD_RTA;
+    res.COD_DETALLE_RTA := r.COD_DETALLE_RTA;
+  except
+    on e: exception do
+    begin
+      res.COD_RTA := '0';
+      res.COD_DETALLE_RTA := '101';
+    end;
+  end;
+  Result:= Res;
+end;
+
+
+
+
+
+
+
+
+
+
+initialization
+{ Invokable classes must be registered }
+   InvRegistry.RegisterInvokableClass(TpuenteBoliviano);
+end.
+

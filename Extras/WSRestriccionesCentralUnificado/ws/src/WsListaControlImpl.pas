@@ -1,0 +1,1161 @@
+{ Invokable implementation File for TWsListaControl which implements IWsListaControl }
+
+unit WsListaControlImpl;
+
+interface
+
+uses
+  soap.InvokeRegistry, system.Types, soap.XSBuiltIns, WsListaControlIntf, UcheckConn, SysUtils, Classes,
+  vcl.Dialogs, Uhilo, ActiveX, SqlOracleManage, INIFILES ;
+
+type
+
+  { TWsListaControl }
+  TWsListaControl_Unif = class(TInvokableClass, IWsListaControl_Unif)
+  private
+    function ValidarParametros(Consulta: XML_CONSULTA_NEW): Boolean;
+    function DateTimeStrEval(const DateTimeFormat : string; const DateTimeStr : string) : TDateTime;
+    function ClonarConsulta(original: XML_CONSULTA_NEW): XML_CONSULTA_NEW;
+    function CheckFuente(
+      Fuente,
+      FuenteOrg: String;
+      Consulta: XML_CONSULTA_NEW): TConsultaHilos;
+    procedure ProcesarRestricciones(
+      Query: TConsultaHilos;
+      var RestriccionesTemp: ResultadoConsulta;
+      var RestriccionActual: Integer);
+    procedure ProcesarFuente(
+      Fuente,
+      FuenteOrg: String;
+      Query: TConsultaHilos;
+      var FuentesTemp: TESTATMANYSOURCES_NEW;
+      var NroFuente: Integer);
+    procedure WaitFor(Query: TConsultaHilos);
+    procedure Incrementar(var Len: Integer; Query: TConsultaHilos);
+
+    procedure generarTxT(path, resultado:string);
+  public
+
+    function ConsultaRestriccion(Consulta: XML_CONSULTA_NEW): TRESULTADO_NEW; stdcall;
+    function ConsultaRestriccionARG(consulta: XML_CONSULTA_NEW): TRESPUESTA_ARG; stdcall;
+
+    function dameLugar(APath,doc:  string):string;
+    function YaConsulteArchivo(doc : string):string;
+    //sera utilizada En RRC para consultar las listas de control de los terceros paises
+    function ConsultaRestriccionLocal(Consulta: XML_CONSULTA_NEW): TRESULTADO_NEW; stdcall;
+
+
+  end;
+
+implementation
+
+uses
+  system.Variants, system.DateUtils, ComObj, IWsListaControl1, WSdePaiseParaConsultaRestriccionLocal, uglobal; //FsocketChile
+
+{ TWsListaControl }
+
+const
+  WSTIMEOUT = 30000; // Timeout en milisegundos.
+
+function TWsListaControl_Unif.ValidarParametros(Consulta: XML_CONSULTA_NEW): Boolean;
+begin
+  result:= (Length(Trim(Consulta.NUMDOC)) >= 2) or
+           ((Length(Trim(Consulta.APELLIDO1)) >= 2) and (Length(Trim(Consulta.NOMBRE1)) >= 2));
+end;
+
+function TWsListaControl_Unif.DateTimeStrEval(const DateTimeFormat : string;
+                         const DateTimeStr : string) : TDateTime;
+
+// Supports DateTimeFormat Specifiers
+//
+// dd    the day as a number with a leading zero or space (01-31).
+// ddd the day as an abbreviation (Sun-Sat)
+// dddd the day as a full name (Sunday-Saturday)
+// mm    the month as a number with a leading zero or space (01-12).
+// mmm the month as an abbreviation (Jan-Dec)
+// mmmm the month as a full name (January-December)
+// yy    the year as a two-digit number (00-99).
+// yyyy the year as a four-digit number (0000-9999).
+// hh    the hour with a leading zero or space (00-23)
+// nn    the minute with a leading zero or space (00-59).
+// ss    the second with a leading zero or space (00-59).
+// zzz the millisecond with a leading zero (000-999).
+// ampm  Specifies am or pm flag hours (0..12)
+// ap    Specifies a or p flag hours (0..12)
+
+
+var i,ii,iii : integer;
+    Retvar : TDateTime;
+    Tmp,
+    Fmt,Data,Mask,Spec : string;
+    Year,Month,Day,Hour,
+    Minute,Second,MSec : word;
+    AmPm : integer;
+begin
+  Year := 1;
+  Month := 1;
+  Day := 1;
+  Hour := 0;
+  Minute := 0;
+  Second := 0;
+  MSec := 0;
+  Fmt := UpperCase(DateTimeFormat);
+  Data := UpperCase(DateTimeStr);
+  i := 1;
+  Mask := '';
+  AmPm := 0;
+
+  while i < length(Fmt) do begin
+    if Fmt[i] in ['A','P','D','M','Y','H','N','S','Z'] then begin
+      // Start of a date specifier
+      Mask  := Fmt[i];
+      ii := i + 1;
+
+      // Keep going till not valid specifier
+      while true do begin
+        if ii > length(Fmt) then Break; // End of specifier string
+        Spec := Mask + Fmt[ii];
+
+        if (Spec = 'DD') or (Spec = 'DDD') or (Spec = 'DDDD') or
+           (Spec = 'MM') or (Spec = 'MMM') or (Spec = 'MMMM') or
+           (Spec = 'YY') or (Spec = 'YYY') or (Spec = 'YYYY') or
+           (Spec = 'HH') or (Spec = 'NN') or (Spec = 'SS') or
+           (Spec = 'ZZ') or (Spec = 'ZZZ') or
+           (Spec = 'AP') or (Spec = 'AM') or (Spec = 'AMP') or
+           (Spec = 'AMPM') then begin
+          Mask := Spec;
+          inc(ii);
+        end
+        else begin
+          // End of or Invalid specifier
+          Break;
+        end;
+      end;
+
+      // Got a valid specifier ? - evaluate it from data string
+      if (Mask <> '') and (length(Data) > 0) then begin
+        // Day 1..31
+        if (Mask = 'DD') then begin
+           Day := StrToIntDef(trim(copy(Data,1,2)),0);
+           delete(Data,1,2);
+        end;
+
+        // Day Sun..Sat (Just remove from data string)
+        if Mask = 'DDD' then delete(Data,1,3);
+
+        // Day Sunday..Saturday (Just remove from data string LEN)
+        if Mask = 'DDDD' then begin
+          Tmp := copy(Data,1,3);
+          for iii := 1 to 7 do begin
+            if Tmp = Uppercase(copy(SysUtils.FormatSettings.LongDayNames[iii],1,3)) then begin
+              delete(Data,1,length(SysUtils.FormatSettings.LongDayNames[iii]));
+              Break;
+            end;
+          end;
+        end;
+
+        // Month 1..12
+        if (Mask = 'MM') then begin
+           Month := StrToIntDef(trim(copy(Data,1,2)),0);
+           delete(Data,1,2);
+        end;
+
+        // Month Jan..Dec
+        if Mask = 'MMM' then begin
+          Tmp := copy(Data,1,3);
+          for iii := 1 to 12 do begin
+            if Tmp = Uppercase(copy(SysUtils.FormatSettings.LongDayNames[iii],1,3)) then begin
+              Month := iii;
+              delete(Data,1,3);
+              Break;
+            end;
+          end;
+        end;
+
+
+        // Month January..December
+        if Mask = 'MMMM' then begin
+          Tmp := copy(Data,1,3);
+          for iii := 1 to 12 do begin
+            if Tmp = Uppercase(copy(SysUtils.FormatSettings.LongDayNames[iii],1,3)) then begin
+              Month := iii;
+              delete(Data,1,length(SysUtils.FormatSettings.LongMonthNames[iii]));
+              Break;
+            end;
+          end;
+        end;
+
+        // Year 2 Digit
+        if Mask = 'YY' then begin
+          Year := StrToIntDef(copy(Data,1,2),0);
+          delete(Data,1,2);
+          if Year < SysUtils.FormatSettings.TwoDigitYearCenturyWindow then
+            Year := (YearOf(Date) div 100) * 100 + Year
+          else
+            Year := (YearOf(Date) div 100 - 1) * 100 + Year;
+        end;
+
+        // Year 4 Digit
+        if Mask = 'YYYY' then begin
+          Year := StrToIntDef(copy(Data,1,4),0);
+          delete(Data,1,4);
+        end;
+
+        // Hours
+        if Mask = 'HH' then begin
+           Hour := StrToIntDef(trim(copy(Data,1,2)),0);
+           delete(Data,1,2);
+        end;
+
+        // Minutes
+        if Mask = 'NN' then begin
+           Minute := StrToIntDef(trim(copy(Data,1,2)),0);
+           delete(Data,1,2);
+        end;
+
+        // Seconds
+        if Mask = 'SS' then begin
+           Second := StrToIntDef(trim(copy(Data,1,2)),0);
+           delete(Data,1,2);
+        end;
+
+        // Milliseconds
+        if (Mask = 'ZZ') or (Mask = 'ZZZ') then begin
+           MSec := StrToIntDef(trim(copy(Data,1,3)),0);
+           delete(Data,1,3);
+        end;
+
+
+        // AmPm A or P flag
+        if (Mask = 'AP') then begin
+           if Data[1] = 'A' then
+             AmPm := -1
+           else
+             AmPm := 1;
+           delete(Data,1,1);
+        end;
+
+        // AmPm AM or PM flag
+        if (Mask = 'AM') or (Mask = 'AMP') or (Mask = 'AMPM') then begin
+           if copy(Data,1,2) = 'AM' then
+             AmPm := -1
+           else
+             AmPm := 1;
+           delete(Data,1,2);
+        end;
+
+        Mask := '';
+        i := ii;
+      end;
+    end
+    else begin
+      // Remove delimiter from data string
+      if length(Data) > 1 then delete(Data,1,1);
+      inc(i);
+    end;
+  end;
+
+  if AmPm = 1 then Hour := Hour + 12;
+  if not TryEncodeDateTime(Year,Month,Day,Hour,Minute,Second,MSec,Retvar) then
+    Retvar := 0.0;
+  Result := Retvar;
+end;
+
+function TWsListaControl_Unif.ClonarConsulta(original: XML_CONSULTA_NEW): XML_CONSULTA_NEW;
+begin
+  Result := XML_CONSULTA_NEW.Create;
+  result.FUENTES              := original.FUENTES;
+  Result.USUARIO              := original.USUARIO;
+  Result.CLAVE                := original.CLAVE;
+  Result.OPERADOR             := original.OPERADOR;
+  Result.NOMBRE1              := original.NOMBRE1;
+  Result.NOMBRE2              := original.NOMBRE2;
+  Result.APELLIDO1            := original.APELLIDO1;
+  Result.APELLIDO2            := original.APELLIDO2;
+  Result.NUMDOC               := original.NUMDOC;
+  Result.IP                   := original.IP;
+  Result.TIPODOC              := original.TIPODOC;
+  Result.EMISORDOC            := original.EMISORDOC;
+  Result.FECHANAC             := original.FECHANAC;
+  Result.GENERO               := original.GENERO;
+  Result.NACIONALIDAD         := original.NACIONALIDAD;
+  Result.NUMEROIDENIFICACION  := original.NUMEROIDENIFICACION;
+  Result.PASO  := original.PASO;  
+end;
+
+function TWsListaControl_Unif.CheckFuente(
+  Fuente,
+  FuenteOrg: String;
+  Consulta: XML_CONSULTA_NEW): TConsultaHilos;
+begin
+  Result := nil;
+  if Pos(Fuente, FuenteOrg) <> 0 then
+    try
+      Result := TConsultaHilos.Create(True);
+      Consulta.FUENTES := Fuente;
+      Result.Consulta := ClonarConsulta(Consulta);
+      Result.FreeOnTerminate := False;
+      Result.Resume;
+    except
+      Result := nil;
+    end;
+end;
+
+procedure TWsListaControl_Unif.ProcesarRestricciones(
+  Query: TConsultaHilos;
+  var RestriccionesTemp: ResultadoConsulta;
+  var RestriccionActual: Integer);
+var
+  restricciones: ResultadoConsulta;
+  i: Integer;
+begin
+  if Query <> nil then
+    if Query.Finalizado and (Query.CantidadTotalRestricciones > 0) then
+    begin
+      // Devuelve una copia de las restricciones.
+      restricciones := Query.Restricciones;
+      for i := 0 to Query.CantidadTotalRestricciones-1 do
+        restriccionesTemp[RestriccionActual+i] := restricciones[i];
+      RestriccionActual := RestriccionActual + Query.CantidadTotalRestricciones;
+    end;
+end;
+
+procedure TWsListaControl_Unif.ProcesarFuente(
+  Fuente,
+  FuenteOrg: String;
+  Query: TConsultaHilos;
+  var FuentesTemp: TESTATMANYSOURCES_NEW;
+  var NroFuente: Integer);
+begin
+  if Query <> nil then
+    if Query.Finalizado then
+      if Pos(Fuente, FuenteOrg) <> 0 then
+      begin
+        SetLength(FuentesTemp, NroFuente+1);
+        // Chequeamos que halla finalizado
+        if Query.Finalizado then
+          FuentesTemp[NroFuente] := Query.Fuente[0]
+        else
+        begin
+          //Si no finalizo entonces colocamos el estado E de error
+          FuentesTemp[NroFuente] := TESTATSOURCE_NEW.Create;
+          FuentesTemp[NroFuente].FUENTES := Fuente;
+          FuentesTemp[NroFuente].ESTADO  := 'E';
+        end;
+        Inc(NroFuente);
+      end;
+end;
+
+procedure TWsListaControl_Unif.WaitFor(Query: TConsultaHilos);
+begin
+  if Query <> nil then
+    Query.Ev.WaitFor(WSTIMEOUT);
+end;
+
+procedure TWsListaControl_Unif.Incrementar(var Len: Integer; Query: TConsultaHilos);
+begin
+  if Query <> nil then
+    if Query.Finalizado then
+      Len := Len + Query.CantidadTotalRestricciones;
+end;
+
+function TWsListaControl_Unif.ConsultaRestriccion(Consulta: XML_CONSULTA_NEW): TRESULTADO_NEW;
+var
+
+  Ora : TSqlOracle;
+  queryCOL,queryINTERPOL,queryPRF, queryFPE, queryURY  : TConsultaHilos;
+  lengthArray, restriccionActual, nroFuente : Integer;
+  restriccionesTemp :  ResultadoConsulta;
+  fuenteOriginal : String;
+  fuentesTemp : TESTATMANYSOURCES_NEW;
+
+
+  ws : IWsListaControl;
+  auxcon : XML_CONSULTA;
+  auxres : TRESULTADO;
+
+
+  temprestri   : ResultadoConsulta;
+  tempFuentes  : TESTATMANYSOURCES_NEW;
+
+  i,j : integer;
+
+  A : WsListaControlIntf.RESTRICCION;
+  B : WsListaControlIntf.TESTATSOURCE_NEW;
+
+  INI : TIniFile;
+
+  sexo : string;
+
+  function datevuelta(unafecha: string): string;
+  begin
+    result := copy(unafecha,9,2) +'/'+copy(unafecha,6,2) +'/'+copy(unafecha,1,4);
+  end;
+
+
+
+  function dedondellamo(var entrada:string): string;
+  var
+    Straux : string;
+    I,J,ii : integer;
+  begin
+    Straux :='';
+    j:=0;
+    i:=0;
+    ii:=0;
+    Straux :=entrada;
+    While (i <= length(entrada))  do
+    begin
+      if (entrada[i] = '-') then
+      begin
+        case j of
+          0: result:=copy(Straux,1, ii-1 );
+        end;
+        ii:=0;
+        Straux := copy(entrada, i+1, length(entrada));
+        j:=j+1;
+      end;
+      ii:=ii+1;
+      i:= i+1;
+    end;
+    entrada := Straux;
+  end;
+
+
+
+
+
+begin
+
+  ini := TIniFile.Create('.\config.ini');
+  uglobal.url:= ini.ReadString('CONFIG','IP','N');
+  uglobal.wSInterpol:= ini.ReadString('CONFIG','WSINTERPOL','N');
+  uglobal.WSURY:= ini.ReadString('CONFIG','WSURY','N');
+  uglobal.ConsultaRestriccionCentral := ini.ReadString('CONFIG','ConsultaRestriccionCentral','0');
+  uglobal.serverAPI := ini.ReadString('CONFIG','serverAPI','10.100.187.12');
+
+
+  sexo :=Consulta.GENERO;
+  DesdeDondeLlamamos:= dedondellamo(sexo);
+  Consulta.GENERO := sexo;
+
+  //generarTxT('.\log.txt',Consulta.APELLIDO1+'-'+Consulta.APELLIDO2+'-'+Consulta.NOMBRE1+'-'+Consulta.NOMBRE2+'-'+Consulta.NUMDOC);
+  fuenteOriginal := Consulta.FUENTES;
+  ORA := TSqlOracle.Create;
+
+
+  // Chequeo de parametros de la consulta
+  if ValidarParametros(Consulta) then
+  begin
+    queryFPE    := CheckFuente('FPE' , fuenteOriginal, Consulta);  
+    if Consulta.EMISORDOC = 'COL' then
+      queryCOL    := CheckFuente('COL' , fuenteOriginal, Consulta);
+    queryInterpol    := CheckFuente('XPO' , fuenteOriginal, Consulta);
+    queryPRF    := CheckFuente('PRF' , fuenteOriginal, Consulta);
+
+    queryURY    := CheckFuente('URY' , fuenteOriginal, Consulta);
+
+    WaitFor(queryFPE);
+    if Consulta.EMISORDOC = 'COL' then
+      WaitFor(queryCOL);
+    WaitFor(queryINTERPOL);
+    WaitFor(queryPRF);
+
+    WaitFor(queryUry);
+
+    lengthArray := 0;
+
+    Incrementar(lengthArray, queryFPE);
+    if Consulta.EMISORDOC = 'COL' then
+      Incrementar(lengthArray, queryCOL);
+    Incrementar(lengthArray, queryINTERPOL);
+    Incrementar(lengthArray, queryPRF);
+
+    Incrementar(lengthArray, queryURY);
+
+    SetLength(restriccionesTemp, lengthArray);
+    restriccionActual := 0;
+
+    ProcesarRestricciones(queryFPE, restriccionesTemp, restriccionActual);
+    if Consulta.EMISORDOC = 'COL' then
+      ProcesarRestricciones(queryCOL, restriccionesTemp, restriccionActual);
+    ProcesarRestricciones(queryINTERPOL, restriccionesTemp, restriccionActual);
+    ProcesarRestricciones(queryPRF, restriccionesTemp, restriccionActual);
+
+    ProcesarRestricciones(queryURY, restriccionesTemp, restriccionActual);
+
+    // Las fuentes
+    nrofuente := 0;
+
+    ProcesarFuente('FPE', fuenteOriginal, queryFPE, fuentesTemp, nroFuente);
+    if Consulta.EMISORDOC = 'COL' then
+      ProcesarFuente('COL', fuenteOriginal, queryCOL, fuentesTemp, nroFuente);
+    ProcesarFuente('XPO', fuenteOriginal, queryINTERPOL, fuentesTemp, nroFuente);
+    ProcesarFuente('PRF', fuenteOriginal, queryPRF, fuentesTemp, nroFuente);
+
+    ProcesarFuente('URY', fuenteOriginal, queryURY, fuentesTemp, nroFuente);
+
+
+    (*
+        Procesar fuentes viejas
+        ws : IWsListaControl;
+        auxcon : XML_CONSULTA;
+        auxres : XML_RESPUESTA;
+    *)
+
+
+
+    if trim(ConsultaRestriccionCentral) = '1' then
+    begin
+      try
+        ws := GetIWsListaControl(true);  //'',
+        auxcon := XML_CONSULTA.Create;
+        auxcon.FUENTES := fuenteOriginal;
+        auxcon.USUARIO := Consulta.USUARIO;
+        auxcon.CLAVE := Consulta.CLAVE;
+
+        if Pos('-',Consulta.OPERADOR) <> 0 then
+           auxcon.OPERADOR:= copy(Consulta.OPERADOR, 1, Pos('-',Consulta.OPERADOR)-1)
+        else
+          auxcon.OPERADOR :=  Consulta.OPERADOR;
+
+        auxcon.APELLIDO1 := Consulta.APELLIDO1;
+        auxcon.APELLIDO2 := Consulta.APELLIDO2;
+        auxcon.NOMBRE1 := Consulta.NOMBRE1;
+        auxcon.NOMBRE2 := Consulta.NOMBRE2;
+        auxcon.NUMDOC := Consulta.NUMDOC;
+        auxcon.IP := Consulta.IP;
+
+        auxres :=  ws.ConsultaRestriccion(auxcon);
+
+      except
+        ConsultaRestriccionCentral := '1';
+      end;
+     end;
+
+    (***************************************************)
+    (*************  MERGE DE RESTRICCIONES  ************)
+    (***************************************************)
+
+    if trim(ConsultaRestriccionCentral) = '1' then
+      SetLength(temprestri, length(restriccionesTemp)+ length(auxres.restricciones))
+    else
+      SetLength(temprestri, length(restriccionesTemp));
+
+    for i := 0 to length(restriccionesTemp)-1 do
+    begin
+      A := WsListaControlIntf.Restriccion.CREATE;
+      A.FUENTE  :=restriccionesTemp[i].FUENTE;
+      A.ID_PERS_PADRE:=restriccionesTemp[i].ID_PERS_PADRE;
+      A.ID_PERS :=restriccionesTemp[i].ID_PERS;
+      A.ID_MOV_C :=restriccionesTemp[i].ID_MOV_C;
+      A.DESC_TIPO_DOC :=restriccionesTemp[i].DESC_TIPO_DOC;
+      A.DOCTIPO := restriccionesTemp[i].DOCTIPO;
+      A.NUM_DOC := restriccionesTemp[i].NUM_DOC;
+      A.PAIS_EMISOR_DOC := restriccionesTemp[i].PAIS_EMISOR_DOC;
+
+      A.APELLIDO :=restriccionesTemp[i].APELLIDO;
+      A.APELLIDO2 :=     restriccionesTemp[i].APELLIDO2;
+      A.NOMBRE :=     restriccionesTemp[i].NOMBRE;
+      A.NOMBRE2 := restriccionesTemp[i].NOMBRE2;
+      A.NACIONALIDAD := restriccionesTemp[i].NACIONALIDAD;
+      A.FECHA_NAC := restriccionestemp[i].FECHA_NAC;
+      A.SEXO :=restriccionesTemp[i].SEXO;
+      A.DESC_TIPO_RESTRICCION := restriccionesTemp[i].DESC_TIPO_RESTRICCION;
+      A.EXPED_DNM  := restriccionesTemp[i].EXPED_DNM;
+
+      A.DESC_RESTRICCION  :=restriccionesTemp[i].DESC_RESTRICCION;
+      A.DESC_CAUSA :=restriccionesTemp[i].DESC_CAUSA;
+      A.DESC_INSTRUCCION := restriccionesTemp[i].DESC_INSTRUCCION;
+      A.DESC_TIPO_JUSTICIA := restriccionesTemp[i].DESC_TIPO_JUSTICIA;
+      A.DESC_PROVINCIA := restriccionesTemp[i].DESC_PROVINCIA;
+      A.DESC_JUZGADOS  := restriccionesTemp[i].DESC_JUZGADOS;
+      A.DESC_LOCALIDAD :=restriccionesTemp[i].DESC_LOCALIDAD;
+      A.JUZGADO := restriccionesTemp[i].JUZGADO;
+      A.SECRETARIA := restriccionesTemp[i].SECRETARIA;
+      A.SALA := restriccionesTemp[i].SALA;
+      A.DESTINO := restriccionesTemp[i].DESTINO;
+      A.FECHA_DESDE := restriccionesTemp[i].FECHA_DESDE;
+      A.FECHA_HASTA :=restriccionesTemp[i].FECHA_HASTA;
+      A.FEC_RECEP_DNM :=restriccionesTemp[i].FEC_RECEP_DNM;
+      A.DESC_ENTIDAD := restriccionesTemp[i].DESC_ENTIDAD;
+      A.NRO_DISPO  := restriccionesTemp[i].NRO_DISPO;
+      //temprestri[i].ANIO_DISPO  := auxres.restricciones[i].ANIO_DISPO;
+      A.NRO_NOTA := restriccionesTemp[i].NRO_NOTA;
+      //temprestri[i].ANIO_NOTA := auxres.restricciones[i].ANIO_NOTA;
+      A.ACTA  :=restriccionesTemp[i].ACTA;
+      A.DESC_DELEGACION := restriccionesTemp[i].DESC_DELEGACION;
+      A.FECHA_SALIDA := restriccionesTemp[i].FECHA_SALIDA;
+      A.FECHA_BAJA := restriccionesTemp[i].FECHA_BAJA;
+      A.OBSERVACIONES := restriccionesTemp[i].OBSERVACIONES;
+      A.FOTO := restriccionesTemp[i].FOTO;
+      temprestri[I]:=A;
+    end;
+
+    if trim(ConsultaRestriccionCentral) = '1' then
+    begin
+      j:= length(restriccionesTemp);
+      for i := j to (length(restriccionesTemp)+length(auxres.restricciones))-1 do
+      begin
+        A := WsListaControlIntf.Restriccion.CREATE;
+        A.FUENTE  :=auxres.restricciones[i-j].FUENTE;
+        A.ID_PERS_PADRE:=auxres.restricciones[i-j].ID_PERS_PADRE;
+        A.ID_PERS :=auxres.restricciones[i-j].ID_PERS;
+        A.ID_MOV_C :=auxres.restricciones[i-j].ID_MOV_C;
+        A.DESC_TIPO_DOC :=auxres.restricciones[i-j].DESC_TIPO_DOC;
+        A.DOCTIPO := auxres.restricciones[i-j].DOCTIPO;
+        A.NUM_DOC := auxres.restricciones[i-j].NUM_DOC;
+        A.PAIS_EMISOR_DOC := auxres.restricciones[i-j].PAIS_EMISOR_DOC;
+
+        A.APELLIDO :=auxres.restricciones[i-j].APELLIDO;
+        A.APELLIDO2 :=     auxres.restricciones[i-j].APELLIDO2;
+        A.NOMBRE :=     auxres.restricciones[i-j].NOMBRE;
+        A.NOMBRE2 := auxres.restricciones[i-j].NOMBRE2;
+        A.NACIONALIDAD := auxres.restricciones[i-j].NACIONALIDAD;
+        A.FECHA_NAC := auxres.restricciones[i-j].FECHA_NAC;
+        A.SEXO :=auxres.restricciones[i-j].SEXO;
+        A.DESC_TIPO_RESTRICCION := auxres.restricciones[i-j].DESC_TIPO_RESTRICCION;
+        A.EXPED_DNM  := auxres.restricciones[i-j].EXPED_DNM;
+
+        A.DESC_RESTRICCION  := auxres.restricciones[i-j].DESC_RESTRICCION;
+        A.DESC_CAUSA := auxres.restricciones[i-j].DESC_CAUSA;
+        A.DESC_INSTRUCCION := auxres.restricciones[i-j].DESC_INSTRUCCION;
+        A.DESC_TIPO_JUSTICIA := auxres.restricciones[i-j].DESC_TIPO_JUSTICIA;
+        A.DESC_PROVINCIA := auxres.restricciones[i-j].DESC_PROVINCIA;
+        A.DESC_JUZGADOS  := auxres.restricciones[i-j].DESC_JUZGADOS;
+        A.DESC_LOCALIDAD :=auxres.restricciones[i-j].DESC_LOCALIDAD;
+        A.JUZGADO := auxres.restricciones[i-j].JUZGADO;
+        A.SECRETARIA := auxres.restricciones[i-j].SECRETARIA;
+        A.SALA := auxres.restricciones[i-j].SALA;
+        A.DESTINO := auxres.restricciones[i-j].DESTINO;
+        A.FECHA_DESDE := auxres.restricciones[i-j].FECHA_DESDE;
+        A.FECHA_HASTA := auxres.restricciones[i-j].FECHA_HASTA;
+        A.FEC_RECEP_DNM := auxres.restricciones[i-j].FEC_RECEP_DNM;
+        A.DESC_ENTIDAD := auxres.restricciones[i-j].DESC_ENTIDAD;
+        A.NRO_DISPO  := auxres.restricciones[i-j].NRO_DISPO;
+        //temprestri[i].ANIO_DISPO  := auxres.restricciones[i].ANIO_DISPO;
+        A.NRO_NOTA := auxres.restricciones[i-j].NRO_NOTA;
+        //temprestri[i].ANIO_NOTA := auxres.restricciones[i].ANIO_NOTA;
+        A.ACTA  := auxres.restricciones[i-j].ACTA;
+        A.DESC_DELEGACION := auxres.restricciones[i-j].DESC_DELEGACION;
+        A.FECHA_SALIDA := auxres.restricciones[i-j].FECHA_SALIDA;
+        A.FECHA_BAJA := auxres.restricciones[i-j].FECHA_BAJA;
+        A.OBSERVACIONES := auxres.restricciones[i-j].OBSERVACIONES;
+        A.FOTO := auxres.restricciones[i-j].FOTO;
+        temprestri[I]:=A;
+      end;
+
+    end;
+
+
+    (***************************************************)
+    (***************    MERGE DE FUENTE   **************)
+    (***************************************************)
+
+    if trim(ConsultaRestriccionCentral) = '1' then
+      SetLength(tempFuentes, length(fuentesTemp)+ length(auxres.fuentes))
+    else
+      SetLength(tempFuentes, length(fuentesTemp));
+
+    for i := 0 to length(fuentesTemp)- 1 do
+    begin
+      B := WsListaControlIntf.TESTATSOURCE_NEW.Create;
+      B.FUENTES :=  fuentesTemp[i].FUENTES;
+      B.ESTADO := fuentesTemp[i].ESTADO;
+      tempFuentes[i]:= B;
+    end;
+    if trim(ConsultaRestriccionCentral) = '1' then
+    begin
+      j := length(fuentesTemp);
+      for i := j to (length(fuentesTemp)+ length(auxres.fuentes)) - 1 do
+      begin
+        B := WsListaControlIntf.TESTATSOURCE_NEW.Create;
+        B.FUENTES :=  auxres.fuentes[i-j].FUENTES;
+        B.ESTADO := auxres.fuentes[i-j].ESTADO;
+        tempFuentes[i]:= B;
+      end;
+    end;
+
+    (*   RESULTADOS   *)
+
+    Result := TRESULTADO_NEW.Create;
+    Result.restricciones := temprestri;
+    Result.fuentes := tempFuentes;
+    Freeandnil(Ora);
+
+  end;
+end;
+
+
+function TWsListaControl_Unif.ConsultaRestriccionARG(consulta: XML_CONSULTA_NEW) : TRESPUESTA_ARG;
+var  Ora : TSqlOracle;
+begin
+  Ora := tSqlOracle.Create;
+  Result := Ora.procesarSolicitud(consulta);
+  Freeandnil(Ora);
+end;
+
+
+
+/////////////////////////////////////////////////////////////////
+/////**************   JPB -  Inicio    ********************//////
+/////////////////////////////////////////////////////////////////
+
+procedure TWsListaControl_Unif.generarTxT(path, resultado:string);
+var
+  F: TextFile;
+begin
+  AssignFile( F, path);
+  Append(f);
+  WriteLn( F, resultado);
+  CloseFile( F );
+end;
+
+
+/////////////////////////////////////////////////////////////////
+//////////****************   JPB -  fin    **************////////
+/////////////////////////////////////////////////////////////////
+
+function TWsListaControl_Unif.dameLugar(APath, doc: string): string;
+var
+      sr: TSearchRec;
+      Arch: TextFile;
+    Linea: string;
+    p:Integer;
+begin
+   APath := IncludeTrailingBackslash(APath);
+   if FindFirst(APath + '*.*', faAnyFile, sr) = 0 Then
+     repeat
+       if (sr.Name <> '..') and (sr.Name <> '.') then
+       begin
+         if (sr.Attr = faDirectory) then
+           dameLugar(APath + sr.Name, doc)
+         else
+          if (formatdatetime('yyyymmddhhmmss', Now-(2/24))+'_'+doc+'.log' < sr.Name) and
+              (formatdatetime('yyyymmddhhmmss', Now)+'_'+doc+'.log' > sr.Name) then
+              begin
+                   begin
+                   AssignFile(Arch, APath+'\'+sr.Name);
+                   reset(Arch);
+                   while not eof(Arch) do
+                   begin
+                     Readln(Arch, Linea);
+                     P := pos('<cod_rta>',linea );
+                     if p <> 0 then
+                       Result := Copy(Linea, pos('<cod_rta>',linea )+9,1);
+                   end;
+                   CloseFile(Arch);
+                 end;
+              end;
+       end;
+     until FindNext(sr) <> 0;
+
+   SysUtils.FindClose(sr);
+  // APath := ExcludeTrailingBackslash(APath);
+ //  Win32Check(RemoveDir(APath));
+end;
+
+
+
+
+function TWsListaControl_Unif.YaConsulteArchivo(doc : string):string ;
+var fecha : TDateTime;
+    sr: TSearchRec;
+    directorioPadre : string;
+
+
+
+begin
+  result:= 'NO';
+  if (Time() >= StrToTime('00:00:000')) and (Time() <= StrToTime('02:00:000')) then
+    fecha := Now()-1
+  else
+      fecha := Now();
+
+  directorioPadre := ExtractFilePath(ParamStr(0)) + 'logs\'+IntToStr(YearOf(fecha))+'\'+FormatFloat('00',MonthOf(fecha))+'\'+FormatFloat('00',DayOf(fecha));
+  if FileExists(directorioPadre +'\'+'*_'+doc+'.log') then
+  begin
+
+    Result:=dameLugar(directorioPadre, doc);
+
+   { if FindFirst(directorioPadre + '*.*', faAnyFile, sr) = 0 then
+      repeat
+        if (sr.Attr and faDirectory = 0) or (sr.Name <> '.')
+          and (sr.Name <> '..') then
+          if (formatdatetime('yyyymmddhhmmss', Now-(2/24))+'_'+doc+'.log' > sr.Name) and
+              (formatdatetime('yyyymmddhhmmss', Now)+'_'+doc+'.log' < sr.Name) then
+              begin
+                   begin
+                   AssignFile(Arch, sr.Name);
+                   reset(Arch);
+                   while not eof(Arch) do
+                   begin
+                     Readln(Arch, Linea);
+                     if pos(linea, '<cod_rta>') <> 0 then
+                       Result := Copy(Linea, pos(linea, '<cod_rta>')+10,1);
+                   end;
+                   CloseFile(Arch);
+                 end;
+              end;
+    until FindNext(sr) <> 0;
+    FindClose(sr);  }
+  end;
+end;
+
+
+
+
+function TWsListaControl_Unif.ConsultaRestriccionLocal(Consulta: XML_CONSULTA_NEW): TRESULTADO_NEW;
+
+
+var
+  ok : String;
+
+  lengthArray, restriccionActual, nroFuente : Integer;
+  restriccionesTemp :  ResultadoConsulta;
+  fuenteOriginal : String;
+  fuentesTemp : TESTATMANYSOURCES_NEW;
+
+  auxcon : XML_CONSULTA;
+  auxres : TRESULTADO;
+
+
+  temprestri   : ResultadoConsulta;
+  tempFuentes  : TESTATMANYSOURCES_NEW;
+
+  i,j,f : integer;
+
+  A : WsListaControlIntf.RESTRICCION;
+  B : WsListaControlIntf.TESTATSOURCE_NEW;
+
+
+  (***JPB***)
+  (***Para Paraguay***)
+  cod_rta , rta_Detalle : integer;
+ (***JPB***)
+
+  function datevuelta(unafecha: string): string;
+  begin
+    result := copy(unafecha,9,2) +'/'+copy(unafecha,6,2) +'/'+copy(unafecha,1,4);
+  end;
+
+
+  procedure log(LogString: string);
+    var f: TextFile;
+        fechaHoy : TDateTime;
+        fileName : string;
+
+    begin
+      try
+        fechaHoy := Now;
+        ForceDirectories(ExtractFilePath(ParamStr(0)) + 'logs\'+IntToStr(YearOf(fechaHoy))+'\'+FormatFloat('00',MonthOf(fechaHoy))+'\'+FormatFloat('00',DayOf(fechaHoy)));
+        filename:= ExtractFilePath(ParamStr(0)) + 'logs\'+IntToStr(YearOf(fechaHoy))+'\'+FormatFloat('00',MonthOf(fechaHoy))+'\'+FormatFloat('00',DayOf(fechaHoy))+'\'+FormatDateTime('YYYYMMDDhhmmss',fechaHoy) +'_'+ consulta.NUMDOC+ '.log';
+        AssignFile(f,fileName);
+        If FileExists(fileName) then
+          Reset(f)
+        else
+          Rewrite(f);
+        Append(f);
+        Writeln(f,logString);
+        closeFile(f);
+      except
+      end;
+    end;
+
+    function armarTextoXMLLog(consulta : XML_CONSULTA_NEW; pais_solicita :string;  cod_rta, cod_rta_detalle : integer) : AnsiString;
+    begin
+     result :='<?xml version="1.0" encoding="ISO-8859-1" ?>'+
+              '<archivo>'+
+              '<pais>'+pais_solicita+'</pais>'+
+              '<operador>'+UpperCase(Consulta.OPERADOR)+'</operador>'+
+              '<apellido1>'+UpperCase(Consulta.APELLIDO1)+'</apellido1>'+
+              '<apellido2>'+UpperCase(Consulta.APELLIDO2)+'</apellido2>'+
+              '<nombre1>'+UpperCase(Consulta.NOMBRE1)+'</nombre1>'+
+              '<nombre2>'+UpperCase(Consulta.NOMBRE2)+'</nombre2>'+
+              '<numdoc>'+UpperCase(Consulta.NUMDOC)+'</numdoc>'+
+              '<fechanac>'+UpperCase(Consulta.FECHANAC)+'</fechanac>'+
+              '<tipodoc>'+UpperCase(Consulta.TIPODOC)+'</tipodoc>'+
+              '<emisordoc>'+UpperCase(Consulta.EMISORDOC)+'</emisordoc>'+
+              '<genero>'+UpperCase(Consulta.GENERO)+'</genero>'+
+              '<nacionalidad>'+UpperCase(Consulta.NACIONALIDAD)+'</nacionalidad>'+
+              '<nroidentificacion>'+UpperCase(Consulta.NUMEROIDENIFICACION)+'</nroidentificacion>'+
+              '<paso>'+UpperCase(Consulta.PASO)+'</paso>'+
+              '<cod_rta>'+inttostr(Cod_rta)+'</cod_rta>'+
+              '<cod_rta_detalle>'+inttostr(cod_rta_Detalle)+'</cod_rta_detalle>'+
+              '</archivo>';
+
+    end;
+
+var
+  r,id,ExtraData:string;
+//  FrmSocketChile: TFrmSocketChile;
+  rtaYaConsulte, FEST : String;
+  INI : TIniFile;
+  Year, Month, Day:Word;
+
+begin
+  //generarTxT('.\log.txt',Consulta.APELLIDO1+'-'+Consulta.APELLIDO2+'-'+Consulta.NOMBRE1+'-'+Consulta.NOMBRE2+'-'+Consulta.NUMDOC);
+
+  try
+    ini := TIniFile.Create('.\config.ini');
+    uglobal.WSPUENTE:= ini.ReadString('CONFIG','WSPUENTE','');
+
+  except
+
+   (********************************************)
+   (** Para CHILE ni siquiera necesita el INI **)
+   (** Para PARAGUAY si se necesita el INI    **)
+   (********************************************)
+
+  end;
+
+  ExtraData := NullAsStringValue;
+  ok := NullAsStringValue;
+  SetLength(temprestri,0);
+  fuenteOriginal := Consulta.FUENTES;
+  // Chequeo de parametros de la consulta
+  FEST := 'T';
+  OK := NullAsStringValue;
+
+  if ValidarParametros(Consulta) then
+  begin
+    if Pos('PRY', fuenteOriginal) <> 0 then
+      begin
+        //consulto semaforo de impedimentos de Paraguay
+
+        consultarParaguay(consulta, Cod_rta, rta_Detalle);
+        CASE cod_rta  OF
+          0:  BEGIN
+                  OK := NullAsStringValue; //'PARAGUAY';
+                  IF (rta_Detalle = 100) or (rta_Detalle = 101) THEN
+                    FEST := 'E'
+              END;
+          1:  BEGIN
+                OK := NullAsStringValue;
+              END;
+          2:  BEGIN
+                OK := 'PARAGUAY';
+              END;
+        end;
+        log(armarTextoXMLLog(Consulta,'PRY',cod_rta,rta_Detalle));
+    end;
+
+
+    if Pos('CHL', fuenteOriginal) <> 0 then
+      begin
+        //consulto semaforo de impedimentos de Paraguay
+        rtaYaConsulte:= YaConsulteArchivo(Consulta.NUMDOC);
+        if rtaYaConsulte = 'NO' then
+          consultarCHILE(consulta, Cod_rta, rta_Detalle)
+        else
+          cod_rta := StrToInt(rtaYaConsulte);
+
+        CASE cod_rta  OF
+          -1:  BEGIN
+                OK := NullAsStringValue; //'PARAGUAY';
+                IF (rta_Detalle = 100) or (rta_Detalle = 101) THEN
+                  FEST := 'E'
+              END;
+          0:  BEGIN
+                OK := NullAsStringValue; //'PARAGUAY';
+                FEST := 'E'
+              END;
+          1:  BEGIN
+                OK := NullAsStringValue;
+              END;
+          2:  BEGIN
+                OK := 'CHILE';
+              END;
+        end;
+        if rtaYaConsulte = 'NO' then
+          log(armarTextoXMLLog(Consulta,'CHL',cod_rta,rta_Detalle));
+    end;
+
+    {if Pos('CHL', fuenteOriginal) <> 0 then
+      begin
+        //consulto semaforo de impedimentos de Chile
+
+        FrmSocketChile := nil;
+        id := IntToStr(nroFuente);
+        try
+          FrmSocketChile:= TFrmSocketChile.Create(nil);
+
+          with FrmSocketChile do
+          begin
+
+            logSend := '';
+            r := autenticar(id);
+
+            if esOK(r) then
+            begin
+              r := verificar(id,consulta.TIPODOC,consulta.NUMDOC,consulta.EMISORDOC,
+                             Consulta.APELLIDO1,Consulta.APELLIDO2,
+                             Trim(Consulta.NOMBRE1+' '+Consulta.NOMBRE2),
+                             Consulta.NACIONALIDAD,Consulta.FECHANAC,Consulta.GENERO);
+
+              DecodeDate(now,Year, Month, Day);
+
+              Log_MandadosCHL := normalizoDir(Log_MandadosCHL) +
+                normalizoDir(IntToStr(Year))+
+                normalizoDir(IntToStr(Month))+
+                normalizoDir(IntToStr(Day));
+
+              if not DirectoryExists(Log_MandadosCHL)then
+                ForceDirectories(Log_MandadosCHL);
+
+
+
+              crearArchivo(normalizoDir(Log_MandadosCHL)+'CHL_ENV_'+consulta.NUMDOC,logSend);
+
+              ExtraData :='<OBS>'+getOBS(r)+'</OBS>';
+
+              //crearArchOBS(Trim(consulta.NUMDOC)+'.obs',r);
+
+              if esOK(r) then
+              begin
+                if esACK(r) then
+                begin
+                  OK := NullAsStringValue;
+                  Log(OK+ 'OK-'+r);
+                end
+                else
+                begin
+                  OK := 'CHILE';
+                  Log(OK+ '-'+r);
+                end;
+              end
+              else
+              begin
+                OK := 'CHILE (NO SE PUDO CONTACTAR EL SERVICIO)';
+                Log(OK+ '-'+r);
+                FEST := 'E';
+              end;
+            end
+            else
+            begin
+                OK := 'CHILE (NO SE PUDO CONTACTAR EL SERVICIO)';
+                Log(OK+ '-'+r);
+                FEST := 'E';
+            end;
+          end;
+          //Log('AAAAA');
+          FreeAndNil(FrmSocketChile);
+        except
+          on e:exception do
+          begin
+            OK := 'CHILE (NO SE PUDO CONTACTAR EL SERVICIO)';
+            Log(OK+ '-'+e.Message);
+            FEST := 'E';
+          end;
+        end;
+
+      end;
+     }
+
+    if Pos('BOL', fuenteOriginal) <> 0 then
+    begin
+        //consulto semaforo de impedimentos de Paraguay
+        consultarBolivia(consulta, Cod_rta, rta_Detalle);
+        CASE cod_rta  OF
+          0:  BEGIN
+                  OK := NullAsStringValue; //'BOLIVIA';
+                  IF (rta_Detalle = 100) or (rta_Detalle = 101) THEN
+                    FEST := 'E'
+              END;
+          1:  BEGIN
+                OK := NullAsStringValue;
+              END;
+          2:  BEGIN
+                OK := 'BOLIVIA';
+              END;
+        end;
+        log(armarTextoXMLLog(Consulta,'BOL',cod_rta,rta_Detalle));
+    end;
+
+    if Pos('BRA', fuenteOriginal) <> 0 then
+    begin
+        //consulto semaforo de impedimentos de Brasil
+
+    end;
+
+    //SI ENCONTRÓ IMPEDIDOS DEL TERCER PAIS, EN LA VARIABLE Ok MANDO EL NOMBRE DEL PAIS.
+    if ok <> NullAsStringValue then
+      begin
+        //Log('00000');
+        A := WsListaControlIntf.Restriccion.CREATE;
+
+        //Log('000001');
+        A.FUENTE  :=fuenteOriginal;
+        A.ID_PERS_PADRE:=0;
+        A.ID_PERS :=0;
+        A.ID_MOV_C :=0;
+        A.DESC_TIPO_DOC :=consulta.TIPODOC;
+        A.DOCTIPO := consulta.TIPODOC;
+        A.NUM_DOC := consulta.NUMDOC;
+        A.PAIS_EMISOR_DOC := consulta.EMISORDOC;
+
+        A.APELLIDO  :=  Consulta.APELLIDO1;
+        A.APELLIDO2 :=  consulta.APELLIDO2;
+        A.NOMBRE    :=  Consulta.NOMBRE1;
+        A.NOMBRE2   :=  Consulta.NOMBRE2;
+        A.NACIONALIDAD := Consulta.NACIONALIDAD;
+        A.FECHA_NAC :=  Consulta.FECHANAC;
+        A.SEXO      :=  Consulta.GENERO;
+        A.DESC_TIPO_RESTRICCION := 'IMPEDIMENTO '+ OK;
+        A.EXPED_DNM  := OK;
+
+        A.DESC_RESTRICCION  := 'IMPEDIMENTO '+ OK;
+        A.DESC_CAUSA :='IMPEDIMENTO '+ OK;
+        A.DESC_INSTRUCCION := 'CONTACTARSE CON AUTORIDADES MIGRATORIAS DE '+OK;
+        A.DESC_TIPO_JUSTICIA := NullAsStringValue;
+        A.DESC_PROVINCIA := NullAsStringValue;
+        A.DESC_JUZGADOS  := NullAsStringValue;
+        A.DESC_LOCALIDAD := NullAsStringValue;
+        A.JUZGADO := NullAsStringValue;
+        A.SECRETARIA := NullAsStringValue;
+        A.SALA := NullAsStringValue;
+        A.DESTINO := NullAsStringValue;
+        A.FECHA_DESDE := NullAsStringValue;
+        A.FECHA_HASTA := NullAsStringValue;
+        A.FEC_RECEP_DNM :=NullAsStringValue;
+        A.DESC_ENTIDAD := NullAsStringValue;
+        A.NRO_DISPO  := NullAsStringValue;
+        A.NRO_NOTA := NullAsStringValue;
+        A.ACTA  :=NullAsStringValue;;
+        A.DESC_DELEGACION := OK;
+        A.FECHA_SALIDA := NullAsStringValue;
+        A.FECHA_BAJA := NullAsStringValue;
+        A.OBSERVACIONES := 'CONTACTARSE CON AUTORIDADES MIGRATORIAS DE '+OK;
+        A.FOTO := NullAsStringValue;
+        A.EXTRA_INFO := ExtraData;
+        SetLength(temprestri,1);
+        temprestri[0]:=A;
+
+      end else
+        SetLength(temprestri,0);
+  end;
+
+  try
+    SetLength(tempFuentes, 1);
+    B := WsListaControlIntf.TESTATSOURCE_NEW.Create;
+    B.FUENTES :=  fuenteOriginal;
+    B.ESTADO := FEST;
+    tempFuentes[0]:= B;
+  except
+    SetLength(tempFuentes, 0);
+  end;
+
+  Result := TRESULTADO_NEW.Create;
+  Result.restricciones := temprestri;
+  Result.fuentes := tempFuentes;
+end;
+
+
+
+
+initialization
+  { Invokable classes must be registered }
+  InvRegistry.RegisterInvokableClass(TWsListaControl_Unif);
+
+end.
+

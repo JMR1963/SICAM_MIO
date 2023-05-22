@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2023/05/06 12:38:53.000.492,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/05/06 12:38:53.000.814,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/05/06 12:39:32.000.949,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrWSLlamadorAA2000Impl.pas</Transaction>
+    <Transaction>2023/05/06 12:39:33.000.057,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrWSLlamadorAA2000Intf.pas</Transaction>
+    <Transaction>2023/05/06 12:40:06.000.258,=C:\Git-WS\extras-main\WSLlamadorAA2000\SRC\manager.pas</Transaction>
+    <Transaction>2023/05/06 12:40:06.000.533,=C:\Git-WS\extras-main\WSLlamadorAA2000\SRC\wsLLamadorAA2000BIntf.pas</Transaction>
+    <Transaction>2023/05/06 12:40:06.000.470,=C:\Git-WS\extras-main\WSLlamadorAA2000\SRC\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/05/06 12:40:06.000.359,=C:\Git-WS\extras-main\WSLlamadorAA2000\SRC\uMainForm.pas</Transaction>
+    <Transaction>2023/05/06 12:40:06.000.502,=C:\Git-WS\extras-main\WSLlamadorAA2000\SRC\wsLLamadorAA2000BImpl.pas</Transaction>
+    <Transaction>2023/05/06 12:41:04.000.155,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Git-WS\extras-main\WSLlamadorAA2000\SRC\svrWSLlamadorAA2000.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -1,0 +1,16 @@
+object DMDatos: TDMDatos
+  OldCreateOrder = False
+  Left = 652
+  Top = 235
+  Height = 180
+  Width = 371
+  object oraConn: TOraSession
+    Left = 64
+    Top = 32
+  end
+  object OraQuery1: TOraQuery
+    Session = oraConn
+    Left = 192
+    Top = 32
+  end
+end

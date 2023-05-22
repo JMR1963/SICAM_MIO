@@ -14,6 +14,11 @@ git add filename.php – añade el filename.php al index del repositorio
 git commit -m "first commit" – despliega los cambios al repositorio, 
 sustituye first commit con la etiqueta commit real ( lugar de guarda )
 
+HISTORIA de commits
+git log --oneline
+    4f49abb (HEAD -> master) dos
+    e2e2523 uno
+git reset --hard 4f49abb
 
 GITHUB
 git remote add origin git@github.com:your_username/name_of_your_repo.git – despliega los cambios a un repositorio Git remoto. Sustituye your_username y name_of_your_repo con tu usuario real GitHub y el nombre de tu repositorio

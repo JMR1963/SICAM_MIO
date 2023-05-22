@@ -1,8 +1,6 @@
 { SOAP WebModule }
 unit uWebModule;
-
 interface
-
 uses
   System.SysUtils, System.Classes, Web.HTTPApp, Soap.InvokeRegistry, soap.WSDLIntf, System.TypInfo,
   Soap.WebServExp, Soap.WSDLBind, Xml.XMLSchema, Soap.WSDLPub, Soap.SOAPPasInv, Soap.SOAPHTTPPasInv,
@@ -11,7 +9,6 @@ uses
   FireDAC.Phys, FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf,
   FireDAC.Stan.Async, FireDAC.DApt, Data.DB, FireDAC.Comp.DataSet,
   FireDAC.Comp.Client;
-
 type
   TWebModule1 = class(TWebModule)
     HTTPSoapDispatcher1: THTTPSoapDispatcher;
@@ -24,18 +21,13 @@ type
   public
     { Public declarations }
   end;
-
 var
   WebModule1: TWebModule1;
-
 implementation
-
 {$R *.dfm}
-
 procedure TWebModule1.WebModule1DefaultHandlerAction(Sender: TObject;
   Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 begin
   WSDLHTMLPublish1.ServiceInfo(Sender, Request, Response, Handled);
 end;
-
 end.

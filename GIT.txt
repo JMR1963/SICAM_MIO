@@ -21,5 +21,12 @@ git log --oneline
 git reset --hard 4f49abb
 
 GITHUB
-git remote add origin git@github.com:your_username/name_of_your_repo.git – despliega los cambios a un repositorio Git remoto. Sustituye your_username y name_of_your_repo con tu usuario real GitHub y el nombre de tu repositorio
+Generar las credenciales para conectar con GitHub:
+winget install --id GitHub.cli ( para windows )
+
+Crear un repo en GitHub name_of_your_repo ( le agrega .git )
+
+desde Terminal:
+git remote add origin git@github.com:your_username/name_of_your_repo.git 
+– despliega los cambios a un repositorio Git remoto. Sustituye your_username y name_of_your_repo con tu usuario real GitHub y el nombre de tu repositorio
 git push origin master – despliega los cambios al repositorio GitHub

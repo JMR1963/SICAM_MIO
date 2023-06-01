@@ -1,7 +1,7 @@
 unit ubaseDatos;
 interface
 uses
-    WinApi.Windows, System.Classes, Data.DB, Ora, MemDS, DBAccess, Provider, OraProvider, vcl.Dialogs,
+    WinApi.Windows, System.Classes, Data.DB,  Provider,  vcl.Dialogs,
     WsServiciosMaritimosIntf, System.SysUtils, Vcl.Forms,FireDAC.Stan.Intf, FireDAC.Stan.Option,
     FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
     FireDAC.Phys, FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf,
@@ -12,8 +12,8 @@ uses
   private
     //FOraSession: TOraSession;
     //ForaQuery: TOraQuery;
-    FOraSession:TFDConnection;
-    ForaQuery:TFDQuery;
+    FOraSession: TFDConnection;
+    ForaQuery: TFDQuery;
     Fparametros : tstrings;
     function getConnected: boolean;
     function getServer: string;
@@ -61,12 +61,12 @@ function TbaseDatos.setAprobado(servicio: integer;username:string): boolean;
 begin
   try
     result := True;
-    FOraSession.Params.UserName := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     FOraSession.StartTransaction;
@@ -104,12 +104,12 @@ var
   fechaDeclarada: string;
 begin
   try
-    FOraSession.Params.UserName := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     ForaQuery.Close;
@@ -179,11 +179,11 @@ end;
 
 function TbaseDatos.getParametros: tstrings;
 begin
-      result := FOraSession.Params;
+      result := FOraSession.params;
 end;
 function TbaseDatos.getServer: string;
 begin
-  result := FOraSession.Params.Database;
+  result := FOraSession.params.Database;
 end;
 function TbaseDatos.getTstrings: Tstrings;
 begin
@@ -191,7 +191,7 @@ begin
 end;
 function TbaseDatos.getUsername: string;
 begin
-  result := FOraSession.Params.UserName;
+  result := FOraSession.params.Username;
 end;
 procedure TbaseDatos.setConnected(bStatus: boolean);
 begin
@@ -209,11 +209,11 @@ begin
 end;
 procedure TbaseDatos.setPassword(pass: string);
 begin
-  FOraSession.Params.Password := pass;
+  FOraSession.params.Password := pass;
 end;
 procedure TbaseDatos.setServer(strServer: string);
 begin
-  FOraSession.Params.Database := strServer;
+  FOraSession.params.Database := strServer;
 end;
 procedure TbaseDatos.setTstrings(const Value: Tstrings);
 var
@@ -224,7 +224,7 @@ begin
 end;
 procedure TbaseDatos.setUsername(name: string);
 begin
-  FOraSession.Params.UserName := name;
+  FOraSession.params.Username := name;
 end;
 
 function TbaseDatos.setEstado(servicio: integer; estado: Testado; username:string): boolean;
@@ -233,12 +233,12 @@ var
 begin
   try
     result := True;
-    FOraSession.Params.Username := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     FOraSession.StartTransaction;
@@ -271,12 +271,12 @@ end;
 
 function TbaseDatos.getJurisdiccionFromPaso(paso: integer): integer;
 begin
-  FOraSession.Params.UserName := 'SERVMUSR';
-  FOraSession.Params.Password := 'USRSERVM';
+  FOraSession.params.Username := 'SERVMUSR';
+  FOraSession.params.Password := 'USRSERVM';
   {$IfDef TESTMODE}
   FOraSession.Server   := 'NOMINAS_DESA';
   {$Else}
-  FOraSession.Params.Database   := 'NOMINAS';
+  FOraSession.params.Database   := 'NOMINAS';
   {$EndIf}
 
   FOraSession.Connected := true;
@@ -293,12 +293,12 @@ function TbaseDatos.setDiferido(servicio: integer; observacion:string; username:
 begin
   try
     result := '';
-    FOraSession.Params.Username := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
 
     FOraSession.Connected := true;
@@ -340,12 +340,12 @@ begin
   try
     jurisdiccion := getJurisdiccionFromPaso(paso);
     ForaQuery.SQL.Clear;
-    FOraSession.Params.Username := 'SERVMUSR';
-    FOraSession.Params.Password := 'USRSERVM';
+    FOraSession.params.Username := 'SERVMUSR';
+    FOraSession.params.Password := 'USRSERVM';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.DataBase   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     ForaQuery.Close;
@@ -620,12 +620,12 @@ var
   i:  integer;
 begin
   try
-    FOraSession.Params.Username := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     ForaQuery.Close;
@@ -675,12 +675,12 @@ var
   i:  integer;
 begin
   try
-    FOraSession.Params.UserName := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     ForaQuery.Close;
@@ -711,12 +711,12 @@ var
   i:  integer;
 begin
   try
-    FOraSession.Params.Username := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     ForaQuery.Close;
@@ -748,12 +748,12 @@ var
   i:  integer;
 begin
   try
-    FOraSession.Params.Username := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     ForaQuery.Close;
@@ -784,12 +784,12 @@ function TbaseDatos.confirmarServicio(idServicio: integer; updServicio: TudpServ
 begin
   try
     result := '';
-    FOraSession.Params.Username := 'SMARUSR';
-    FOraSession.Params.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Params.Database   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     FOraSession.StartTransaction;
@@ -870,8 +870,8 @@ begin
   end;
 END;
 function TbaseDatos.fechaIntervencion(servicio: integer): string;
-//var
- // estadoStr: string;
+var
+  estadoStr: string;
 begin
   try
     result := '';
@@ -880,7 +880,7 @@ begin
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.params.Database   := 'NOMINAS';
+    FOraSession.params.Database  := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     ForaQuery.Close;
@@ -923,7 +923,7 @@ begin
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.params.Database   := 'NOMINAS';
+    FOraSession.params.Database  := 'NOMINAS';
     {$EndIf}
     FOraSession.Connected := true;
     FOraSession.StartTransaction;

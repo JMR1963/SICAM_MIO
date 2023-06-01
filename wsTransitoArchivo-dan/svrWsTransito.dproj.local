@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2022/11/20 21:14:09.000.891,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2022/11/20 21:38:54.000.880,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2022/11/20 21:43:13.000.750,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2022/11/20 23:58:21.000.860,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2023/03/28 21:29:37.000.969,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/03/28 21:29:39.000.422,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/01 15:55:28.000.374,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2023/04/02 03:36:35.000.503,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+    <Transaction>2023/04/02 03:36:37.000.705,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>2023/04/02 03:37:11.000.462,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\wsTransitoNewImpl.pas</Transaction>
+    <Transaction>2023/04/02 03:37:11.000.582,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\wsTransitoNewIntf.pas</Transaction>
+    <Transaction>2023/04/02 03:38:22.000.955,=C:\SICAM\Web Service\wsTransitoArchivo\Iwspuente1.pas</Transaction>
+    <Transaction>2023/04/02 03:38:22.000.999,=C:\SICAM\Web Service\wsTransitoArchivo\IwsPuenteBolivia1.pas</Transaction>
+    <Transaction>2023/04/02 03:38:22.000.923,=C:\SICAM\Web Service\wsTransitoArchivo\Ipuentechileno2.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.543,=C:\SICAM\Web Service\wsTransitoArchivo\WSTransitosImpl.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.506,=C:\SICAM\Web Service\wsTransitoArchivo\WebServiceMMPaysandu.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.034,=C:\SICAM\Web Service\wsTransitoArchivo\IwsPuentePRY1.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.577,=C:\SICAM\Web Service\wsTransitoArchivo\WSTransitosIntf.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.118,=C:\SICAM\Web Service\wsTransitoArchivo\uBase64.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.065,=C:\SICAM\Web Service\wsTransitoArchivo\md5.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.244,=C:\SICAM\Web Service\wsTransitoArchivo\Udatos.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.281,=C:\SICAM\Web Service\wsTransitoArchivo\ufixWS.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.456,=C:\SICAM\Web Service\wsTransitoArchivo\Unit1.pas</Transaction>
+    <Transaction>2023/04/02 03:38:23.000.322,=C:\SICAM\Web Service\wsTransitoArchivo\uMD5.pas</Transaction>
+    <Transaction>2023/04/02 03:40:18.000.418,C:\SICAM\Web Service\wsTransitoArchivo\Unit1.pas=C:\SICAM\Web Service\wsTransitoArchivo\uWebModule.pas</Transaction>
+    <Transaction>2023/04/02 03:40:18.000.418,C:\SICAM\Web Service\wsTransitoArchivo\Unit1.dfm=C:\SICAM\Web Service\wsTransitoArchivo\uWebModule.dfm</Transaction>
+    <Transaction>2023/04/02 03:40:41.000.644,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.dfm=C:\SICAM\Web Service\wsTransitoArchivo\uMainForm.dfm</Transaction>
+    <Transaction>2023/04/02 03:40:41.000.644,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas=C:\SICAM\Web Service\wsTransitoArchivo\uMainForm.pas</Transaction>
+    <Transaction>2023/04/02 03:41:01.000.873,C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\SICAM\Web Service\wsTransitoArchivo\wsTransitoNew.dproj</Transaction>
+    <Transaction>2023/04/09 01:49:45.027,C:\Git-WS\extras\wsTransitoArchivo\svrWsTransito.dproj=C:\Git-WS\extras\wsTransitoArchivo\wsTransitoNew.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

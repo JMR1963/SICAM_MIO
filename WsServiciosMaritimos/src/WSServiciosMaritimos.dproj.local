@@ -1,10 +1,2 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject>
-	<ProjectSortOrder AutoSort="0" SortType="0">
-    <File Path="ubaseDatos.pas"/>
-    <File Path="uWebModule.pas"/>
-    <File Path="uWebModule.dfm"/>
-    <File Path="WsServiciosMaritimosImpl.pas"/>
-    <File Path="WsServiciosMaritimosIntf.pas"/>
-  </ProjectSortOrder>
-</BorlandProject>
+<BorlandProject/>

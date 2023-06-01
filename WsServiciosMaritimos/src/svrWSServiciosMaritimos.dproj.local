@@ -1,15 +1,2 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject>
-	<Transactions>
-    <Transaction>2023/05/06 12:20:17.000.343,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
-    <Transaction>2023/05/06 12:20:18.000.097,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
-    <Transaction>2023/05/06 12:20:45.000.534,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrWSServiciosMritimosImpl.pas</Transaction>
-    <Transaction>2023/05/06 12:20:45.000.652,=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\svrWSServiciosMritimosIntf.pas</Transaction>
-    <Transaction>2023/05/06 12:21:47.000.966,=C:\Git-WS\extras-main\WsServiciosMaritimos\src\uMainForm.pas</Transaction>
-    <Transaction>2023/05/06 12:21:47.000.863,=C:\Git-WS\extras-main\WsServiciosMaritimos\src\ubaseDatos.pas</Transaction>
-    <Transaction>2023/05/06 12:21:48.000.141,=C:\Git-WS\extras-main\WsServiciosMaritimos\src\WsServiciosMaritimosIntf.pas</Transaction>
-    <Transaction>2023/05/06 12:21:48.000.077,=C:\Git-WS\extras-main\WsServiciosMaritimos\src\uWebModule.pas</Transaction>
-    <Transaction>2023/05/06 12:21:48.000.107,=C:\Git-WS\extras-main\WsServiciosMaritimos\src\WsServiciosMaritimosImpl.pas</Transaction>
-    <Transaction>2023/05/06 12:21:59.000.693,C:\Git-WS\extras-main\WsServiciosMaritimos\src\svrWSServiciosMaritimos.dproj=C:\Users\Daniel\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
-  </Transactions>
-</BorlandProject>
+<BorlandProject/>

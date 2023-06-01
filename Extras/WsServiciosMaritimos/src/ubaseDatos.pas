@@ -1,21 +1,23 @@
 unit ubaseDatos;
-
 interface
-
 uses
-    WinApi.Windows, System.Classes, Data.DB, Ora, MemDS, DBAccess, Provider, OraProvider, vcl.Dialogs,
-    WsServiciosMaritimosIntf, System.SysUtils, Vcl.Forms;
-
+    WinApi.Windows, System.Classes, Data.DB,  Provider,  vcl.Dialogs,
+    WsServiciosMaritimosIntf, System.SysUtils, Vcl.Forms,FireDAC.Stan.Intf, FireDAC.Stan.Option,
+    FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
+    FireDAC.Phys, FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf,
+    FireDAC.Stan.Async, FireDAC.DApt, FireDAC.Comp.DataSet,
+    FireDAC.Comp.Client;
   type
     TbaseDatos =  class
   private
-    FOraSession: TOraSession;
-    ForaQuery: TOraQuery;
+    //FOraSession: TOraSession;
+    //ForaQuery: TOraQuery;
+    FOraSession: TFDConnection;
+    ForaQuery: TFDQuery;
     Fparametros : tstrings;
     function getConnected: boolean;
     function getServer: string;
     function getUsername : string;
-
     procedure setConnected(bStatus: boolean);
     procedure setServer(strServer: string);
     procedure setUsername(name: string);
@@ -46,43 +48,34 @@ uses
     function fechaIntervencion(servicio: integer): string;
     function fechaProcesando(servicio: integer): string;
     function fechaHoraNominas: String;
-
     constructor create(); reintroduce;
     destructor destroy(); reintroduce;
   end;
-
 implementation
-
   //{$Define TESTMODE}
   {$Define PRODUCCION}
 
-
 uses System.Math, System.DateUtils;
 { TbaseDatos }
-
 function TbaseDatos.setAprobado(servicio: integer;username:string): boolean;
 begin
   try
     result := True;
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     FOraSession.StartTransaction;
     ForaQuery.Close;
-
     ForaQuery.SQL.Add('update servicios_maritimos.servicio set aprobado = ''t'', fecha_aprobado = sysdate, ');
     ForaQuery.SQL.Add('usuario_aprobado = :username  ');
     ForaQuery.SQL.Add('where nro_solicitud = :servicio ');
-
     ForaQuery.ParamByName('servicio').AsInteger := servicio;
     ForaQuery.ParamByName('username').AsString := username;
-
     ForaQuery.SQL.SaveToFile(ExtractFilePath(application.ExeName)  + 'sql1.txt');
     ForaQuery.ExecSQL;
     ForaQuery.Connection.Commit;
@@ -91,22 +84,19 @@ begin
     ForaQuery.connection.rollback;
   end
 end;
-
 constructor TbaseDatos.create;
 begin
-  FOraSession := TOraSession.Create(nil);
-  ForaQuery := TOraQuery.Create(nil);
-  ForaQuery.Session := FOraSession;
+  FOraSession := TFDConnection.Create(nil);
+  ForaQuery := TFDQuery.Create(nil);
+  ForaQuery.Connection := FOraSession;
   Fparametros := TStringList.Create;
 end;
-
 destructor TbaseDatos.destroy;
 begin
   FreeAndNil(FOraSession);
   FreeAndNil(Foraquery);
   FreeAndNil(fparametros);
 end;
-
 function TbaseDatos.getservicios(paso:integer;fecha1, fecha2: string): Tservicios;
 var
   i: integer;
@@ -114,18 +104,15 @@ var
   fechaDeclarada: string;
 begin
   try
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
-
     ForaQuery.SQL.Add('select * from servicios_maritimos.servicio serv ');
     ForaQuery.SQL.Add('inner join catalogos.vw_cat_cab_pasos pasos on serv.puerto_declarado = pasos.idpaso ');
     ForaQuery.SQL.Add('inner join servicios_maritimos.buque buque on serv.BUQUE_DECLARADO = buque.CODIGO ');
@@ -135,15 +122,11 @@ begin
     ForaQuery.SQL.Add('where FECHA_INICIO_DECLARADA between to_date(:fecha1, ''ddmmyyyyhh24miss'') and to_date(:fecha2, ''ddmmyyyyhh24miss'') ');
     ForaQuery.SQL.Add(' and  jurisdiccion = ((select jurisdiccion from catalogos.vw_cat_cab_pasos where idpaso  = :paso)) order by FECHA_INICIO_DECLARADA');
 
-
     ForaQuery.ParamByName('fecha1').AsString := fecha1;
     ForaQuery.ParamByName('fecha2').AsString := fecha2;
     ForaQuery.ParamByName('paso').AsInteger  := paso;
-
     ForaQuery.SQL.SaveToFile(ExtractFilePath(application.ExeName)  + 'sql.txt');
-
     ForaQuery.open;
-
     if ForaQuery.IsEmpty then
       result := NIL
     else
@@ -189,33 +172,27 @@ begin
   end;
 end;
 
-
 function TbaseDatos.getConnected: boolean;
 begin
   result := ForaSession.connected;
 end;
 
-
 function TbaseDatos.getParametros: tstrings;
 begin
-
+      result := FOraSession.params;
 end;
-
 function TbaseDatos.getServer: string;
 begin
-  result := FOraSession.Server;
+  result := FOraSession.params.Database;
 end;
-
 function TbaseDatos.getTstrings: Tstrings;
 begin
   result := ForaQuery.SQL;
 end;
-
 function TbaseDatos.getUsername: string;
 begin
-  result := FOraSession.Username;
+  result := FOraSession.params.Username;
 end;
-
 procedure TbaseDatos.setConnected(bStatus: boolean);
 begin
   //fix
@@ -223,7 +200,6 @@ begin
   FOraSession.Open;
   //ForaSession.connected := bStatus;
 end;
-
 procedure TbaseDatos.setParametros(const Value: tstrings);
 var
   i : integer;
@@ -231,17 +207,14 @@ begin
   for i:=0 to value.Count-1 do
     Fparametros.Add(value.Strings[i]);
 end;
-
 procedure TbaseDatos.setPassword(pass: string);
 begin
-  FOraSession.Password := pass;
+  FOraSession.params.Password := pass;
 end;
-
 procedure TbaseDatos.setServer(strServer: string);
 begin
-  FOraSession.Server := strServer;
+  FOraSession.params.Database := strServer;
 end;
-
 procedure TbaseDatos.setTstrings(const Value: Tstrings);
 var
   i : integer;
@@ -249,13 +222,10 @@ begin
   for i:=0 to value.Count-1 do
     ForaQuery.SQL.Add(value.Strings[i]);
 end;
-
 procedure TbaseDatos.setUsername(name: string);
 begin
-  FOraSession.Username := name;
+  FOraSession.params.Username := name;
 end;
-
-
 
 function TbaseDatos.setEstado(servicio: integer; estado: Testado; username:string): boolean;
 var
@@ -263,19 +233,16 @@ var
 begin
   try
     result := True;
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     FOraSession.StartTransaction;
     ForaQuery.Close;
-
     ForaQuery.SQL.Add('update servicios_maritimos.servicio set ');
     if estado = PROCESANDO then //si lo paso a procesando le pongo la fecha.
     begin
@@ -283,7 +250,6 @@ begin
       ForaQuery.SQL.Add('USUARIO_PROCESANDO = :PUSERNAME, ');
     end;
     ForaQuery.SQL.Add('estado = :estado where nro_solicitud = :servicio ');
-
     case estado of
       SOLICITADO  : estadoStr := 's';
       CANCELADO   : estadoStr := 'c';
@@ -294,7 +260,6 @@ begin
     ForaQuery.ParamByName('estado').AsString := estadoStr;
     if estado = PROCESANDO then
       ForaQuery.ParamByName('PUSERNAME').AsString := username;
-
     ForaQuery.SQL.SaveToFile(ExtractFilePath(application.ExeName)  + 'sql2.txt');
     ForaQuery.ExecSQL;
     ForaQuery.Connection.Commit;
@@ -304,73 +269,58 @@ begin
   end
 end;
 
-
 function TbaseDatos.getJurisdiccionFromPaso(paso: integer): integer;
 begin
-  FOraSession.Username := 'SERVMUSR';
-  FOraSession.Password := 'USRSERVM';
-
+  FOraSession.params.Username := 'SERVMUSR';
+  FOraSession.params.Password := 'USRSERVM';
   {$IfDef TESTMODE}
   FOraSession.Server   := 'NOMINAS_DESA';
   {$Else}
-  FOraSession.Server   := 'NOMINAS';
+  FOraSession.params.Database   := 'NOMINAS';
   {$EndIf}
-
 
   FOraSession.Connected := true;
   ForaQuery.Close;
-
   ForaQuery.SQL.Add('select jurisdiccion from catalogos.vw_cat_cab_pasos where idpaso  = :paso');
   ForaQuery.ParamByName('paso').AsInteger := paso;
   ForaQuery.open;
-
   if ForaQuery.IsEmpty then
     result := -1
   else
     result := ForaQuery.fieldbyname('JURISDICCION').AsInteger;
 end;
-
 function TbaseDatos.setDiferido(servicio: integer; observacion:string; username:string; fecha_declarada:string): string;
 begin
   try
     result := '';
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
 
     FOraSession.Connected := true;
     ForaQuery.Close;
     ForaQuery.SQL.Clear;
     FOraSession.StartTransaction;
-
     ForaQuery.SQL.Add('update servicios_maritimos.servicio set ');
     ForaQuery.SQL.Add('diferido = ''t'', ');
     ForaQuery.SQL.Add('USUARIO_DIFERIDO = :PUSERNAME, ');
     ForaQuery.SQL.Add('FECHA_DIFERIDO = sysdate, ');
-
     //No va por orden de JC
     //ForaQuery.SQL.Add('fecha_diferido_declarada = :PFECHA_DECLARADA, ');
 
-
     ForaQuery.SQL.Add('observacion_diferido = :POBSERVACION ');
     ForaQuery.SQL.Add('where nro_solicitud = :servicio ');
-
     ForaQuery.ParamByName('servicio').AsInteger := servicio;
     ForaQuery.ParamByName('POBSERVACION').asstring := observacion;
     ForaQuery.ParamByName('PUSERNAME').asstring := username;
 
-
     ForaQuery.SQL.SaveToFile('diferido.txt');
-
     ForaQuery.ExecSQL;
     ForaQuery.Connection.Commit;
-
   except
     on e: exception do
     begin
@@ -379,7 +329,6 @@ begin
     end;
   end;
 end;
-
 
 function TbaseDatos.getServiciosLocalesYOtros(paso: integer; fecha1, fecha2: string): Tservicios;
 var
@@ -391,18 +340,15 @@ begin
   try
     jurisdiccion := getJurisdiccionFromPaso(paso);
     ForaQuery.SQL.Clear;
-    FOraSession.Username := 'SERVMUSR';
-    FOraSession.Password := 'USRSERVM';
-
+    FOraSession.params.Username := 'SERVMUSR';
+    FOraSession.params.Password := 'USRSERVM';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
-
     ForaQuery.SQL.Text := 'SELECT TO_CHAR (SERV.SICAM_FECHA_INICIO_PROCESO, ''dd/mm/yyyy hh24:mi:ss'')' +
                           ' AS FECHA_PROCESANDO, ' +
                           ' SERV.PUERTO_DESTINO_ORIGEN, ' +
@@ -469,13 +415,11 @@ begin
                           ' FROM CATALOGOS.VW_CAT_CAB_PASOS ' +
                           ' WHERE IDPASO = SERV.ID_PUERTO_INTERMEDIO_5)))) ' +
                           ' ORDER BY nro_servicio desc ';
-
     //ForaQuery.ParamByName('fecha1').AsString := fecha1;
     //ForaQuery.ParamByName('fecha2').AsString := fecha2;
     ForaQuery.ParamByName('pjurisdiccion').AsInteger := jurisdiccion;
     ForaQuery.SQL.SaveToFile(ExtractFilePath(application.ExeName)  + 'sql3.txt');
     ForaQuery.open;
-
     if ForaQuery.IsEmpty then
       result := NIL
     else
@@ -493,7 +437,6 @@ begin
         DateTimeTostring(fechaDeclarada, 'dd/mm/YYYY hh:nn:ss' , fecha);
         result[i].fecha_declarada := fechaDeclarada;
         //---
-
         //Result[i].fecha_declarada     := ForaQuery.fieldbyname('FECHA_INICIO_DECLARADA').asString;
         Result[i].nombreBuque         := ForaQuery.fieldbyname('BUQUE_DESCRIPCION').AsString;
         Result[i].matricula           := ForaQuery.fieldbyname('MATRICULA').AsString;
@@ -524,9 +467,7 @@ begin
   except
   end;
 end;
-
 {
-
 function TbaseDatos.getServiciosLocalesYOtros(paso: integer; fecha1, fecha2: string): Tservicios;
 var
   i: integer;
@@ -539,16 +480,13 @@ begin
     ForaQuery.SQL.Clear;
     FOraSession.Username := 'SMARUSR';
     FOraSession.Password := 'USRSMAR';
-
     {$IfDef TESTMODE
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else
     FOraSession.Server   := 'NOMINAS';
     {$EndIf
-
     FOraSession.Connected := true;
     ForaQuery.Close;
-
 
     ForaQuery.SQL.Add('SELECT  SERV.FECHA_PROCESANDO , SERV.ESTADO, SERV.APROBADO, serv.nro_solicitud, serv.servicio_declarado, ');
     ForaQuery.SQL.Add('serv.sobretasa_declarada, serv.tripulantes_declarado, ');
@@ -565,7 +503,6 @@ begin
     ForaQuery.SQL.Add('TIPO_CRUCE_DECLARADO, em.id_empresa, sobretasa.descripcion as sobretasa_descripcion, ');
     ForaQuery.SQL.Add('cat_serv.descripcion as cat_descripcion, em.descripcion as descripcion_empresa, buque.tipo_buque as tipo_buque ');
 
-
     ForaQuery.SQL.Add('FROM servicios_maritimos.servicio serv INNER JOIN catalogos.vw_cat_cab_pasos pasos ');
     ForaQuery.SQL.Add('ON serv.puerto_declarado = pasos.idpaso ');
     ForaQuery.SQL.Add('INNER JOIN servicios_maritimos.buque buque ');
@@ -576,17 +513,12 @@ begin
     ForaQuery.SQL.Add('ON SERV.SOBRETASA_DECLARADA   = SOBRETASA.CODIGO ');
     ForaQuery.SQL.Add('left join catalogos.cat_servicio_maritimo cat_serv ');
     ForaQuery.SQL.Add('on cat_serv.CODIGO = serv.SERVICIO_DECLARADO ');
-
     ForaQuery.SQL.Add('WHERE ((fecha_inicio_declarada BETWEEN TO_DATE (:fecha1, ''ddmmyyyyhh24miss'') ');
     ForaQuery.SQL.Add('AND TO_DATE (:fecha2, ''ddmmyyyyhh24miss'' ) and jurisdiccion = :pjurisdiccion) or ');
-
     ForaQuery.SQL.Add('(estado = ''p'' and jurisdiccion = :pjurisdiccion))  ');
 
 
-
-
     ForaQuery.SQL.Add('union all ');
-
     ForaQuery.SQL.Add('SELECT   SERV.FECHA_PROCESANDO, SERV.ESTADO, SERV.APROBADO, serv.nro_solicitud, serv.servicio_declarado, ');
     ForaQuery.SQL.Add('serv.sobretasa_declarada, serv.tripulantes_declarado, ');
     ForaQuery.SQL.Add('serv.pasajeros_declarado, serv.apellido_firmante, ');
@@ -602,7 +534,6 @@ begin
     ForaQuery.SQL.Add('TIPO_CRUCE_DECLARADO, em.id_empresa, sobretasa.descripcion as sobretasa_descripcion,  ');
     ForaQuery.SQL.Add('cat_serv.descripcion as cat_descripcion, em.descripcion as descripcion_empresa, buque.tipo_buque as tipo_buque ');
 
-
     ForaQuery.SQL.Add('FROM servicios_maritimos.servicio serv INNER JOIN catalogos.vw_cat_cab_pasos pasos ');
     ForaQuery.SQL.Add('ON serv.puerto_declarado = pasos.idpaso ');
     ForaQuery.SQL.Add('INNER JOIN servicios_maritimos.buque buque ');
@@ -613,7 +544,6 @@ begin
     ForaQuery.SQL.Add('ON SERV.SOBRETASA_DECLARADA   = SOBRETASA.CODIGO ');
     ForaQuery.SQL.Add('left join catalogos.cat_servicio_maritimo cat_serv ');
     ForaQuery.SQL.Add('on cat_serv.CODIGO = serv.SERVICIO_DECLARADO ');
-
     ForaQuery.SQL.Add('WHERE fecha_inicio_declarada BETWEEN TO_DATE (:fecha1, ''ddmmyyyyhh24miss'' ) ');
     ForaQuery.SQL.Add('AND TO_DATE (:fecha2, ''ddmmyyyyhh24miss'' ) ');
     ForaQuery.SQL.Add('AND estado = ''p'' ');
@@ -633,13 +563,11 @@ begin
     ForaQuery.SQL.Add('FROM catalogos.vw_cat_cab_pasos ');
     ForaQuery.SQL.Add('WHERE idpaso = serv.puerto_intermedio_5_declarado))) ');
     ForaQuery.SQL.Add('ORDER BY fecha_inicio_declarada ');
-
     ForaQuery.ParamByName('fecha1').AsString := fecha1;
     ForaQuery.ParamByName('fecha2').AsString := fecha2;
     ForaQuery.ParamByName('pjurisdiccion').AsInteger := jurisdiccion;
     ForaQuery.SQL.SaveToFile('./sql.txt');
     ForaQuery.open;
-
     if ForaQuery.IsEmpty then
       result := NIL
     else
@@ -657,7 +585,6 @@ begin
         DateTimeTostring(fechaDeclarada, 'dd/mm/YYYY hh:nn:ss' , fecha);
         result[i].fecha_declarada := fechaDeclarada;
         //---
-
         //Result[i].fecha_declarada     := ForaQuery.fieldbyname('FECHA_INICIO_DECLARADA').asString;
         Result[i].nombreBuque         := ForaQuery.fieldbyname('BUQUE_DESCRIPCION').AsString;
         Result[i].matricula           := ForaQuery.fieldbyname('MATRICULA').AsString;
@@ -680,7 +607,6 @@ begin
         Result[i].descripcion_empresa := ForaQuery.fieldbyname('DESCRIPCION_EMPRESA').AsString;
         result[i].tipo_buque          := ForaQuery.fieldbyname('TIPO_BUQUE').asInteger;
         result[i].FECHA_PROCESANDO    := ForaQuery.fieldbyname('FECHA_PROCESANDO').AsString;
-
         ForaQuery.Next;
         inc(i);
       end;
@@ -688,31 +614,24 @@ begin
   except
   end;
 end;
-
 }
-
 function TbaseDatos.catalogosPasosFronterizos: TpasosFronterizos;
 var
   i:  integer;
 begin
   try
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
     ForaQuery.SQL.Clear;
-
     ForaQuery.SQL.Add('select * from catalogos.vw_cat_cab_pasos where tipopaso = ''M'' ');
-
     ForaQuery.open;
-
     if ForaQuery.IsEmpty then
       result := NIL
     else
@@ -745,34 +664,29 @@ begin
         begin
           ForaQuery.Next;
         end;
-
       end;
     end;
   except
     result := NIL
   END;
 end;
-
 function TbaseDatos.catalogosTasas: Ttasas;
 var
   i:  integer;
 begin
   try
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
     ForaQuery.SQL.Clear;
     ForaQuery.SQL.Add('select * from catalogos.cat_sobretasa ');
     ForaQuery.open;
-
     if ForaQuery.IsEmpty then
       result := NIL
     else
@@ -792,27 +706,23 @@ begin
     result := nil;
   END;
 end;
-
 function TbaseDatos.catalogoTipoBuque: TtipoBuques;
 var
   i:  integer;
 begin
   try
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
     ForaQuery.SQL.Clear;
     ForaQuery.SQL.Add('select * from catalogos.cat_tipo_buque ');
     ForaQuery.open;
-
     if ForaQuery.IsEmpty then
       result := NIL
     else
@@ -833,27 +743,23 @@ begin
     result := nil;
   END;
 end;
-
 function TbaseDatos.catalogoServicioMaritimo: tServiciosMaritimos;
 var
   i:  integer;
 begin
   try
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
     ForaQuery.SQL.Clear;
     ForaQuery.SQL.Add('select * from catalogos.cat_servicio_maritimo ');
     ForaQuery.open;
-
     if ForaQuery.IsEmpty then
       result := NIL
     else
@@ -874,25 +780,21 @@ begin
     result := nil;
   END;
 end;
-
 function TbaseDatos.confirmarServicio(idServicio: integer; updServicio: TudpServicio): string;
 begin
   try
     result := '';
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     FOraSession.StartTransaction;
     ForaQuery.Close;
     ForaQuery.SQL.Clear;
-
     ForaQuery.SQL.Add('UPDATE servicios_maritimos.servicio ');
     ForaQuery.SQL.Add('SET servicio_confirmado = :pservicio_confirmado, ');
     ForaQuery.SQL.Add(' estado = ''i'', ');
@@ -902,7 +804,6 @@ begin
     ForaQuery.SQL.Add('pasajeros_confirmado = :ppasajeros_confirmado, ');
     ForaQuery.SQL.Add('PUERTO_DEST_FINAL_CONFIRMADO = :PPUERTO_DEST_FINAL_CONFIRMADO, ');
     ForaQuery.SQL.Add('OBSERVACION = :POBSERVACION, ');
-
     //si el que intervino no modifico la fecha -> sysdate
     if updServicio.fechaFinalDeclarada = updServicio.fecha_registro then
     begin
@@ -914,7 +815,6 @@ begin
       ForaQuery.SQL.Add('FECHA_FINAL_CONFIRMADA = to_date(:PFECHAFINAL, ''dd/mm/yyyy hh24:mi''),  '); {to_date(:fecha1, ''ddmmyyyyhh24miss'')}
       ForaQuery.SQL.Add('fecha_confirmacion = sysdate, '); {to_date(:fecha1, ''ddmmyyyyhh24miss'')}
     end;
-
     ForaQuery.SQL.Add('usuario_confirmacion = :pusuario_confirmacion, ');
     ForaQuery.SQL.Add('apellido_firmante = :papellido_firmante, ');
     ForaQuery.SQL.Add('nombre_firmante = :pnombre_firmante, ');
@@ -930,23 +830,17 @@ begin
     ForaQuery.SQL.Add('FECHA_TOPE_CANCELACION   = to_date(:PFECHA_TOPE_CANCELACION, ''dd/mm/yyyy hh24:mi'')');
     ForaQuery.SQL.Add('WHERE nro_solicitud = :pnro_solicitud ');
     ForaQuery.SQL.SaveToFile('update.txt');
-
     {
-
     if updServicio.servicio = 1 then //harcodeado hasta que se modifique la version de sicam
       updServicio.servicio := 2;
-
     }
-
     ForaQuery.ParamByName('pservicio_confirmado').Value     := updServicio.servicio;
-
     if updServicio.sobretasa <> -1 then {si es -1 no hay sobretasa}
       ForaQuery.ParamByName('psobretasa_confirmada').Value  := updServicio.sobretasa;
     ForaQuery.ParamByName('ptripulantes_confirmados').Value := updServicio.tripulantes;
     ForaQuery.ParamByName('ppasajeros_confirmado').Value    := updServicio.pasajeros;
     ForaQuery.ParamByName('PPUERTO_DEST_FINAL_CONFIRMADO').Value    := updServicio.puertoFinal;
     ForaQuery.ParamByName('POBSERVACION').Value             := updServicio.observacion;
-
     ForaQuery.ParamByName('pusuario_confirmacion').Value    := updServicio.usuario;
     ForaQuery.ParamByName('papellido_firmante').Value       := updServicio.apellidoFirmante;
     ForaQuery.ParamByName('pnombre_firmante').Value         := updServicio.nombreFirmante;
@@ -964,10 +858,8 @@ begin
     if not(updServicio.fechaFinalDeclarada = updServicio.fecha_registro) then
       ForaQuery.ParamByName('PFECHAFINAL').Value              := updServicio.fechaFinalDeclarada;
     //ForaQuery.ParamByName('pfecha_confirmacion').AsString   := updServicio.fecha_registro;
-
     ForaQuery.SQL.SaveToFile('update.txt');
     ForaQuery.ExecSQL;
-
     FOraSession.Commit;
   except
     on e: exception do
@@ -977,90 +869,70 @@ begin
     end;
   end;
 END;
-
 function TbaseDatos.fechaIntervencion(servicio: integer): string;
 var
   estadoStr: string;
 begin
   try
     result := '';
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database  := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
-
     ForaQuery.SQL.Add('select to_char(fecha_confirmacion,''dd/mm/yyyy hh24:mi:ss'')as fecha_confirmacion from servicios_maritimos.servicio where ');
     ForaQuery.SQL.Add(' nro_solicitud = :servicio ');
-
     ForaQuery.ParamByName('servicio').AsInteger := servicio;
     ForaQuery.Open;
-
     if not ForaQuery.IsEmpty then
       result := ForaQuery.fieldbyname('fecha_confirmacion').Value;
-
   except
     result := '';
   end
 end;
-
 function TbaseDatos.fechaHoraNominas: String;
 begin
 try
     result := '';
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
-
     ForaQuery.SQL.Add('select to_char(sysdate, ''dd/mm/yyyy hh24:mi:ss'') as now from dual ');
-
     ForaQuery.Open;
-
     result := ForaQuery.fieldbyname('now').asstring;
-
   except
     result := '';
   end
-
 end;
-
 function TbaseDatos.setAprobadoYQ(servicio: integer; username: string): boolean;
 begin
   try
     result := True;
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database  := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     FOraSession.StartTransaction;
     ForaQuery.Close;
-
     ForaQuery.SQL.Add('update servicios_maritimos.servicio set aprobado = ''t'', fecha_aprobado = sysdate, ');
     ForaQuery.SQL.Add('usuario_aprobado = :username, servicio_declarado = 2 ');
     ForaQuery.SQL.Add('where nro_solicitud = :servicio ');
-
     ForaQuery.ParamByName('servicio').AsInteger := servicio;
     ForaQuery.ParamByName('username').AsString := username;
-
     ForaQuery.SQL.SaveToFile('./sql.txt');
     ForaQuery.ExecSQL;
     ForaQuery.Connection.Commit;
@@ -1069,37 +941,27 @@ begin
     ForaQuery.connection.rollback;
   end
 end;
-
 function TbaseDatos.fechaProcesando(servicio: integer): string;
 begin
   try
     result := '';
-    FOraSession.Username := 'SMARUSR';
-    FOraSession.Password := 'USRSMAR';
-
+    FOraSession.params.Username := 'SMARUSR';
+    FOraSession.params.Password := 'USRSMAR';
     {$IfDef TESTMODE}
     FOraSession.Server   := 'NOMINAS_DESA';
     {$Else}
-    FOraSession.Server   := 'NOMINAS';
+    FOraSession.params.Database   := 'NOMINAS';
     {$EndIf}
-
     FOraSession.Connected := true;
     ForaQuery.Close;
-
     ForaQuery.SQL.Add('select to_char(fecha_procesando,''dd/mm/yyyy hh24:mi:ss'')as fecha_procesando from servicios_maritimos.servicio where ');
     ForaQuery.SQL.Add(' nro_solicitud = :servicio ');
-
     ForaQuery.ParamByName('servicio').AsInteger := servicio;
     ForaQuery.Open;
-
     if not ForaQuery.IsEmpty then
       result := ForaQuery.fieldbyname('fecha_procesando').Value;
-
   except
     result := '';
   end
-
 end;
-
 end.
-
